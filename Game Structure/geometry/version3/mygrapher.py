@@ -2,12 +2,12 @@ from mywindow import Window
 from myplane import Plane
 from mycolors import *
 
-from math import cos,sin,exp
+from math import cos,sin,exp,tan,atan
 
 import random
 
 sigmoid=lambda x:1/(1+exp(-x))
-alea=   lambda x:sin(x)*random.random()
+alea=   lambda x:random.random()
 
 class Grapher(Plane):
     """The grapher is a tool using the Plane class made in order to show functions taking one input.
@@ -37,65 +37,23 @@ class Grapher(Plane):
         if not color: color=window.randomColor()
         wsx,wsy=window.size
         points=[]
-        for X in range(0,wsx):
-            x,y=self.getFromScreen([X,0],window)
-            X,Y=self.getToScreen([x,function(x)],window)
-            points.append((X,Y))
-        window.draw.lines(window.screen,color,False,points,1)
+        for xi in range(0,wsx):
+            try:
+                x,y=self.getFromScreen([xi,0],window)
+                fx=function(x)
+                X,Y=self.getToScreen([x,fx],window)
+                points.append((X,Y))
+            except:
+                points.append(None)
+        for i in range(len(points)-1):
+            print(points[i],points[i+1])
+            if points[i] and points[i+1]:
+                window.draw.line(window.screen,color,points[i],points[i+1])
 
-#Traces d'un enorme dm
-
-class fonction:
-    def __init__(self):
-        pass
-    def __call__(self,x):
-        if x==0:
-            return 0
-        else:
-            return (cos(x)-1)/sin(x)
-    def __repr__(self):
-        return "(cos(x)-1)/sin(x)"
-
-p=lambda x:-2*x+1/3*x**3 #-2*x**2
-
-t=lambda x:-1/2*x
-
-#fs=[f,p,t]
-
-
-class cf2:
-    def __init__(self):
-        pass
-    def __call__(self,x):
-        return f1(x)**2
-    def __repr__(self):
-        return "(sin(x)-1)**2"
-
-
-class cdf2:
-    def __init__(self):
-        pass
-    def __call__(self,x):
-        return 1-2*x+x**2+x**3/3
-    def __repr__(self):
-        return "1-2*x+x**2+x**3/3"
-
-
-
-f1=lambda x:sin(x)-1
-f2=lambda x:f1(x)**2
-df2=lambda x:1+2*x+x**2-x**3/3
-
-#fs=[cf2(),cdf2()]
-
-sm=lambda x:1/sin(x)
-dsm=lambda x:4-6*x+4*x**2
-
-fs=[sm,dsm]
-
+        #window.draw.lines(window.screen,color,False,points,1)
 
 if __name__=="__main__":
     window=Window(size=[1440,900],fullscreen=True)
-    f=fonction()
+    fs=[sin,cos,tan]
     grapher=Grapher(fs)
     grapher(window)

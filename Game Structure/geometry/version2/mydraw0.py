@@ -1,6 +1,7 @@
 
 from myplane import Plane
 from mywindow import Window
+from mycolors import *
 
 """
 Structure:
@@ -28,7 +29,7 @@ Client:
 
 
 class Draw:
-    def __init__(self,plane,window):
+    def __init__(self,plane=Plane(),window=Window()):
         self.plane=plane
         self.window=window
 
@@ -46,20 +47,40 @@ class Draw:
         size=self.plane.getToScreen([side_size,side_size],self.window)
         self.window.draw.rect(self.window.screen,color,position+size,not filled)
 
-    def polygon(self,color,positions,filled=False):
+    def polygon(self,color,positions,filled=False): #No clue of what i'm doing to do here.
         pass
 
-    def line(self,color,start_position,end_position,width=0):
+    def line(self,color,start_position,end_position,width=1):
         start_position=self.plane.getToScreen(start_position,self.window)
         end_position=self.plane.getToScreen(end_position,self.window)
-        slef.widnow.draw.line(self.window.screen,color,start_position,end_position,width)
+        self.window.draw.line(self.window.screen,color,start_position,end_position,width)
 
-    def lines(self,color,positions,width=0):
-        new_positions=
+    def lines(self,color,positions,connected=True,width=1):
+        new_positions=self.plane.getAllToScreen(positions,self.window)
+        self.window.draw.lines(self.window.screen,color,connected,positions,width)
+
+    def show(self):
+        self.plane.showGrid(self.window)
+        self.window.flip()
+
+    def clear(self):
+        self.plane.clear(self.window)
+
+    def check(self):
+        self.window.check()
+
+    def control(self):
+        self.plane.control(self.window)
 
 
 
 if __name__=="__main__":
-    window=Window()
+    window=Window("mydraw")
     plane=Plane()
     draw=Draw(plane,window)
+    while draw.window.open:
+        draw.check()
+        draw.control()
+        draw.clear()
+        draw.line(WHITE,(3,-5),(-2,6))
+        draw.show()

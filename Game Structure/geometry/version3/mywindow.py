@@ -1,75 +1,80 @@
 from __future__ import division
 
-from couleurs import *
+from mycolors import *
 
 import pygame
 from pygame.locals import *
 import time
 import json
 
-
-
 class Window:
     made=0
     draw=pygame.draw
+    rect=pygame.rect
 
-    def __init__(self,name="Unnamed Game",taille=None,text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,set=True):
-        """Create a window object using name, taille text_font, text_size, text_color, background and set."""
+    def __init__(self,name="Unnamed",size=None,text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,build=True):
+        """Create a window object using name, size text_font, text_size, text_color, background and set."""
         Window.made+=1
         self.number=Window.made
         self.name=name
-        self.taille=taille
+        self.size=size
         self.text_font=text_font
-        self.taille_du_texte=text_size
+        self.text_size=text_size
         self.text_color=text_color
-        self.couleur_de_fond=background_color
+        self.background_color=background_color
         self.fullscreen=fullscreen
-        self.load()
-        if set:
-            self.set()
+        self.set()
+        self.log("Window has been created.")
+        if build:
+            self.build()
 
-    def load(self):
-        """Load builtins attributs of window object."""
+    def set(self):
+        """Set builtins attributs of window object."""
         self.RIGHT = 0
         self.UP    = 1
         self.LEFT  = 2
         self.DOWN  = 3
-        if self.taille is None:
-            self.taille=(self.info.current_w//2,self.info.current_h//2)
-        #self.mouse_position=pygame.mouse.get_pos()
-        #self.mouse_click=bool(pygame.mouse.get_pressed()[0])
-        self.selecter_color=self.reverseColor(self.couleur_de_fond)
-        self.pausing=False
+        self.selecter_color=self.reverseColor(self.background_color)
         self.open=False
-        self.coordonnates=[0,0]+self.taille
-        self.picture_saved=0
+        self.screenshots_taken=0
         self.pause_cool_down=1
         self.time=time.time()
+        self.pause_time=0.2
 
-    def set(self):
+    def build(self):
         """Creates apparent window."""
-        self.log("Window has been created.")
         pygame.init()
-        self.info = pygame.display.Info()
-        self.font = pygame.font.SysFont(self.text_font, self.taille_du_texte)
+        self.info=pygame.display.Info()
+        self.font=pygame.font.SysFont(self.text_font, self.text_size)
+        if not self.size:
+            if self.fullscreen:
+                self.size=[self.info.current_w,self.info.current_h]
+            else:
+                self.size=[2*self.info.current_w//3,2*self.info.current_h//3]
         if self.fullscreen:
-            self.screen=pygame.display.set_mode(self.taille,FULLSCREEN)
+            self.screen=pygame.display.set_mode(self.size,FULLSCREEN)
         else:
-            self.screen=pygame.display.set_mode(self.taille,RESIZABLE)
+            self.screen=pygame.display.set_mode(self.size,RESIZABLE)
         pygame.display.set_caption(self.name)
+        if self.text_color is None:
+            self.text_color=self.reverseColor(self.background_color)
         self.clear()
         self.flip()
         self.open=True
 
+    def __call__(self):
+        self.flip()
+        self.pause()
+
     def clear(self,color=None):
         """Clear to background color."""
-        if not color:
-            color=self.couleur_de_fond
+        if color is None:
+            color=self.background_color
         self.screen.fill(color)
 
-    def scale(self,picture,taille):
-        """Return scaled picture using picture and taille."""
-        return pygame.transform.scale(picture,taille)
+    def scale(self,picture,size):
+        """Return scaled picture using picture and size."""
+        return pygame.transform.scale(picture,size)
 
     def check(self):
         """Update window's state depending if close buttons are pressed."""
@@ -79,11 +84,6 @@ class Window:
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self.open=False
-            if event.type == pygame.VIDEORESIZE and not self.fullscreen:
-                # There's some code to add back window content here.
-                self.size=[event.w,event.h]
-                self.screen=pygame.display.set_mode(self.size,pygame.RESIZABLE)
-                self.flip()
 
     def update(self):
         """Updates all window's main attributs."""
@@ -98,18 +98,13 @@ class Window:
 
     def pause(self):
         """Wait for user to click on space."""
-        self.pausing=True
-        while self.pausing and self.open:
+        while self.open:
             self.check()
             keys=pygame.key.get_pressed()
             if keys[K_SPACE]:
-                self.pausing=False
+                break
         if self.open:
-            time.sleep(0.1)
-
-    def sleep(self,waiting_time): #useless
-        """Wait for giving time."""
-        time.sleep(waiting_time)
+            time.sleep(self.pause_time)
 
     def press(self):
         """Return all keys."""
@@ -118,23 +113,7 @@ class Window:
     def direction(self):
         """Return keys for arrows pressed. Trigonometric orientation is used."""
         keys=pygame.key.get_pressed()
-        if keys[K_LEFT]:
-            left=True
-        else:
-            left=False
-        if keys[K_RIGHT]:
-            right=True
-        else:
-            right=False
-        if keys[K_UP]:
-            up=True
-        else:
-            up=False
-        if keys[K_DOWN]:
-            down=True
-        else:
-            down=False
-        return [right,up,right,down]
+        return (keys[K_RIGHT],keys[K_UP],keys[K_LEFT],keys[K_DOWN])
 
 
     def select(self):
@@ -176,20 +155,18 @@ class Window:
         x,y,sx,sy=coordonnates
         picture=pygame.image.load(picture_directory)
         picture=pygame.transform.scale(picture,(sx,sy))
-        if color is not None:
-            picture=colorize(picture,color)
+        if color: picture=colorize(picture,color)
         self.screen.blit(picture, position)
 
-    def centerText(self,message,taille=None):
-        """Center the text in the middle of the screen."""
-        sx,sy=self.taille
-        if not taille: taille=self.taille_du_texte
+    def centerText(self,message,size=None):
+        """Centers Text on screen."""
+        sx,sy=self.size
+        if not size: size=self.text_size
         l=len(message)
-        letter_size=taille/4
+        letter_size=size/4
         x=sx//2-letter_size*l//2
-        y=sy//2-taille/3
+        y=sy//2-size/3
         return (x,y)
-
 
     def alert(self,message):
         """Quickly display text on window."""
@@ -197,21 +174,18 @@ class Window:
         self.print(message,position)
         self.flip()
 
-    def print(self,text,position,taille=None,color=None,couleur_de_fond=None,font=None):
-        """Display text on screen using position, taille, color and font."""
-        sx,sy=taille
-        x,y=position
-        pygame.draw.rect(self.screen,self.reverseColor(couleur_de_fond),position+taille,0)
-        pygame.draw.rect(self.screen,couleur_de_fond,(x+1,y+1,sx-2,sy-2),0)
-        if not taille: taille=self.taille_du_texte
+    def print(self,text,position,size=None,color=None,font=None):
+        """Display text on screen using position, size, color and font."""
+        if not size: size=self.text_size
         if not color: color=self.text_color
-        if not font: font=self.font
-        label = font.render(text, 1, color)
-        self.screen.blit(label, position)
+        if not font: font=self.text_font
+        font=pygame.font.SysFont(font,size)
+        label=font.render(text,1,color)
+        self.screen.blit(label,position)
 
     def drawRect(self,coordonnates,color):
         """Draw a rectangle on the screen using color and coordonnates relative to window's fiducials."""
-        wsx,wsy=self.taille
+        wsx,wsy=self.size
         wcx,wcy,wcsx,wcsy=self.coordonnates
         rcx,rcy,rcsx,rcsy=coordonnates
         x,y=(rcx-wcx,rcy-wcy)
@@ -224,6 +198,11 @@ class Window:
         pcx,pcy=position
         x,y=(rcx-wcx,rcy-wcy)
         return (x,y)
+
+    def rename(self,name):
+        """Rename the window using name."""
+        self.name=name
+        pygame.display.set_caption(self.name)
 
 
     def randomColor(self):
@@ -266,6 +245,7 @@ class Window:
         return image
 
 
+
     def wavelengthToRGB(self,wavelength):
         """Convert wavelength to rgb color type."""
         gamma,max_intensity=0.80,255
@@ -286,14 +266,6 @@ class Window:
         r,g,b=adjust(r,factor),adjust(g,factor),adjust(b,factor)
         return (r,g,b)
 
-    def __str__(self):
-        """Donne une représentation en string de la fenêtre."""
-        text="Fenetre creee par Marc Partensky afin de faciliter l'utilisation des fonctions de pygame."
-        return text
-
-    __repr__=__help__=__str__
-
-
     def kill(self):
         """Quit pygame."""
         pygame.quit()
@@ -307,21 +279,21 @@ class Window:
         """Executed before the window is destroyed."""
         self.log("Window has been closed.")
 
-    def __call__(self):
-        """Refresh and pause."""
-        self.flip()
-        self.pause()
+
+
+
+
+
 
 
 if __name__=="__main__":
-    w=Window("Game")
-    print(w.press())
+    w=Window("Window Prototype")
     #save(w,"grosse fenetre")
     #w=load("grosse fenetre")
     #print(w.lighten(BLUE))
     #w.alert("test")
     w.pause()
     w.clear()
-    w.alert("test2")
+    w.alert("je raconte de la merde juste pour avoir une longue chaine de caractere")
     w.pause()
     w.kill()

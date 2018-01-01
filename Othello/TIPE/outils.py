@@ -1,5 +1,6 @@
 import random
 import config
+
 def intersection_(liste):#todo revoir
     for i in range(len(liste)):
         liste[i]=tuple(liste[i])

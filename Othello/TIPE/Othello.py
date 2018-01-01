@@ -33,14 +33,15 @@
 # --coding:utf-8--
 
 import mywindow
-import mycolors as couleur
+import couleurs
 
-import board as Plateau
+from plateau import Plateau
 
-import player as Joueur
+import joueur as Joueur
 import time
 import pygame
-from pygame.locals import *##todo
+from pygame.locals import *
+from config import log #Utilisé pour débuguer rapidement
 import config as cfg
 
 from copy import deepcopy
@@ -48,85 +49,101 @@ from copy import deepcopy
 
 
 class Othello:
-    def __init__(self,fenetre,liste_joueur,affichage=True):
+    def __init__(self,joueurs,fenetre=None,theme=None):
         self.nom="Othello"
-        self.fenetre=fenetre
-        self.fenetre.name=self.nom
-        if affichage: self.fenetre.set()
-        self.fenetre.couleur_de_fond=couleur.VERT
-        self.couleur_grille=couleur.NOIR
-        self.couleur_pieces=[couleur.BLANC,couleur.NOIR]
-        self.couleur_mouvement=couleur.ROUGE
-        self.theme=[self.couleur_grille,self.couleur_pieces,self.couleur_mouvement]
-        self.joueurs=liste_joueur
+        self.joueurs=joueurs
         for compteur in range(len(self.joueurs)):
-            self.joueurs[compteur].initialisation(compteur)# i.e. : self.joueurs[compteur].side=compteur
-        self.plateau=Plateau.Board(self.theme,len(self.joueurs))
+            self.joueurs[compteur].attribuerCote(compteur)# i.e. : self.joueurs[compteur].cote=compteur
         self.state=0
-        self.tour=self.state%self.plateau.nombre_joueurs
         self.gagnant=None
         self.historique=[]
-        self.affichage=affichage
 
+        #Permet de simuler des parties sans fenetre pour des combats machine vs machine
+        if fenetre:
+            self.chargerFenetre(fenetre) #Charge une fenetre existante
+            self.chargerTheme(theme) #Charge un theme même si celui-ci est None
+            log(self.fenetre,self.theme)
+            self.plateau=Plateau(theme=self.theme)
+        else:
+            self.fenetre=None
+            self.plateau=Plateau()
+
+
+
+    def chargerFenetre(self,fenetre):
+        """Permet de charger la fenetre en supposant qu'elle ne soit pas None."""
+        fenetre.name=self.nom #Donne un nom a la fenêtre.
+        fenetre.set() #Charge la fenêtre créée.
+        fenetre.couleur_de_fond=couleurs.VERT #Charge la couleur de fond par défaut.
+        self.fenetre=fenetre
+
+    def chargerTheme(self,theme):
+        """Charge un theme peut importe si celui-ci est None"""
+        if theme: #Si celui-ci existe, le définir.
+            self.theme=theme
+        else: #Sinon, le créer.
+            couleur_grille=couleurs.NOIR #Crée la couleur de la grille.
+            couleur_pieces=[couleurs.BLANC,couleurs.NOIR] #Crée la couleur des pieces.
+            couleur_mouvement=couleurs.ROUGE #Crée la couleur des mouvements
+            self.theme=[couleur_grille,couleur_pieces,couleur_mouvement]
 
     def __call__(self):
-        self.afficher()
-        #cfg.debug(self.joueurs)
-
-        while self.fenetre.open and not self.plateau.gagne:
-            self.fenetre.check()
+        """Boucle principale du jeu Othello."""
+        if self.fenetre: self.afficher()
+        while not self.plateau.estFini():
+            if self.fenetre:
+                self.fenetre.check()
+                log("fenetre ouverte:",self.fenetre.open)
+                if not self.fenetre.open: break
+                self.afficher()
             self.faireTour()
-            self.plateau.testVictoire()
-        self.afficherSceneFinale()
-        #print("C'est la fin, pour le moment...")
+        self.fin()
+        if self.fenetre:
+            self.afficher()
+            self.afficherSceneFinale()
 
+    def fin(self):
+        """Determine le gagnant de la partie a la fin du jeu."""
+        jouable=self.plateau.estJouable()
+        cote_gagnant=self.plateau.obtenirCoteGagnant()
+        #Faire attention au fait que le plateau ne connait que des cotés, et à
+        #aucun moment il ne possède les vrais joueurs comme attributs.
+        #Effectivement, ce sont les joueurs qui utilise le plateau et non l'inverse.
+        self.gagnant=self.joueurs[cote_gagnant]
 
     def afficherSceneFinale(self):
-        """Afficher le resultat de la partie une fois qu'elle est terminee."""
-        comptes=[]
-        for i in range(len(self.joueurs)):
-            comptes.append(sum([self.plateau.grille[y].count(i) for y in range(len(self.plateau.grille))]))
-        #print("Comptes final:",comptes)
-        self.gagnant=comptes.index(max(comptes)) #determine un gagnant meme si la partie n'est pas encore finie
-        if self.affichage:
-            self.afficher()
-
-            self.plateau.testVictoire()
-            if self.plateau.gagne:
-                message="Joueur "+str(self.gagnant+1)+" gagne!"
-            else: #to complete with moves counter
-                message="Match Nul"
-            position=list(self.fenetre.centerText(message))
-            position[0]-=50
-            taille=[int(len(message)*self.fenetre.taille_du_texte/2.7),70]
-            self.fenetre.print(message,position,taille,color=couleur.NOIR,couleur_de_fond=couleur.BLANC)
-            self.fenetre.flip()
-            self.fenetre.pause()
-            #Todo retourner menu principal
+        """Afficher le resultat de la partie une fois qu'elle est terminee.
+        Ne peut être exécutée que si la fenetre existe."""
+        if self.gagnant: #Si il existe un gagnant, l'afficher.
+            message=str(self.gagnant)+" gagne!"
+        else: #Sinon, afficher match nul.
+            message="Match Nul"
+        position=list(self.fenetre.centerText(message)) #Centre la position du message, ne fonctionne pas correctement.
+        position[0]-=50 #Recentre correctement le message.
+        taille=[int(len(message)*self.fenetre.taille_du_texte/2.7),70] #Choisie la taille du message.
+        self.fenetre.print(message,position,taille,color=couleurs.NOIR,couleur_de_fond=couleurs.BLANC) #Affiche le message.
+        self.fenetre.flip() #Rafraîchie la fenêtre.
+        self.fenetre.pause() #Fais pause en attendant que l'utilisateur appuie sur espace ou escape.
 
     def afficher(self):
         """Affiche tout : le plateau"""
-        if self.affichage:
-            self.fenetre.clear()
-            self.plateau.afficher(self.fenetre)
-            self.fenetre.flip()
+        self.fenetre.clear()
+        self.plateau.afficher(self.fenetre)
+        self.fenetre.flip()
 
     def faireTour(self) :
         """Faire un tour de jeu"""
-        self.tour = self.state % self.plateau.nombre_joueurs
+        self.tour = self.state % self.plateau.nombre_de_joueurs
         joueur_actif=self.joueurs[self.tour]#joueur a qui c'est le tour
-        self.plateau.mouvements=self.plateau.obtenirMouvementsValides(joueur_actif.side)#todo pas top
-        self.afficher()
+        self.plateau.mouvements=self.plateau.obtenirMouvementsValides(self.tour)#todo pas top
         self.state+=1
         if len(self.plateau.mouvements)>=1:#Si des moves sont possibles
-            #time.sleep(1)
             choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre)
             if not choix_du_joueur:
                 return None
-            self.plateau.placerPion(choix_du_joueur,joueur_actif.side)
-            #if self.affichage:
+            self.plateau.placerPion(choix_du_joueur,joueur_actif.cote)
             self.plateau.afficherAnimationPion(self.fenetre,choix_du_joueur)
-            self.historique.append([self.plateau.grille,joueur_actif.side,choix_du_joueur])
+            self.historique.append([self.plateau.grille,joueur_actif.cote,choix_du_joueur]) #Permet en théorie au joueur de retourner en arrière.
         else :
-            #Si aucun mouvement possible on demane l'avis du joueur_actif
+            #Sinon aucun mouvement n'est possible et on passe uniquement au tour suivant
             pass

@@ -1,6 +1,6 @@
 from copy import deepcopy
 import random
-import player
+import joueur
 from outils import intersection
 from outils import est_superieur
 from outils import deco_debug
@@ -37,14 +37,14 @@ for i in range(len(LISTE_ZONES)):#Permet de generer LISTE_POSITION_ZONE
     LISTE_POSITION_ZONE[key]=result
 
 
-class IA(player.Robot) :
+class IA(joueur.Robot) :
     def __init__(self):
        pass
 
 
     def reinitialiser(self, plateau):
         self.plateau=plateau#il ne faut surtout pas faire des simulations sur ce plateau !!
-        self.mouvements_possibles=plateau.obtenirMouvementsValides(self.side)
+        self.mouvements_possibles=plateau.obtenirMouvementsValides(self.cote)
 
 
 
@@ -79,27 +79,27 @@ class IA(player.Robot) :
         """
         return PLATEAU_COLORE[position[0]][position[1]]
 
-    def testSiJoueurSidePossedeUneDeCesPositions(self, plateau, side, positions):
-        """Prend une liste de positions dans le plateau est verifi si le joueur de side
-        side possede un pion a l'une des position de la liste"""
+    def testSiJoueurCotePossedeUneDeCesPositions(self, plateau, cote, positions):
+        """Prend une liste de positions dans le plateau est verifi si le joueur de cote
+        cote possede un pion a l'une des position de la liste"""
         resultat=False
         for position in positions:
-            if plateau.estCaseJoueur(position, side):
+            if plateau.estCaseJoueur(position, cote):
                 resultat=True
                 break
         return resultat
 
-    def testSiJoueurSidePossedeTouesCesPositions(self, plateau, side, positions):
-        """Prend une liste de positions dans le plateau est verifi si le joueur de side
-        side possede tout les pions sur les position de la liste"""
+    def testSiJoueurCotePossedeTouesCesPositions(self, plateau, cote, positions):
+        """Prend une liste de positions dans le plateau est verifi si le joueur de cote
+        cote possede tout les pions sur les position de la liste"""
         for position in positions:
-            if not(plateau.estCaseJoueur(position, side)):
+            if not(plateau.estCaseJoueur(position, cote)):
                 return False
         return True
 
-    def test_si_le_joueur_side_peut_prendre_position(self,plateau, side, positions):
+    def test_si_le_joueur_cote_peut_prendre_position(self,plateau, cote, positions):
         """on considere que position est une case valide du plateau
-        On a un plateau, c'est le tour de joueur side est on souhaite determiner, si dans ses mouvements possibles,
+        On a un plateau, c'est le tour de joueur cote est on souhaite determiner, si dans ses mouvements possibles,
         un permet d'avoir une pion de sa couleur dans une des position de la liste positiones dans le plateau
 
         positions peut etre une liste ou simple coo (si )
@@ -112,13 +112,13 @@ class IA(player.Robot) :
                 #positions n'est pas une liste de positions mais jsute une couplde coo:
                 postions=[positions]
 
-        mouvements_possible_side=plateau.obtenirMouvementsValides(side)
+        mouvements_possible_cote=plateau.obtenirMouvementsValides(cote)
 
-        for position_posible_joueur_side in mouvements_possible_side :
+        for position_posible_joueur_cote in mouvements_possible_cote :
             plateau_simulation=deepcopy(self.plateau)
-            plateau_simulation.placerPion(position_posible_joueur_side, side)
+            plateau_simulation.placerPion(position_posible_joueur_cote, cote)
 
-            if self.testSiJoueurSidePossedeUneDeCesPositions(positions, side) :#on verif si le  coup à permit de prendre une des positions
+            if self.testSiJoueurCotePossedeUneDeCesPositions(positions, cote) :#on verif si le  coup à permit de prendre une des positions
                 resultat=True
                 break
         return resultat
@@ -127,9 +127,9 @@ class IA(player.Robot) :
     def test_peut_etre_repris_tout_suite_apres(self, position):
         """on considere que position est une case valide du plateau est que c'est un mouv possible"""
         plateau_simulation=deepcopy(self.plateau)
-        plateau_simulation.placerPion(position, self.side)
-        side_adversaire=plateau_simulation.obtenir_side_joueur_oppose(self.side)
-        return self.test_si_le_joueur_side_peut_prendre_position(plateau_simulation, side_adversaire, position)
+        plateau_simulation.placerPion(position, self.cote)
+        cote_adversaire=plateau_simulation.obtenir_cote_joueur_oppose(self.cote)
+        return self.test_si_le_joueur_cote_peut_prendre_position(plateau_simulation, cote_adversaire, position)
 
     def obtenirLesPositionsDansZone(self, positions, zone):#Todo, utiliser les fonctions build-in de python
         """Renvoie une liste des positions de positions se trouvant dans la zone zone"""
@@ -162,7 +162,7 @@ class IA(player.Robot) :
         """"Renvoie le nombre de pion qui sont retourne lorsque self pose un pion à la position pos sur le plateau plateau."""
         plateau_simulation = deepcopy(plateau)
         nombre_init=plateau_simulation.obtenirNombrePionsJoueur(pos)
-        plateau_simulation.placerPion(pos, self.side)
+        plateau_simulation.placerPion(pos, self.cote)
         nombre_final=plateau_simulation.obtenirNombrePionsJoueur(pos)
         return nombre_final-nombre_init-1#-1 car on pose un pion
 
@@ -227,8 +227,8 @@ class IA(player.Robot) :
         for mouv in mouv_valide_adv :
             plateau_simulation = deepcopy(plateau)
             plateau_simulation.placerPion(mouv, cote_oppose)
-            #if self.testSiJoueurSidePossedeUneDeCesPositions(plateau_simulation, cote_oppose, liste_de_position):
-            if self.testSiJoueurSidePossedeTouesCesPositions(plateau_simulation, cote_oppose, liste_de_position):
+            #if self.testSiJoueurCotePossedeUneDeCesPositions(plateau_simulation, cote_oppose, liste_de_position):
+            if self.testSiJoueurCotePossedeTouesCesPositions(plateau_simulation, cote_oppose, liste_de_position):
                 #On est dans le deuxième cas
                 #cfg.debug("liste_des_cas_particuliers1 :", liste_des_cas_particuliers)
                 #cfg.debug("le mouv associ1:", mouv)

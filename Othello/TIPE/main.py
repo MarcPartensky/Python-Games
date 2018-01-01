@@ -1,13 +1,11 @@
-import othello
-import mywindow
-from player import Robot,Humain
+from mywindow import Window
+from othello import Othello
+from joueur import Robot,Humain
 from ia import IA
-#from beast import Beast
+#from bruteforce import BruteForce
 
 """
-TOdo :
-
-obtenir_side_joueur_oppose => le board doit connaitre le nombre de joueur dans board.py
+A faire:
 
 FAire API pour IA avec des fonctions 'basique' comme :
 Replacer les grille[y][x] par des grille[x][y]
@@ -34,13 +32,17 @@ Ajouter un menu très basique=>nouvelle class est nouveau fichier .py
 Pour dossier :
 expliquer demarche dans cahier de bord
 Faire mini schema des heritage de classe
-
-
 """
 
 
-if __name__=="__main__":
-    fenetre=mywindow.Window(taille=[900,900],set=False,fullscreen=True)
-    #jeu=othello.Othello(fenetre, [Robot(),Beast()])
-    jeu=othello.Othello(fenetre, [IA(),Humain()])
-    jeu()
+if __name__=="__main__": #Ceci est exécuté uniquement si le fichier est exécuté directement et non depuis un autre fichier.
+
+    fenetre=Window(taille=[800,800],set=False,fullscreen=False) #Crée une fenêtre.
+
+    humain=Humain() #Crée un humain.
+    machine1=IA() #Crée une intelligence artificielle.
+    machine2=IA()
+    #bruteforce=BruteForce(level=3) #Crée une machine utilisant la force de calcul de la machine, cela est utile pour les tests de niveau des nouvelles intelligences artificielles.
+
+    jeu=Othello(joueurs=[machine1,machine2],fenetre=fenetre) #Crée un jeu.
+    jeu() #Lance le jeu.

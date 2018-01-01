@@ -2,7 +2,8 @@ import tensorflow as tf
 import numpy as np
 
 from othello import Othello
-from player import Robot,Humain,Beast
+from player import Player,Robot,Humain
+from beast import Beast
 from mywindow import Window
 
 import random
@@ -65,8 +66,9 @@ class Trainer:
 
 
 
-class NeuralNetwork:
+class NeuralNetwork(Player):
     def __init__(self,training_data=[[],[]]):
+        Player.__init__(self)
         self.training_data=training_data
         self.model=tf.keras.models.Sequential()
         self.model.add(tf.keras.layers.Flatten())
@@ -127,6 +129,6 @@ if __name__=="__main__":
     training(5)
     window.set()
     print(training.players[1].training_data)
-    game=Othello(window,[NeuralNetwork(),Humain()])
+    game=Othello(window,[NeuralNetwork(),Robot(1)])
     #game=Othello(window,[Humain(),training.players[1]],affichage=True)
     game()

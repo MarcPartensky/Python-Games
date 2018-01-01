@@ -4,7 +4,7 @@ from player import Player
 from copy import deepcopy
 from random import choice
 
-class Beast(Player): #a ete rajoute pour faire des tests, ne sera pas present a la fin du projet
+class BruteForce(Player): #a ete rajoute pour faire des tests, ne sera pas present a la fin du projet
     def __init__(self,level=1):
         self.level=level
         self.advantage=[[ 9,-2, 1, 1, 1, 1,-2, 9],
