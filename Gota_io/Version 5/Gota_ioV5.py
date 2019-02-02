@@ -231,7 +231,7 @@ class Game:
             self.update()
             quadtree=self.getQuadtree()
             #print(quadtree)
-            #self.allCollision()
+            self.allCollision()
             self.show()
             #time.sleep(self.gametick)
 

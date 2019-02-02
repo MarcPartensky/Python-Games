@@ -23,7 +23,7 @@ import time
 
 try:
     DIRECTORY="/Users/olivierpartensky/Programs/Python/Games/Ball Control/"
-    os.chdir(DIRECTORY)
+    #os.chdir(DIRECTORY)
 finally:
     pass
 
@@ -160,6 +160,7 @@ class Ball:
         wx,wy=window.size
         self.position=[random.randint(0,wx),random.randint(0,wy)]
         self.speed=[0,0]
+        #self.acceleration=[0,self.gravity_constant]
         self.acceleration=[0,self.gravity_constant]
 
     def move(self,time):
@@ -234,17 +235,18 @@ class Game:
         self.window_color=BLACK
         self.ball_color=GREEN
         self.ball_radius=20
-        self.time=1
+        self.time=0.01
 
         self.window=Window(self.name,self.window_color)
         self.window.flip()
-        self.balls=[Ball(self.window,self.ball_color,self.ball_radius)]*10
+        self.balls=[Ball(self.window,self.ball_color,self.ball_radius) for i in range(1)]
 
         self.play()
 
     def show(self):
         for ball in self.balls:
             ball.show(self.window)
+            print(ball.position)
         self.paddle.show(self.window)
         self.window.flip()
 
@@ -255,17 +257,19 @@ class Game:
         for ball in self.balls:
             ball.spawn(self.window)
         while self.window.opened:
+            time.sleep(self.time)
             if int(time.time())-instant>1:
                 print(sent)
                 instant=int(time.time())
                 sent+=1
                 self.paddle=Paddle(self.window)
             self.window.check()
+            self.paddle.move()
+            #print(self.balls[0].position,self.balls[1].position)
             for ball in self.balls:
                 ball.lead(self.window)
-            self.paddle.move()
-            self.paddle.checkCollision(self.ball)
-            self.ball.play(self.time,self.window)
+                self.paddle.checkCollision(ball)
+                ball.play(self.time,self.window)
             self.show()
 
 

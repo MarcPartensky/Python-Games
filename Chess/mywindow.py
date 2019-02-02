@@ -24,7 +24,7 @@ class Window:
         self.setSize()
         self.font = pygame.font.SysFont(self.font, 65)
         self.screen=pygame.display.set_mode(self.size)
-        icon = pygame.image.load("icon.png")
+        icon = pygame.image.load("Pictures/icon.png")
         pygame.display.set_icon(icon)
         pygame.display.set_caption(self.title,"Chess")
 

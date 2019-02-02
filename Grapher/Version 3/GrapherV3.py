@@ -206,6 +206,6 @@ class Grapher:
 #Actions#
 #-------#
 
-#functions=["math.sin(x)","math.cos(x)","math.exp(x)"]
+functions=["math.sin(x)","math.cos(x)","math.exp(x)","x**3-2*x+1"]
 
-#Grapher=Grapher(functions)
+Grapher=Grapher(functions)

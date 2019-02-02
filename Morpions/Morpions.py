@@ -22,11 +22,14 @@ import numpy as np
 import time
 import copy
 
+
+"""
 try:
     DIRECTORY="/Users/olivierpartensky/Programs/Python/Games/Morpions/"
     os.chdir(DIRECTORY)
 finally:
     pass
+"""
 
 #---------#
 #Variables#

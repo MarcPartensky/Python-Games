@@ -1,7 +1,8 @@
 from mywindow import *
 from mycolors import *
+from myminimax import *
 
-from pawns import *
+from pieces import *
 from board import *
 from player import *
 
@@ -9,13 +10,17 @@ import time
 import pygame
 from pygame.locals import *
 
+print(" ")
+print(" ")
+
+
 
 
 """ Plan:
 Control: Game=>Player
-             =>Board=>Pawn=>Pawns
+              =>Board=>Piece=>Pieces
 Game,Player: Active
-Board,Pawn,Pawns: Passive
+Board,Piece,Pieces: Passive
 """
 
 class Chess:
@@ -25,38 +30,48 @@ class Chess:
         self.loadThemes()
         self.window=Window(self.name,[700,700])
         self.player1=Human(1)
-        self.player2=Human(2)
+        self.player2=Robot(2)
         self.board=Board()
         self.delta=0.00000001
         self.cursor=None
         self.click=None
+        self.player=self.player1
         self.session()
 
     def loadThemes(self):
-        #Format=pawns_colors,grid_colors,selecters_colors
-        self.pawns_colors_classic=[WHITE,BLACK]
-        self.pawn_colors_pro=[WHITE,BLACK]
-        self.pawn_colors_random=[randomColor(),randomColor()]
+        #Format=pieces_colors,grid_colors,selecters_colors
+        self.pieces_colors_classic=[WHITE,BLACK]
+        self.piece_colors_dark=[WHITE,BLACK]
+        self.piece_colors_light=[WHITE,BLACK]
+        self.piece_colors_random=[randomColor(),randomColor()]
 
         self.grid_colors_classic=[[BEIGE,LIGHTBROWN],BLACK]
-        self.grid_colors_pro=[[DARKGREY,BLACK],WHITE]
-        self.grid_colors_random=[[randomColor(),randomColor()],randomColor()]
+        self.grid_colors_dark=[[DARKGREY,BLACK],WHITE]
+        self.grid_colors_light=[[LIGHTGREY,WHITE],BLACK]
+        self.grid_colors_random=[[randomColor() for i in range(2)],randomColor()]
 
-        self.selecters_colors_classic=[[BEIGE,WHITE],[BEIGE,WHITE]]
-        self.selecters_colors_pro=[[LIGHTGREY,BLACK],[WHITE,BLACK]]
-        self.selecters_colors_random=[[randomColor(),randomColor()],[randomColor(),randomColor()]]
+        self.selecters_colors_classic=[[BEIGE,WHITE],[BEIGE,WHITE],[BEIGE,WHITE],[BEIGE,WHITE]]
+        self.selecters_colors_dark=[[LIGHTGREY,BLACK],[WHITE,BLACK],[HALFGREY,BLACK],[DARKGREY,BLACK]]
+        self.selecters_colors_light=[[GREY,WHITE],[BLACK,WHITE],[WHITE,BLACK],[GREY,WHITE]]
+        self.selecters_colors_random=[[randomColor(),randomColor()] for i in range(4)]
 
-        self.theme_classic=[self.pawns_colors_classic,self.grid_colors_classic,self.selecters_colors_classic]
-        self.theme_pro=(self.pawn_colors_pro,self.grid_colors_pro,self.selecters_colors_pro)
-        self.theme_random=(self.pawn_colors_random,self.grid_colors_random,self.selecters_colors_random)
+        self.theme_classic=[self.pieces_colors_classic,self.grid_colors_classic,self.selecters_colors_classic]
+        self.theme_dark=(self.piece_colors_dark,self.grid_colors_dark,self.selecters_colors_dark)
+        self.theme_light=(self.piece_colors_light,self.grid_colors_light,self.selecters_colors_light)
+        self.theme_random=(self.piece_colors_random,self.grid_colors_random,self.selecters_colors_random)
 
-        self.themes=[self.theme_pro,self.theme_classic,self.theme_random]
+        self.themes=[self.theme_dark,self.theme_light,self.theme_classic,self.theme_random]
 
     def session(self):
         self.show()
         while self.window.open and not self.board.won:
             self.window.check()
-            self.input()
+            #print(self.board.moving)
+            if isinstance(self.player,Human):
+                self.input()
+            else:
+                if self.board.moving_shown and self.board.moving is not None:
+                    self.board.updateMoving(self.window,self.theme)
             self.play()
             self.check()
             time.sleep(self.delta)
@@ -72,15 +87,23 @@ class Chess:
         self.updating=False
         while (not self.updating) and self.window.open:
             self.window.check()
+            typing=False
+            #print(self.board.moving_shown, self.board.moving)
+            if self.board.moving_shown and self.board.moving is not None:
+                #print("supposed to do something here")
+                self.board.updateMoving(self.window,self.theme)
             cursor=self.cursor
             self.click=self.window.click()
             self.cursor=self.board.point(self.window)
             keys=pygame.key.get_pressed()
             if keys[K_RSHIFT] or keys[K_LSHIFT]:
+                self.board.reverseMove()
+                typing=True
+            if keys[K_SPACE]:
                 self.loadThemes()
                 self.theme_mode=(self.theme_mode+1)%len(self.themes)
-                print(self.theme_mode)
-            if cursor==self.cursor and not self.click and not keys[K_RSHIFT] and not keys[K_LSHIFT]:
+                typing=True
+            if cursor==self.cursor and not self.click and not typing:
                 self.updating=False
             else:
                 self.updating=True
@@ -88,19 +111,22 @@ class Chess:
     def play(self):
         click=self.click
         position=self.cursor
-        board=self.board #Might add security later even though it's useless
+        board=self.board #giving the player a copy of the board
         if board.state%2==0:
-            player=self.player1
+            self.player=self.player1
         else:
-            player=self.player2
-        player.play(board,position,click)
-        if player.hasChosen:
-            entity=board.pawn_selecter
+            self.player=self.player2
+        self.player.play(board,position,click)
+        if self.player.hasChosen:
+            entity=board.piece_selecter
             move=board.move_selection
-            moves=board.moves_selecter
-            if entity is not None and move in moves: #Testing if players choices are possible
-                self.board.move(entity,move)
-            player.hasChosen=False
+            position=board.locateByEntity(entity)
+            moves=board.getMoves(entity,position)
+            if entity is not None and move in moves: #Testing if player's choice is possible before changing the true board
+                self.board.move(entity,position,move)
+                self.board.updateHistoric()
+                print(self.board.getPresentation(board.state,(entity,position,move)))
+            self.player.hasChosen=False
 
     def check(self):
         self.player1.alive=self.board.isAlive("King",1)

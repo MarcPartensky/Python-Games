@@ -48,7 +48,7 @@ class Body:
 class Ball(Body):
     def __init__(self,position):
         Body.__init__(self,position)
-        self.radius=20
+        self.radius=2
         self.spawning_position=position
         self.spawn()
 
@@ -58,13 +58,13 @@ class Ball(Body):
         wsx,wsy=window.size
         raw_position=[int(wsx*(x)//100),int(wsy*(y)//100)]
         raw_radius=min(wsx,wsy)*r//100
-        pygame.draw.circle(window.screen,self.color,raw_position,self.radius,0)
+        pygame.draw.circle(window.screen,self.color,raw_position,raw_radius,0)
 
     def spawn(self):
         self.position=self.spawning_position
         self.velocity=[0,0]
-        while 0.4>abs(self.velocity[0]):
-            self.velocity=[(random.random()-0.5),(random.random()-0.5)]
+        while 0.9>abs(self.velocity[0]):
+            self.velocity=[(2*random.random()-1),(2*random.random()-1)]
 
     def update(self,game):
         self.move()
@@ -83,14 +83,18 @@ class Ball(Body):
         x,y=self.position
         r=self.radius
         vx,vy=self.velocity
+        print(r)
         #print("1",self.position,self.velocity)
-        if x+vx*dt<p1x+p1sx and p1y<y+vy*dt<p1y+p1sy:
-            x=p1x+p1sx
+        print(x+vx*dt)
+        if x+vx*dt+r/2<p1x+p1sx and p1y-r/2<y+vy*dt<p1y+p1sy+r/2:
+            x=p1x+p1sx-r/2
             self.bounce(game.player1)
+            print("collided with player1")
         #print(x+vx*dt+r)
-        if x+vx*dt>p2x and p2y<y+vy*dt<p2y+p2sy:
-            x=p2x
+        if x+vx*dt+r>p2x and p2y-r/2<y+vy*dt<p2y+p2sy+r/2:
+            x=p2x-r
             self.bounce(game.player2)
+            print("collided with player2")
         self.position=x,y
         #print("2",self.position,self.velocity)
 
@@ -187,7 +191,7 @@ class Pong:
         self.player1=Human([1.,50.],True)
         self.player2=Human([98.,50.],False)
         self.ball=Ball([50.,50.])
-        self.delta=0.0000001
+        self.delta=0.001
         self.font= pygame.font.SysFont("monospace", 50)
         self.session()
 

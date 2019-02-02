@@ -35,7 +35,7 @@ class Game:
         self.player_texture=os.path.abspath("character blue.png")
 
     def session(self):
-        self.window=Window(self)
+        self.window=Window(self,(700,600))
         self.play()
         self.window.kill()
 
