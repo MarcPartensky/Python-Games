@@ -10,7 +10,7 @@ import time
 class Window:
     made=0
 
-    def __init__(self,name="Unnamed Game",size=[700,600],text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,set=True):
+    def __init__(self,name="Unnamed Game",size=[700,600],text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,set=True):
         """Create a window object using name, size text_font, text_size, text_color, background and set."""
         Window.made+=1
         self.number=Window.made
@@ -20,6 +20,7 @@ class Window:
         self.text_size=text_size
         self.text_color=text_color
         self.background_color=background_color
+        self.fullscreen=fullscreen
         self.load()
         self.log("Window has been created.")
         if set:
@@ -49,7 +50,10 @@ class Window:
         pygame.init()
         self.info = pygame.display.Info()
         self.font = pygame.font.SysFont(self.text_font, self.text_size)
-        self.screen=pygame.display.set_mode(self.size,RESIZABLE)
+        if self.fullscreen:
+            self.screen=pygame.display.set_mode(self.size,FULLSCREEN)
+        else:
+            self.screen=pygame.display.set_mode(self.size,RESIZABLE)
         pygame.display.set_caption(self.name)
         self.clear()
         self.flip()
@@ -257,28 +261,27 @@ class Window:
         size=2
         wavelength=380
         self.focus=True
-        while self.open and self.focus:
-            self.check()
-            click=self.click()
-            position=self.point()
-            if click:
-                self.trace(position,size,self.wavelengthToRGB(wavelength))
-                self.flip()
-            keys=pygame.key.get_pressed()
-            if keys[K_LSHIFT] and size>0:
-                size-=1
-            if keys[K_RSHIFT] and size<100:
-                size+=1
-            if keys[K_LEFT] and wavelength>380:
-                wavelength-=1
-            if keys[K_RIGHT] and wavelength<780:
-                wavelength+=1
-            if keys[K_s]:
-                self.save()
-            if keys[K_SPACE]:
-                self.clear()
-            if keys[K_RETURN]:
-                self.focus=False
+        self.check()
+        click=self.click()
+        position=self.point()
+        if click:
+            self.trace(position,size,self.wavelengthToRGB(wavelength))
+            self.flip()
+        keys=pygame.key.get_pressed()
+        if keys[K_LSHIFT] and size>0:
+            size-=1
+        if keys[K_RSHIFT] and size<100:
+            size+=1
+        if keys[K_LEFT] and wavelength>380:
+            wavelength-=1
+        if keys[K_RIGHT] and wavelength<780:
+            wavelength+=1
+        if keys[K_s]:
+            self.save()
+        if keys[K_SPACE]:
+            self.clear()
+        if keys[K_RETURN]:
+            self.focus=False
 
     def trace(self,position,radius=5,color=None):
         """Trace a point on the screen using position, size and color."""
