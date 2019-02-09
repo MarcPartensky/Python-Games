@@ -6,14 +6,11 @@ from pieces import *
 from board import *
 from player import *
 
+import json
 import time
 import pygame
 from pygame.locals import *
-
-print(" ")
-print(" ")
-
-
+import os
 
 
 """ Plan:
@@ -30,13 +27,12 @@ class Chess:
         self.loadThemes()
         self.window=Window(self.name,[700,700])
         self.player1=Human(1)
-        self.player2=Robot(2)
+        self.player2=Human(2)
         self.board=Board()
         self.delta=0.00000001
         self.cursor=None
         self.click=None
         self.player=self.player1
-        self.session()
 
     def loadThemes(self):
         #Format=pieces_colors,grid_colors,selecters_colors
@@ -62,7 +58,7 @@ class Chess:
 
         self.themes=[self.theme_dark,self.theme_light,self.theme_classic,self.theme_random]
 
-    def session(self):
+    def __call__(self):
         self.show()
         while self.window.open and not self.board.won:
             self.window.check()
@@ -76,7 +72,6 @@ class Chess:
             self.check()
             time.sleep(self.delta)
             self.show()
-        self.end()
 
     def end(self):
         self.board.end()
@@ -146,5 +141,30 @@ class Chess:
         self.board.show(self.window,self.theme)
         self.window.flip()
 
+    def save(self):
+        name="Chess"
+        new_directory=directory+"/Games"
+        os.chdir(new_directory)
+        files=os.listdir()
+        n=max([int(file[6]) for file in files]+[0])+1
+        name+=" "+str(n)
+        print(self.__dict__)
+        self.window.__dict__
+        del self.window
+        del self.player1
+        del self.player2
+        del self.board
+        with open(name+".json","w") as file:
+            json.dump(self.__dict__,file)
+        print(name)
+        #with open():
+
+
 if __name__=="__main__":
+    directory=os.getcwd()
+    print(directory)
+    print("\n\n")
     game=Chess()
+    game()
+    game.save()
+    game.end()

@@ -37,7 +37,7 @@ class Player:
         for piece in pieces:
             position=board.locateByEntity(piece)
             moves=board.getMoves(piece,position)
-            #print(len(moves))
+            ##print(len(moves))
             if len(moves)>0:
                 movable_pieces.append(piece)
         return movable_pieces
@@ -100,31 +100,31 @@ class Robot(Player):
         self.hasChosen=True
 
     def smartPlay(self,board):
-            #print(len(self.getPossibilities(board,self.side)))
+            ##print(len(self.getPossibilities(board,self.side)))
             tree=self.predict(board,self.prediction)
-            print(tree)
+            #print(tree)
             minimax=Minimax(tree,0)
             choice=minimax.choice
-            print(minimax.start)
-            print(choice)
+            #print(minimax.start)
+            #print(choice)
             possibilities=self.getFastChoices(board,self.side)
             piece,position,move=possibilities[choice]
-            print(tree[choice])
-            print(possibilities[choice])
+            #print(tree[choice])
+            #print(possibilities[choice])
             board.piece_selecter=piece
             board.moves_selecter=board.getMoves(piece,position)
             board.move_selection=move
             self.choice=board.piece_selecter,move
             self.hasChosen=True
-            #print(self.analyse(board))
+            ##print(self.analyse(board))
 
     def predict(self,board,max_n=1,n=0):
         old_value=self.analyse(board)
         side=(self.side-1+n)%2+1
-        #print("side ",side)
+        ##print("side ",side)
         if n<max_n:
             possibilities=self.getFastChoices(board,side)
-            #print(len(possibilities),n)
+            ##print(len(possibilities),n)
             storage=[]
             for possibility in possibilities:
                 piece,position,move=possibility
@@ -132,14 +132,14 @@ class Robot(Player):
                 n_board.move(piece,position,move)
                 value=self.analyse(board)
                 storage.append((n_board,value))
-            #print(storage)
+            ##print(storage)
             storage=sorted(storage, key=lambda columns: columns[1],reverse=True)
-            #print(storage)
+            ##print(storage)
             storage=storage[:len(storage)-n*self.step_choices]
-            print(storage)
+            #print(storage)
             output=[]
             for n_board,value in storage:
-                #print(value-old_value)
+                ##print(value-old_value)
                 #if value-old_value>=n*self.step_choices:
                 output.append(self.predict(n_board,max_n,n+1))
             return output

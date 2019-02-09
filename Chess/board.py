@@ -32,7 +32,7 @@ class Board:
         self.last_action_shown=True
         self.colors=["White","Black"]
         self.time=time.time()
-        self.moving_shown=False
+        self.moving_shown=True
         self.moving=None
         self.moving_time=0
         self.moving_max_time=2
@@ -87,11 +87,12 @@ class Board:
                 self.grid[y][x]=entity
 
     def debug(self):
-        print("DEBUG:")
-        print(self.state)
-        print(self.piece_selecter)
-        print(self.moves_selecter)
-        print("")
+        pass
+        #print("DEBUG:")
+        #print(self.state)
+        #print(self.piece_selecter)
+        #print(self.moves_selecter)
+        #print("")
 
     def getPresentation(self,state,action):
         sx,sy=self.size
@@ -115,7 +116,7 @@ class Board:
             return False
 
     def locateChoices(self,side):
-        #print(side)
+        ##print(side)
         output=[]
         sx,sy=self.size
         for y in range(sy):
@@ -130,7 +131,7 @@ class Board:
                     continue
                 for move in moves:
                     output.append((entity,(x,y),move))
-        print(output)
+        #print(output)
         return output
 
 
@@ -157,10 +158,10 @@ class Board:
     def getMoves(self,piece,position):
         moves=self.extractMoves(piece,position)
         moves+=self.extractSpecialMoves1(piece,position)
-        #print(moves)
+        ##print(moves)
         random.shuffle(moves)
-        #print(moves)
-        #print("")
+        ##print(moves)
+        ##print("")
         return moves
 
     def extractMoves(self,piece,position):
@@ -203,7 +204,7 @@ class Board:
                 if entity is not None:
                     if entity.side is not piece.side:
                         moves.append((x,y))
-        #print(moves)
+        ##print(moves)
         return moves
 
     def inGrid(self,x,y):
@@ -310,7 +311,7 @@ class Board:
             self.showMovesSelecter(window)
         self.showPieces(grid,window)
         if self.moving_shown and self.moving is not None and self.moving_position is not None:
-            #print(self.moving_shown,self.moving,self.moving_position)
+            ##print(self.moving_shown,self.moving,self.moving_position)
             self.showMovingPiece(window)
             window.flip()
 
@@ -351,7 +352,7 @@ class Board:
         x,y=self.moving_position
         wsx,wsy=window.size
         sx,sy=self.size
-        #print(x,y)
+        ##print(x,y)
         position=[int(x*wsx/sx),(y*wsy/sy)]
         size=[wsx/sx,wsy/sy]
         coordonnates=position+size
@@ -414,7 +415,7 @@ class Board:
         angle=atan(height/width)
         delta=moving_max_time
         c=moving_time/moving_max_time
-        #print(1-c**2,c,moving_time,moving_max_time)
+        ##print(1-c**2,c,moving_time,moving_max_time)
         z=sqrt((1-c**2))
         x=width*z*cos(angle)
         y=height*z*sin(angle)
@@ -428,10 +429,10 @@ class Board:
         width=xb-xa
         t=self.moving_time
         mt=self.moving_max_time
-        #print("time: ",t,mt)
+        ##print("time: ",t,mt)
         x=xa+width*t/mt
         y=ya+height*t/mt
-        #print("trajectory:",x,y)
+        ##print("trajectory:",x,y)
         return (x,y)
 
     def updateMoving(self,window,colors):
@@ -461,4 +462,4 @@ class Board:
         else:
             self.message+="|         Tie         |\n"
         self.message+="|=====================|\n"
-        print(self.message)
+        #print(self.message)

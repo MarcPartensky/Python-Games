@@ -1,20 +1,16 @@
 from __future__ import division
 
-from mymemory2 import *
 from mycolors import *
-from mypencil import *
-
 import pygame
 from pygame.locals import *
 import time
-import json
 
 
 
 class Window:
     made=0
 
-    def __init__(self,name="Unnamed Game",size=[700,600],text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,set=True):
+    def __init__(self,name="Unnamed Game",size=[700,600],text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,set=True):
         """Create a window object using name, size text_font, text_size, text_color, background and set."""
         Window.made+=1
         self.number=Window.made
@@ -24,8 +20,6 @@ class Window:
         self.text_size=text_size
         self.text_color=text_color
         self.background_color=background_color
-        self.fullscreen=fullscreen
-        self.hand=[Pencil(text_font=self.text_font,text_size=self.text_size,text_color=self.text_color)]
         self.load()
         self.log("Window has been created.")
         if set:
@@ -42,22 +36,20 @@ class Window:
         #self.mouse_position=pygame.mouse.get_pos()
         #self.mouse_click=bool(pygame.mouse.get_pressed()[0])
         self.selecter_color=self.reverseColor(self.background_color)
-        self.pausing=False
+        self.focus=False
         self.open=False
         self.coordonnates=[0,0]+self.size
         self.picture_saved=0
         self.pause_cool_down=1
         self.time=time.time()
+        self.points=[]
 
     def set(self):
         """Creates apparent window."""
         pygame.init()
         self.info = pygame.display.Info()
         self.font = pygame.font.SysFont(self.text_font, self.text_size)
-        if self.fullscreen:
-            self.screen=pygame.display.set_mode(self.size,FULLSCREEN)
-        else:
-            self.screen=pygame.display.set_mode(self.size,RESIZABLE)
+        self.screen=pygame.display.set_mode(self.size,RESIZABLE)
         pygame.display.set_caption(self.name)
         self.clear()
         self.flip()
@@ -95,12 +87,12 @@ class Window:
 
     def pause(self):
         """Wait for user to click on space."""
-        self.pausing=True
-        while self.pausing and self.open:
+        self.focus=True
+        while self.focus and self.open:
             self.check()
             keys=pygame.key.get_pressed()
             if keys[K_SPACE]:
-                self.pausing=False
+                self.focus=False
 
     def sleep(self,waiting_time): #useless
         """Wait for giving time."""
@@ -157,7 +149,7 @@ class Window:
         """Refresh screen."""
         pygame.display.flip()
 
-    def screenshot(self):
+    def save(self):
         """Save picture of the surface."""
         self.picture_saved+=1
         pygame.image.save(self.screen,self.name+"-"+str(self.picture_saved)+".png")
@@ -201,7 +193,7 @@ class Window:
             color=self.text_color
         if font is None:
             font=self.font
-        label = font.render(text, 1, color)
+        label=font.render(text, 1, color)
         self.screen.blit(label, position)
 
     def drawRect(self,coordonnates,color):
@@ -254,7 +246,7 @@ class Window:
         return color
 
     def colorize(self,image, color):
-        """Return image colorized"""
+        """Return image colorized."""
         image = image.copy()
         image.fill((0,0,0,255),None,pygame.BLEND_RGBA_MULT)
         image.fill(color[0:3]+(0,),None,pygame.BLEND_RGBA_ADD)
@@ -262,67 +254,38 @@ class Window:
 
     def draw(self):
         """Allow user to draw on screen."""
-        radius=2
+        size=2
         wavelength=380
-        color=self.reverseColor(self.background_color)
-        form=0
-        size=[10,10]
-        width=0
-        while self.open:
+        self.focus=True
+        while self.open and self.focus:
             self.check()
             click=self.click()
             position=self.point()
             if click:
-                self.trace(position,size,self.wavelengthToRGB(wavelength),radius,form,width)
-            else:
-                self.hand[0].points=[]
-                #print(size)
+                self.trace(position,size,self.wavelengthToRGB(wavelength))
+                self.flip()
             keys=pygame.key.get_pressed()
-            if keys[K_LSHIFT] and radius>10:
-                radius-=1
-            if keys[K_RSHIFT] and radius:
-                radius+=1
+            if keys[K_LSHIFT] and size>0:
+                size-=1
+            if keys[K_RSHIFT] and size<100:
+                size+=1
             if keys[K_LEFT] and wavelength>380:
                 wavelength-=1
             if keys[K_RIGHT] and wavelength<780:
                 wavelength+=1
-            if keys[K_q] and size[0]>0:
-                size[0]-=1
-            if keys[K_w]:
-                size[0]+=1
-            if keys[K_e] and size[1]>0:
-                size[1]-=1
-            if keys[K_r]:
-                size[1]+=1
             if keys[K_s]:
-                self.screenshot()
-            if keys[K_t]:
-                width=(width+1)%2
+                self.save()
             if keys[K_SPACE]:
-                form=(form+1)%4
-                print(form)
-            if keys[K_RETURN]:
                 self.clear()
-            self.flip()
+            if keys[K_RETURN]:
+                self.focus=False
 
-    def oldTrace(self,position,color=WHITE,radius=5):
-        """Trace a point on the screen using position, size, color."""
+    def trace(self,position,radius=5,color=None):
+        """Trace a point on the screen using position, size and color."""
+        if color is None:
+            color=self.reverseColor(self.background_color)
+        self.points.append(position)
         pygame.draw.circle(self.screen,color,position,radius,0)
-        #print("position: ",position)
-
-
-    def trace(self,position,size,color=WHITE,radius=5,form=0,width=0):
-        """Trace a point on the screen using position, size, color."""
-        for tool in self.hand:
-            tool.size=size
-            tool.position=position
-            tool.points.append(position)
-            tool.color=color
-            tool.radius=radius
-            tool.connect=False
-            tool.form=form
-            tool.width=width
-            tool.draw(self.screen)
         #print("position: ",position)
 
     def wavelengthToRGB(self,wavelength):
@@ -355,10 +318,7 @@ class Window:
         print(text)
 
     def __del__(self):
-        """Executed before the window is destroyed."""
         self.log("Window has been closed.")
-
-
 
 
 
@@ -366,10 +326,8 @@ class Window:
 
 if __name__=="__main__":
     w=Window("Game")
-    #save(w,"grosse fenetre")
-    #w=load("grosse fenetre")
     #print(w.lighten(BLUE))
-    #w.alert("test")
+    w.alert("test")
     w.draw()
     w.pause()
     w.clear()

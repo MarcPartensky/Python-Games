@@ -1,13 +1,9 @@
 from __future__ import division
 
-from mymemory2 import *
 from mycolors import *
-from mypencil import *
-
 import pygame
 from pygame.locals import *
 import time
-import json
 
 
 
@@ -25,7 +21,6 @@ class Window:
         self.text_color=text_color
         self.background_color=background_color
         self.fullscreen=fullscreen
-        self.hand=[Pencil(text_font=self.text_font,text_size=self.text_size,text_color=self.text_color)]
         self.load()
         self.log("Window has been created.")
         if set:
@@ -157,7 +152,7 @@ class Window:
         """Refresh screen."""
         pygame.display.flip()
 
-    def screenshot(self):
+    def save(self):
         """Save picture of the surface."""
         self.picture_saved+=1
         pygame.image.save(self.screen,self.name+"-"+str(self.picture_saved)+".png")
@@ -177,6 +172,7 @@ class Window:
         self.screen.blit(picture, position)
 
     def centerText(self,message,size=None):
+        """Center the text."""
         sx,sy=self.size
         if size is None:
             size=self.text_size
@@ -262,67 +258,35 @@ class Window:
 
     def draw(self):
         """Allow user to draw on screen."""
-        radius=2
+        size=2
         wavelength=380
         color=self.reverseColor(self.background_color)
-        form=0
-        size=[10,10]
-        width=0
         while self.open:
             self.check()
             click=self.click()
             position=self.point()
             if click:
-                self.trace(position,size,self.wavelengthToRGB(wavelength),radius,form,width)
-            else:
-                self.hand[0].points=[]
+                self.trace(position,size,self.wavelengthToRGB(wavelength))
                 #print(size)
             keys=pygame.key.get_pressed()
-            if keys[K_LSHIFT] and radius>10:
-                radius-=1
-            if keys[K_RSHIFT] and radius:
-                radius+=1
+            if keys[K_LSHIFT] and size>0:
+                size-=1
+            if keys[K_RSHIFT] and size<100:
+                size+=1
             if keys[K_LEFT] and wavelength>380:
                 wavelength-=1
             if keys[K_RIGHT] and wavelength<780:
                 wavelength+=1
-            if keys[K_q] and size[0]>0:
-                size[0]-=1
-            if keys[K_w]:
-                size[0]+=1
-            if keys[K_e] and size[1]>0:
-                size[1]-=1
-            if keys[K_r]:
-                size[1]+=1
             if keys[K_s]:
-                self.screenshot()
-            if keys[K_t]:
-                width=(width+1)%2
+                self.save()
+
             if keys[K_SPACE]:
-                form=(form+1)%4
-                print(form)
-            if keys[K_RETURN]:
                 self.clear()
             self.flip()
 
-    def oldTrace(self,position,color=WHITE,radius=5):
+    def trace(self,position,color=WHITE,radius=5):
         """Trace a point on the screen using position, size, color."""
         pygame.draw.circle(self.screen,color,position,radius,0)
-        #print("position: ",position)
-
-
-    def trace(self,position,size,color=WHITE,radius=5,form=0,width=0):
-        """Trace a point on the screen using position, size, color."""
-        for tool in self.hand:
-            tool.size=size
-            tool.position=position
-            tool.points.append(position)
-            tool.color=color
-            tool.radius=radius
-            tool.connect=False
-            tool.form=form
-            tool.width=width
-            tool.draw(self.screen)
         #print("position: ",position)
 
     def wavelengthToRGB(self,wavelength):
@@ -355,10 +319,7 @@ class Window:
         print(text)
 
     def __del__(self):
-        """Executed before the window is destroyed."""
         self.log("Window has been closed.")
-
-
 
 
 
@@ -366,10 +327,8 @@ class Window:
 
 if __name__=="__main__":
     w=Window("Game")
-    #save(w,"grosse fenetre")
-    #w=load("grosse fenetre")
     #print(w.lighten(BLUE))
-    #w.alert("test")
+    w.alert("test")
     w.draw()
     w.pause()
     w.clear()

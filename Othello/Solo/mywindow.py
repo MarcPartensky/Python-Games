@@ -1,8 +1,6 @@
 from __future__ import division
 
-from mymemory2 import *
 from mycolors import *
-from mypencil import *
 
 import pygame
 from pygame.locals import *
@@ -25,7 +23,6 @@ class Window:
         self.text_color=text_color
         self.background_color=background_color
         self.fullscreen=fullscreen
-        self.hand=[Pencil(text_font=self.text_font,text_size=self.text_size,text_color=self.text_color)]
         self.load()
         self.log("Window has been created.")
         if set:
@@ -101,6 +98,8 @@ class Window:
             keys=pygame.key.get_pressed()
             if keys[K_SPACE]:
                 self.pausing=False
+        if self.open:
+            time.sleep(0.1)
 
     def sleep(self,waiting_time): #useless
         """Wait for giving time."""
@@ -193,8 +192,12 @@ class Window:
         self.print(message,position)
         self.flip()
 
-    def print(self,text,position,size=None,color=None,font=None):
+    def print(self,text,position,size=None,color=None,background_color=None,font=None):
         """Display text on screen using position, size, color and font."""
+        sx,sy=size
+        x,y=position
+        pygame.draw.rect(self.screen,self.reverseColor(background_color),position+size,0)
+        pygame.draw.rect(self.screen,background_color,(x+1,y+1,sx-2,sy-2),0)
         if size is None:
             size=self.text_size
         if color is None:
