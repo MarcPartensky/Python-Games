@@ -20,7 +20,7 @@ class Othello:
         self.moves_color=RED
         self.theme=[self.grid_color,self.pieces_color,self.moves_color]
         self.board=Board(self.theme)
-        self.players=[Human(0),Robot(1)]
+        self.players=[Human(0),Human(1)]
         self.won=False
         self.state=0
         self.input=None
@@ -40,7 +40,7 @@ class Othello:
         player=self.players[turn]
         if self.won:
             message="Player"+str(player.side+1)+" won!"
-        else:
+        if not self.won: #to complete with moves counter
             message="Draw "
         position=list(self.window.centerText(message))
         position[0]-=50

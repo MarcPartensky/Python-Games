@@ -103,11 +103,13 @@ class Board:
                     if case==e_side:
                         possible=True
                         eatables.append((x,y))
-                    if case==p_side and norm>1 and possible:
-                        found=True
-                        for eatable in eatables:
-                            x,y=eatable
-                            self.grid[y][x]=p_side
+                    if case==p_side:
+                        if norm>1 and possible:
+                            found=True
+                            for eatable in eatables:
+                                x,y=eatable
+                                self.grid[y][x]=p_side
+                        break
                 else:
                     break
 
@@ -141,8 +143,11 @@ class Board:
                         break
                     if case==e_side:
                         possible=True
-                    if case==p_side and norm>1 and possible:
-                        found=True
+                    if case==p_side:
+                        if norm>1 and possible:
+                            found=True
+                        break
+
                 else:
                     break
             i+=1
