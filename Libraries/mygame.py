@@ -16,10 +16,6 @@ class Game:
         self.turn=0
 
     def __call__(self):
-        self.loop()
-
-
-    def loop(self):
         """Main game loop."""
         self.show()
         while self.window.open:

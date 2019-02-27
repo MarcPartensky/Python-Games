@@ -45,7 +45,6 @@ class Window:
         self.picture_saved=0
         self.pause_cool_down=1
         self.time=time.time()
-        #if self.text_color is None: self.text_color=self.reverseColor(self.background_color)
 
     def set(self):
         """Creates apparent window."""
@@ -99,8 +98,6 @@ class Window:
             keys=pygame.key.get_pressed()
             if keys[K_SPACE]:
                 self.pausing=False
-        if self.open:
-            time.sleep(0.1)
 
     def sleep(self,waiting_time): #useless
         """Wait for giving time."""
@@ -184,7 +181,7 @@ class Window:
         letter_size=size/4
         x=sx//2-letter_size*l//2
         y=sy//2-size/3
-        return [x,y]
+        return (x,y)
 
 
     def alert(self,message):
@@ -193,22 +190,14 @@ class Window:
         self.print(message,position)
         self.flip()
 
-    def print(self,text,position=None,size=None,color=None,background_color=None,font=None):
+    def print(self,text,position,size=None,color=None,font=None):
         """Display text on screen using position, size, color and font."""
-        if position is None:
-            position=self.centerText(text)
         if size is None:
             size=self.text_size
         if color is None:
             color=self.text_color
-        if background_color is None:
-            background_color=self.background_color
         if font is None:
             font=self.font
-        sx,sy=size
-        x,y=position
-        pygame.draw.rect(self.screen,self.reverseColor(background_color),position+size,0)
-        pygame.draw.rect(self.screen,background_color,(x+1,y+1,sx-2,sy-2),1)
         label = font.render(text, 1, color)
         self.screen.blit(label, position)
 

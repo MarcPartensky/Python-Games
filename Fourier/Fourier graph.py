@@ -8,7 +8,7 @@ from math import sin,cos,sqrt
 import pygame
 
 class Graph:
-    def __init__(self,window,precision=5,speed=0.01,factor=10):
+    def __init__(self,window,precision=20,speed=0.01,factor=10):
         self.window=window
         #self.window.background_color=WHITE
         self.speed=speed
@@ -16,9 +16,9 @@ class Graph:
         #self.coefficients=[[1,1,1] for i in range(self.precision)]
         #self.coefficients=[[10,1,0],[4,5,0],[0.8,29,0]]
         #self.coefficients=[[[rd(1,5)/(i+1),rd(1,5)*(i+1)] for j in range(2)] for i in range(precision)]
-        self.coefficients=[[[-60,1],[50,1]],[[30,1],[18,2]],[[-8,2],[-12,3]],[[10,3],[14,5]]]
+        #self.coefficients=[[[-60,1],[50,1]],[[30,1],[18,2]],[[-8,2],[-12,3]],[[10,3],[14,5]]]
         #self.coefficients=[[-60,30,-8,10],[50,18,-12,14]]
-        #self.coefficients=[(rd(10,20)/(i+1),rd(10,20)/(i+1)) for i in range(precision)]
+        self.coefficients=[(rd(10,20)/(i+1),rd(10,20)/(i+1)) for i in range(precision)]
         self.factor=factor
         self.precision=min(precision,len(self.coefficients))
         self.points=[(0,0) for i in range(self.precision)]

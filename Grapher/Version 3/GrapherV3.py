@@ -44,7 +44,8 @@ class Graph:
         tx,ty=(wsx//2,wsy//2)
         for X in range(0,wsx,self.precision):
             x=((X-tx)/zx+mx)/ux
-            y=eval(self.function)
+            #y=eval(self.function)
+            y=self.function(x)
             Y=(ty-(y*uy+my)*zy)
             if 0<=X<wsx and 0<=Y<wsy:
                 self.dots.append((X,Y))
@@ -83,7 +84,7 @@ class Plan:
         for i,graph in enumerate(self.graphs):
             graph.draw(self,window)
             position=[wsx-200,wsy-(2+i)*30]
-            window.showText(graph.function,position,graph.color,"monospace",20)
+            window.showText(str(graph.function),position,graph.color,"monospace",20)
 
     def drawAxis(self,window):
         wsx,wsy=window.size
@@ -206,6 +207,6 @@ class Grapher:
 #Actions#
 #-------#
 
-functions=["math.sin(x)","math.cos(x)","math.exp(x)","x**3-2*x+1"]
-
-Grapher=Grapher(functions)
+if __name__=="__main__":
+    functions=[math.sin,math.cos,math.exp,lambda x:x**3-2*x+1]
+    Grapher=Grapher(functions)

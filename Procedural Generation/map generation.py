@@ -24,7 +24,7 @@ WHITE=  (255,255,255)
 
 class Window:
     made=0
-    def __init__(self,game=None,title="Game",size=None,font="monospace",set=True):
+    def __init__(self,game=None,title="Game",size=[700,600],font="monospace",set=True):
         Window.made+=1
         self.number=Window.made
         self.title=title
@@ -44,9 +44,9 @@ class Window:
     def setSize(self):
         if self.size is None:
             info = pygame.display.Info()
-            self.size=(info.current_w*2/3,info.current_h*2/3)
-        else:
-            self.size=size
+            self.size=(int(info.current_w*2/3),int(info.current_h*2/3))
+        print(self.size)
+
 
     def pop_up(self,message):
         pass

@@ -11,8 +11,7 @@ import json
 
 class Window:
     made=0
-
-    def __init__(self,name="Unnamed Game",size=[700,600],text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,set=True):
+    def __init__(self,name="Unnamed",size=None,text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,build=True):
         """Create a window object using name, size text_font, text_size, text_color, background and set."""
         Window.made+=1
         self.number=Window.made
@@ -23,40 +22,42 @@ class Window:
         self.text_color=text_color
         self.background_color=background_color
         self.fullscreen=fullscreen
-        self.load()
+        self.set()
         self.log("Window has been created.")
-        if set:
-            self.set()
+        if build:
+            self.build()
 
-    def load(self):
-        """Load builtins attributs of window object."""
+    def set(self):
+        """Set builtins attributs of window object."""
         self.RIGHT = 0
         self.UP    = 1
         self.LEFT  = 2
         self.DOWN  = 3
-        if self.size is None:
-            self.size=(self.info.current_w//2,self.info.current_h//2)
-        #self.mouse_position=pygame.mouse.get_pos()
-        #self.mouse_click=bool(pygame.mouse.get_pressed()[0])
         self.selecter_color=self.reverseColor(self.background_color)
-        self.pausing=False
         self.open=False
-        self.coordonnates=[0,0]+self.size
-        self.picture_saved=0
+        self.screenshots_taken=0
         self.pause_cool_down=1
         self.time=time.time()
-        #if self.text_color is None: self.text_color=self.reverseColor(self.background_color)
+        self.pause_time=0.2
 
-    def set(self):
+    def build(self):
         """Creates apparent window."""
         pygame.init()
         self.info = pygame.display.Info()
         self.font = pygame.font.SysFont(self.text_font, self.text_size)
+        if self.size is None:
+            if self.fullscreen:
+                self.size=[self.info.current_w,self.info.current_h]
+            else:
+                self.size=[2*self.info.current_w//3,2*self.info.current_h//3]
+        self.coordonnates=[0,0]+self.size
         if self.fullscreen:
             self.screen=pygame.display.set_mode(self.size,FULLSCREEN)
         else:
             self.screen=pygame.display.set_mode(self.size,RESIZABLE)
         pygame.display.set_caption(self.name)
+        if self.text_color is None:
+            text_color=self.reverseColor(self.background_color)
         self.clear()
         self.flip()
         self.open=True
@@ -93,19 +94,13 @@ class Window:
 
     def pause(self):
         """Wait for user to click on space."""
-        self.pausing=True
-        while self.pausing and self.open:
+        while self.open:
             self.check()
             keys=pygame.key.get_pressed()
             if keys[K_SPACE]:
-                self.pausing=False
+                break
         if self.open:
-            time.sleep(0.1)
-
-    def sleep(self,waiting_time): #useless
-        """Wait for giving time."""
-        import time
-        time.sleep(waiting_time)
+            time.sleep(self.pause_time)
 
     def press(self):
         """Return all keys."""
@@ -114,23 +109,7 @@ class Window:
     def direction(self):
         """Return keys for arrows pressed. Trigonometric orientation is used."""
         keys=pygame.key.get_pressed()
-        if keys[K_LEFT]:
-            left=True
-        else:
-            left=False
-        if keys[K_RIGHT]:
-            right=True
-        else:
-            right=False
-        if keys[K_UP]:
-            up=True
-        else:
-            up=False
-        if keys[K_DOWN]:
-            down=True
-        else:
-            down=False
-        return (right,up,right,down)
+        return (keys[K_RIGHT],keys[K_UP],keys[K_LEFT],keys[K_DOWN])
 
 
     def select(self):
@@ -177,6 +156,7 @@ class Window:
         self.screen.blit(picture, position)
 
     def centerText(self,message,size=None):
+        """Centers Text on screen."""
         sx,sy=self.size
         if size is None:
             size=self.text_size
@@ -184,8 +164,7 @@ class Window:
         letter_size=size/4
         x=sx//2-letter_size*l//2
         y=sy//2-size/3
-        return [x,y]
-
+        return (x,y)
 
     def alert(self,message):
         """Quickly display text on window."""
@@ -193,22 +172,14 @@ class Window:
         self.print(message,position)
         self.flip()
 
-    def print(self,text,position=None,size=None,color=None,background_color=None,font=None):
+    def print(self,text,position,size=None,color=None,font=None):
         """Display text on screen using position, size, color and font."""
-        if position is None:
-            position=self.centerText(text)
         if size is None:
             size=self.text_size
         if color is None:
             color=self.text_color
-        if background_color is None:
-            background_color=self.background_color
         if font is None:
             font=self.font
-        sx,sy=size
-        x,y=position
-        pygame.draw.rect(self.screen,self.reverseColor(background_color),position+size,0)
-        pygame.draw.rect(self.screen,background_color,(x+1,y+1,sx-2,sy-2),1)
         label = font.render(text, 1, color)
         self.screen.blit(label, position)
 
@@ -268,70 +239,7 @@ class Window:
         image.fill(color[0:3]+(0,),None,pygame.BLEND_RGBA_ADD)
         return image
 
-    def draw(self):
-        """Allow user to draw on screen."""
-        radius=2
-        wavelength=380
-        color=self.reverseColor(self.background_color)
-        form=0
-        size=[10,10]
-        width=0
-        while self.open:
-            self.check()
-            click=self.click()
-            position=self.point()
-            if click:
-                self.trace(position,size,self.wavelengthToRGB(wavelength),radius,form,width)
-            else:
-                self.hand[0].points=[]
-                #print(size)
-            keys=pygame.key.get_pressed()
-            if keys[K_LSHIFT] and radius>10:
-                radius-=1
-            if keys[K_RSHIFT] and radius:
-                radius+=1
-            if keys[K_LEFT] and wavelength>380:
-                wavelength-=1
-            if keys[K_RIGHT] and wavelength<780:
-                wavelength+=1
-            if keys[K_q] and size[0]>0:
-                size[0]-=1
-            if keys[K_w]:
-                size[0]+=1
-            if keys[K_e] and size[1]>0:
-                size[1]-=1
-            if keys[K_r]:
-                size[1]+=1
-            if keys[K_s]:
-                self.screenshot()
-            if keys[K_t]:
-                width=(width+1)%2
-            if keys[K_SPACE]:
-                form=(form+1)%4
-                print(form)
-            if keys[K_RETURN]:
-                self.clear()
-            self.flip()
 
-    def oldTrace(self,position,color=WHITE,radius=5):
-        """Trace a point on the screen using position, size, color."""
-        pygame.draw.circle(self.screen,color,position,radius,0)
-        #print("position: ",position)
-
-
-    def trace(self,position,size,color=WHITE,radius=5,form=0,width=0):
-        """Trace a point on the screen using position, size, color."""
-        for tool in self.hand:
-            tool.size=size
-            tool.position=position
-            tool.points.append(position)
-            tool.color=color
-            tool.radius=radius
-            tool.connect=False
-            tool.form=form
-            tool.width=width
-            tool.draw(self.screen)
-        #print("position: ",position)
 
     def wavelengthToRGB(self,wavelength):
         """Convert wavelength to rgb color type."""
@@ -373,14 +281,13 @@ class Window:
 
 
 if __name__=="__main__":
-    w=Window("Game")
+    w=Window("Window Prototype")
     #save(w,"grosse fenetre")
     #w=load("grosse fenetre")
     #print(w.lighten(BLUE))
     #w.alert("test")
-    w.draw()
     w.pause()
     w.clear()
-    w.alert("test2")
+    w.alert("je raconte de la merde juste pour avoir une longue chaine de caractere")
     w.pause()
     w.kill()

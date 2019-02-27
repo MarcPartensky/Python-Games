@@ -1,34 +1,23 @@
 from mycolors import *
 from mywindow import Window
+import pygame
 
 class Panel:
-    def __init__(self,name="Unnamed Pannel",window=None,position=None,size=None,background=BLACK,border=WHITE):
+    def __init__(self,name="Unnamed",position=None,size=None,background=BLACK,border=WHITE):
         """Create panel object."""
-        self.window=window
         self.position=position
         self.size=size
-        self.load()
+        self.set()
+        #if build:
+        #    self.build()
         #if window is not None:
         #    self.loadFromWindow(window)
 
-    def load(self):
-        """Load panel object."""
+    def set(self):
+        """Set panel object."""
         self.background=BLUE
         self.border=WHITE
         self.default_size=[100,100]
-
-    def loadFromWindow(self,window):
-        """Load windows attributs."""
-        x,y,sx,sy=self.center(window,self.default_size)
-        self.position=(x,y)
-        self.size=(sx,sy)
-
-    def center(self,window):
-        """Center object by default."""
-        wsx,wsy=window.size
-        wcx,wcy,wcsx,wcsy=window.coordonnates
-        hx,hy=(wcsx-wcx,wcsy-wcy)
-        return (hx,hy,wsx,wsy)
 
     def show(self,window,coordonnates,background_color,border_color):
         """Show pannel on screen."""
@@ -44,6 +33,21 @@ class Panel:
         pygame.draw.line(window.screen,border_color,(x+sx,y+sy),(x+sx,y),1)
         pygame.draw.line(window.screen,border_color,(x+sx,y),(x,y),1)
 
+
+    def loadFromWindow(self,window):
+        """Load windows attributs."""
+        x,y,sx,sy=self.center(window,self.default_size)
+        self.position=(x,y)
+        self.size=(sx,sy)
+
+    def center(self,window):
+        """Center object by default."""
+        wsx,wsy=window.size
+        wcx,wcy,wcsx,wcsy=window.coordonnates
+        hx,hy=(wcsx-wcx,wcsy-wcy)
+        return (hx,hy,wsx,wsy)
+
+
     def createButtons(self,names):
         """Create button entities for pannel."""
         for i in range(len(names)):
@@ -55,9 +59,6 @@ class Panel:
         for button in self.buttons:
             states.append(button())
         return states
-
-
-
 
 if __name__=="__main__":
     w=Window("Testing pannel")

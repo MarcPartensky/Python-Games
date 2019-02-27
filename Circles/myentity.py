@@ -3,7 +3,7 @@ class Entity:
     def __init__(self,name="Unnamed",id=None,position=None,size=None,colliding_box=None,spawn_position=None,velocity=[0,0],acceleration=[0,0]):
         """Create entity object using name, id, position, size, colliding_box, spawn_position, velocity and acceleration."""
         Entity.made+=1
-        self.made=Entity.made
+        self.number=Entity.made
         self.name=name
         self.id=id
         self.position=position

@@ -1,12 +1,26 @@
 class Body:
-    def __init__(self,name,position,size):
+    made=0
+    def __init__(self,name="Unnamed",position=None,velocity=None,acceleration=None,size=None):
         """Create a body object."""
+        Body.made+=1
+        self.made=Body.made
         self.name=name
         self.position=position
+        self.velocity=velocity
+        self.acceleration=acceleration
         self.size=size
-        self.selected=False
 
 
+
+
+
+
+
+
+
+
+
+"""
     def check(self,cursor):
         cx,cy=cursor
         x,y=self.position
@@ -19,7 +33,6 @@ class Body:
             self.cursor_position=None
 
 
-
     def pick(self,cursor):
         cx,cy=cursor
         cpx,cpy=self.cursor_position
@@ -28,7 +41,7 @@ class Body:
 
     def show(self,window):
         pass
-
+"""
 
 
 """

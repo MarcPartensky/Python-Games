@@ -2,7 +2,7 @@ from mywindow import Window
 from mypanel import Panel
 
 class Button:
-    def __init__(self,name="Unnamed Button",pannel=None,window):
+    def __init__(self,name="Unnamed",pannel=None,window):
         """Create a button object using name, pannel and window."""
         self.name=name
         self.pannel=pannel
