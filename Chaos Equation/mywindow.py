@@ -200,6 +200,9 @@ class Window:
         x,y=(rcx-wcx,rcy-wcy)
         return (x,y)
 
+    def inWindow(self,position):
+        return sum([0<=position[i]<self.size[i] for i in range(len(self.size))])==len(self.size)
+
 
     def randomColor(self):
         """Return random color."""
@@ -243,7 +246,7 @@ class Window:
 
 
     def wavelengthToRGB(self,wavelength):
-        """Convert wavelength to rgb color type."""
+        """Convert wavelength [380,780] to rgb color type."""
         gamma,max_intensity=0.80,255
         def adjust(color, factor):
             if color==0: return 0

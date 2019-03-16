@@ -1,5 +1,5 @@
 from GrapherV3 import Grapher
-from math import exp,sin,cos,atan
+from math import exp,sin,cos,atan,log
 
 def sigmoid(x):
   return 1/(1+exp(-x))
@@ -15,5 +15,8 @@ functions=[sigmoid_gota,sinus,atan,square]
 polynome=lambda x:x**4+2*x**3-x**2-6*x-3
 
 functions=[polynome]
+
+dm=lambda x:x*log(x)+x-1
+functions=[dm]
 
 Grapher(functions)

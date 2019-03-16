@@ -1,6 +1,8 @@
 from __future__ import division
 
 from mycolors import *
+#from myinput import Input
+import time
 
 import pygame
 from pygame.locals import *
@@ -11,6 +13,8 @@ import json
 
 class Window:
     made=0
+    draw=pygame.draw
+    bijection=lambda x,i1,i2:(i2[1]-i2[0])/(i1[1]-i1[0])*(x-i1[0])+i2[0]
 
     def __init__(self,name="Unnamed",size=None,text_font="monospace",text_size=65,text_color=WHITE,background_color=BLACK,fullscreen=False,build=True):
         """Create a window object using name, size text_font, text_size, text_color, background and set."""
@@ -23,10 +27,11 @@ class Window:
         self.text_color=text_color
         self.background_color=background_color
         self.fullscreen=fullscreen
+        #self.input=Input()
         self.set()
-        self.log("Window has been created.")
         if build:
             self.build()
+        self.log("Window has been created.")
 
     def set(self):
         """Set builtins attributs of window object."""
@@ -38,8 +43,10 @@ class Window:
         self.open=False
         self.screenshots_taken=0
         self.pause_cool_down=1
-        self.time=time.time()
+        self.click_cool_down=0.3
+        self.last_click=time.time()
         self.pause_time=0.2
+        self.focus=None
 
     def build(self):
         """Creates apparent window."""
@@ -103,9 +110,11 @@ class Window:
         if self.open:
             time.sleep(self.pause_time)
 
-    def press(self):
-        """Return all keys."""
-        return pygame.key.get_pressed()
+    def __call__(self):
+        self.flip()
+        self.pause()
+
+
 
     def direction(self):
         """Return keys for arrows pressed. Trigonometric orientation is used."""
@@ -125,13 +134,22 @@ class Window:
         """Return cursor position on screen."""
         return pygame.mouse.get_pos()
 
+    def press(self):
+        """Return all keys."""
+        return pygame.key.get_pressed()
+
     def click(self):
         """Return bool value for clicking on screen."""
         return bool(pygame.mouse.get_pressed()[0])
 
-    def press(self):
-        """Return bool value for clicking on screen."""
-        return pygame.key.get_pressed()
+    def onclick(self):
+        if self.click() and time.time()-self.last_click>self.click_cool_down:
+            self.last_click=time.time()
+            return True
+        else:
+            return False
+
+
 
     def flip(self):
         """Refresh screen."""

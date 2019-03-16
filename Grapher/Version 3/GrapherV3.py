@@ -23,6 +23,21 @@ import random
 import numpy as np
 import noise
 
+
+BLUE      = (  0,  0,255)
+RED       = (255,  0,  0)
+GREEN     = (  0,255,  0)
+YELLOW    = (255,255,  0)
+BLACK     = (  0,  0,  0)
+WHITE     = (255,255,255)
+GREY      = (100,100,100)
+PURPLE    = (100,  0,100)
+DARKGREY  = ( 20, 20, 20)
+DARKRED   = ( 10, 10, 10)
+DARKGREEN = ( 10, 10, 10)
+DARKBLUE  = ( 10, 10, 10)
+
+
 #-------#
 #Classes#
 #-------#

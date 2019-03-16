@@ -110,7 +110,7 @@ class Beast(Player):
         print("sum: ",sum)
         return sum"""
 
-
+        #Does exactly the same thing but in one line ;)
         return sum([sum([(2*side-1)*(int(grid[y][x]==1)-int(grid[y][x]==2))*self.advantage[y][x] for x in range(len(self.advantage[y]))]) for y in range(len(self.advantage))])
 
 

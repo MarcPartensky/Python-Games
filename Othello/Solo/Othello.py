@@ -23,7 +23,7 @@ class Othello:
         self.moves_color=RED
         self.theme=[self.grid_color,self.pieces_color,self.moves_color]
         self.board=Board(self.theme)
-        self.players=[Beast(0,4),Beast(1,3)]
+        self.players=[Human(0),Beast(1,3)]
         self.won=False
         self.state=0
         self.input=None
