@@ -1,36 +1,94 @@
+"""
+################################################################################
+#
+#              Institut Supérieur d'électronique de Paris (ISEP)
+#
+#                               SUJET DE TIPE:
+#                     Othello et Intelligence Artificielle
+#
+#    Première année  --  MPSI
+#
+#    Créateurs : Marc  PARTENSKY
+#                Valentin  COLIN
+#                Alexandre Bigot
+#
+#    Version : 2019
+#              1.1
+#
+###############################################################################
+#
+#                           SOMMAIRE du plateau
+#
+#    note : commenter le script correctement
+#
+#    0.  __init__   ................................................ ligne  64
+#    1.  creerGrille   ............................................. ligne  74
+#    2.  est_dans_grille   ......................................... ligne  83
+#    3.  est_un_coin   ............................................. ligne  89
+#    4.  adjust   .................................................. ligne  96
+#    5.  testVictoire   ............................................ ligne 103
+#    6.  obtenirPositionsPions   ................................... ligne 112
+#    7.  obtenirPions   ............................................ ligne 116
+#    8.  obtenirEnvironnement   .................................... ligne 130
+#    9.  insererPion   ............................................. ligne 145
+#   10.  reverse_pion   ............................................ ligne 150
+#   11.  obtenir_case   ............................................ ligne 158
+#   12.  placer_pion   ............................................. ligne 163
+#   13.  est_une_case_vide   ....................................... ligne 168
+#   14.  est_une_case_joueur_side   ................................ ligne 172
+#   15.  obtenirCotesEnnemis   ..................................... ligne 176
+#   16.  obtenir_mouvements_valides   .............................. ligne 180
+#   17.  estMouvementValide   ...................................... ligne 191
+#   18.  estMouvementValideDansLigne   ............................. ligne 202
+#   19.  conquerir   ............................................... ligne 220
+#   20.  obtenirLigne   ............................................ ligne 228
+#   21.  conquerir_ligne   ......................................... ligne 239
+#   22.  manger   .................................................. ligne 256
+#   24.  afficher   ................................................ ligne 261
+#   25.  colorerCase   ............................................. ligne 267
+#   26.  afficherMouvements   ...................................... ligne 273
+#   27.  afficherGrille   .......................................... ligne
+#   28.  afficherPions   ........................................... ligne
+#
+###############################################################################
+"""
+# --coding:utf-8--
+
+from outils import intersection
 import mycolors as couleur
 import config as cfg
 
 import pygame
 
 class Board:
-    def __init__(self,theme,taille=[8,8]):
+    def __init__(self,theme,nombre_joueurs=2,taille=[8,8]):
         """Cree un plateau"""
+        self.theme=theme
         self.taille=taille
-        self.createGrid()
+        self.creerGrille()
         self.couleur_grille,self.pieces_couleur,self.mouvements_couleur=theme
         self.mouvements=[]
         self.gagne=False
-        self.taille_x, self.taille_y =self.taille
+        self.taille_x,self.taille_y=self.taille
+        self.nombre_joueurs=nombre_joueurs
 
-
-    def createGrid(self):
+    def creerGrille(self):
         """Cree une grille"""
         sx,sy=self.taille
         self.grille=[[cfg.CASE_VIDE for x in range(sx)] for y in range(sy)]
-        self.inserer_pion((3,3),0)
-        self.inserer_pion((3,4),1)
-        self.inserer_pion((4,3),1)
-        self.inserer_pion((4,4),0)
+        self.insererPion([3,3],0)
+        self.insererPion([3,4],1)
+        self.insererPion([4,3],1)
+        self.insererPion([4,4],0)
 
-
-    def est_dans_grille(self,position):
+    def estDansGrille(self,position):
         """Verifie si la position est dans la grille"""
         sx,sy=self.taille
         x,y=position
         return (0<=x<sx and 0<=y<sy)
 
-    def est_un_coin(self, position):
+    def estCoin(self, position):
+        """Determine si une position correspond a un coin."""
         x,y=position
         sx,sy=self.taille
         x_=x%(sx-1)
@@ -45,90 +103,109 @@ class Board:
         return (int(rx*sx/wsx),int(ry*sy/wsy))
 
     def testVictoire(self):
-        """Test la victoire."""
+        """Test la victoire. pas au point"""
+        #fonction incomplete car ne prends pas en compte le cas particulier dans lequel les joueurs n'ont aucun mouvement possible.
         compteur=cfg.CASE_VIDE
         for colonne in self.grille:
             compteur+=colonne.count(cfg.CASE_VIDE)
         self.gagne=(compteur==cfg.CASE_VIDE)
         return self.gagne
 
+    def obtenirPositionsPions(self):
+        """Renvoie la liste de la positione de tout les pions"""
+        return self.obtenirPions(range(self.nombres_joueurs))
 
-
-    def getPieces(self,side):
-        """Recup toute les position de toues les piece d'un joueur"""
+    def obtenirPions(self,cotes):
+        """Obtenir toute les position de toutes les pieces de cotes de joueurs"""
+        if not isinstance(cotes,list):
+            cotes=[cotes]
         positions=[]
-        sx,sy=self.taille
-        for y in range(sy):
-            for x in range(sx):
-                case = self.obtenir_case((x,y))
-                if case==side:
-                    positions.append((x,y))
+        for cote in cotes:
+            sx,sy=self.taille
+            for y in range(sy):
+                for x in range(sx):
+                    case=self.obtenirCase([x,y])
+                    if self.estCaseJoueur([x,y],cote):
+                        positions.append([x,y])
         return positions
 
-    def getAround(self,positions):
+    def obtenirEnvironnement(self,positions):
         """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
-        environment=[]
-
-        around=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
+        environnement=[]
+        directions=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
         for position in positions:
             px,py=position
-            for step in around:
-                stx,sty=step
+            for pas in directions:
+                stx,sty=pas
                 x,y=(px+stx,py+sty)
-                if self.est_dans_grille((x,y)):
-                    if self.est_une_case_vide((x,y)) :
-                        environment.append((x,y))
-        return environment
+                if self.estDansGrille([x,y]):
+                    if self.estCaseVide([x,y]) :
+                        environnement.append([x,y])
+        print(1,environnement)
+        environnement=list(intersection(environnement))
+        print(2,environnement)
+        return environnement
 
-    def inserer_pion(self, coordonnees, side) :
-        """inserer_pion insere un pion dans la grille sans se soucier de conquerir le territoire"""
+    def insererPion(self, coordonnees, side) :
+        """insererPion insere un pion dans la grille sans se soucier de conquerir le territoire"""
         x,y=coordonnees
         self.grille[y][x]=side
 
-    def reverse_pion(self, coordonnees) :
+    def reverse_pion(self, coordonnees): #ne peux pas marcher si on considere un jeu avec plus de 2 joueurs.
         """Retourne le pion se trouvant au coordonnees"""
-        #Todo pour marc : faire cette foction
+        x,y=coordonnees
+        #self.grid[y][x]=
+        #Todo pour marc : faire cette fonction
         #Utiliser cette methode dans la methode 'conquer'
         pass
 
-    def obtenir_case(self, coordonnees) :
-        """Retourn le contenu d'une case"""
+    def obtenirCase(self,coordonnees):
+        """Retourne le contenu d'une case"""
         x,y=coordonnees
         return self.grille[y][x]
 
-    def placer_pion(self,coordonnees_pion,side):
-        """place un pion sur le plateau"""
-        self.inserer_pion(coordonnees_pion, side)
+    def placerPion(self,coordonnees_pion,side):
+        """Place un pion sur le plateau"""
+        self.insererPion(coordonnees_pion, side)
         self.conquerir(coordonnees_pion,side)
 
-    def est_une_case_vide(self, position) :
-        return self.obtenir_case(position)==cfg.CASE_VIDE
+    def estCaseVide(self, position):
+        """Determine si la case a la position donnee est une case vide."""
+        return self.obtenirCase(position)==cfg.CASE_VIDE
 
+    def estCaseJoueur(self,position,cote):
+        """Determine si la case a la position donnee contient un pion du joueur side."""
+        return self.obtenirCase(position)==cote
 
-    def obtenir_mouvements_valides(self,joueur_side,fenetre):
-        """Retourne une liste de tuple qui correspondent aux coordonnées des mouvements possibles pour le joueur_side"""
-        ennemi_side=1-joueur_side
-        positions=self.getPieces(ennemi_side)
-        positions=self.getAround(positions)
-        mouvements=[]
-        for position in positions:
-            if self.est_mouvement_valide(position,joueur_side):
-                mouvements.append(position)
-        return mouvements
+    def obtenirCotesEnnemis(self,joueur_cote):
+        """Renvoie la liste des cotes enemis d'un cote de joueur."""
+        return [cote for cote in range(self.nombre_joueurs) if cote!=joueur_cote]
 
-    def est_mouvement_valide(self,position,p_side):
-        """Permet de verifier si un mouvement est valide"""
+    def obtenir_mouvements_valides(self,joueur_cote): #yavait fenetre dans les parametres
+        """Retourne une liste de tuple qui correspondent aux coordonnees des mouvements possibles pour le joueur_side"""
+        cotes=self.obtenirCotesEnnemis(joueur_cote)
+        positions=self.obtenirPions(cotes)
+        cfg.debug(positions)
+        positions_possibles=self.obtenirEnvironnement(positions)
+        mouvements_valides=[]
+        for position_possible in positions_possibles:
+            if self.estMouvementValide(position_possible,joueur_cote):
+                mouvements_valides.append(position_possible)
+        return mouvements_valides
+
+    def estMouvementValide(self,mouvement,cote):
+        """Permet de verifier si un mouvement est valide."""
         vecteurs=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
         resultat=False
         for vecteur in vecteurs:
-            ligne=self.recuperer_ligne(vecteur,position)
-            if self.est_mouvement_valide_dans_ligne(p_side,ligne):
+            ligne=self.obtenirLigne(vecteur,mouvement)
+            if self.estMouvementValideDansLigne(cote,ligne):
                 resultat=True
                 break
         return resultat
 
-    def est_mouvement_valide_dans_ligne(self,p_side,ligne):
-        """Permet de verifier si un mouvement est valide dans une ligne"""
+    def estMouvementValideDansLigne(self,p_side,ligne):
+        """Permet de verifier si un mouvement est valide dans une ligne."""
         e_side=1-p_side
         valide=True
         possible=False
@@ -150,15 +227,15 @@ class Board:
         retouner les autres pions"""
         vecteurs=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
         for vecteur in vecteurs:
-            ligne=self.recuperer_ligne(vecteur,position)
+            ligne=self.obtenir_ligne(vecteur,position)
             self.conquerir_ligne(p_side,ligne)
 
-    def recuperer_ligne(self,position,vecteur):
+    def obtenirLigne(self,position,vecteur):
         """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
         line=[]
         vx,vy=vecteur
         x,y=position
-        while self.est_dans_grille((x,y)):
+        while self.estDansGrille((x,y)):
             x+=vx
             y+=vy
             line.append((x,y))
@@ -184,39 +261,37 @@ class Board:
     def manger(self,mangeables,personne):
         """Assigne aux cases mangeables la valeur de pion de la personne"""
         for mangeable in mangeables:
-            self.inserer_pion(mangeable,personne)
+            self.insererPion(mangeable,personne)
 
     def afficher(self,fenetre):
-        self.showGrid(fenetre)
-        self.showPieces(fenetre)
-        self.showMoves(fenetre)
+        self.afficherGrille(fenetre)
+        #self.afficherDecorationGrille(fenetre)
+        self.afficherPions(fenetre)
+        self.afficherMouvements(fenetre)
 
-    def debugMove(self,position,fenetre,couleur):
-        #fenetre.clear()
-        #self.afficher(fenetre)
-        #self.showMove(position,fenetre,couleur)
-        #fenetre.flip()
-        #fenetre.pause()
-        pass
-
-    def showMove(self,move,fenetre,couleur):
-        wsx,wsy=fenetre.taille
-        sx,sy=self.taille
-        radius=int(min(wsx,wsy)/min(sx,sy)/4)
-        x,y=move
-        raw_position=(int((x+1/2)*wsx/sx),int((y+1/2)*wsy/sy))
-        pygame.draw.circle(fenetre.screen,couleur,raw_position,radius,0)
-
-    def showMoves(self,fenetre):
-        for move in self.mouvements:
-            self.showMove(move,fenetre,self.mouvements_couleur)
-
-    def colorer_case(postion, couleur) :
+    def colorerCase(postion, couleur) :
         """permet de colorer une case du plateau d'une certaine couleur
         cette fonction est utile pour debug de ia.py"""
         pass
 
-    def showGrid(self,fenetre):
+
+    def afficherMouvements(self,fenetre,mouvements=None,couleur=None):
+        """Afficher les coups possible. (point rouge sur la fenêtre)"""
+        if not mouvements:
+            mouvements=self.mouvements
+        if not couleur:
+            couleur=self.theme[2]
+        #devrait  marcher si il n'y a que un moment.
+        for move in mouvements:
+            wsx,wsy=fenetre.taille
+            sx,sy=self.taille
+            radius=int(min(wsx,wsy)/min(sx,sy)/4)
+            x,y=move
+            raw_position=(int((x+1/2)*wsx/sx),int((y+1/2)*wsy/sy))
+            pygame.draw.circle(fenetre.screen,couleur,raw_position,radius,0)
+
+
+    def afficherGrille(self,fenetre):
         """Affiche la grille"""
         wsx,wsy=fenetre.taille
         sx,sy=self.taille
@@ -231,14 +306,14 @@ class Board:
             end=(_x,wsy)
             pygame.draw.line(fenetre.screen,self.couleur_grille,start,end,1)
 
-    def showPieces(self,fenetre):
+    def afficherPions(self,fenetre):
         """Affiche les pions"""
         wsx,wsy=fenetre.taille
         sx,sy=self.taille
         radius=int(min(wsx,wsy)/min(sx,sy)/2)
         for y in range(sy):
             for x in range(sx):
-                case=self.obtenir_case((x,y))
+                case=self.obtenirCase((x,y))
                 raw_position=(int((x+1/2)*wsx/sx),int((y+1/2)*wsy/sy))
                 if 0<=case and case<=len(self.pieces_couleur)-1 :
                     couleur=self.pieces_couleur[case]

@@ -1,3 +1,37 @@
+"""
+################################################################################
+#
+#              Institut Supérieur d'électronique de Paris (ISEP)
+#
+#                               SUJET DE TIPE:
+#                     Othello et Intelligence Artificielle
+#
+#    Première année  --  MPSI
+#
+#    Créateurs : Marc  PARTENSKY
+#                Valentin  COLIN
+#                Alexandre Bigot
+#
+#    Version : 2019
+#              1.1
+#
+###############################################################################
+#
+#                           SOMMAIRE de Othello
+#
+#    note : commenter le script correctement
+#
+#    0. __init__   ................................................ ligne
+#    1. __call__   ................................................ ligne
+#    2. finalScene   .............................................. ligne
+#    3. getInput   ................................................ ligne
+#    4. afficher   ................................................ ligne
+#    5. faireTour   ............................................... ligne
+#
+###############################################################################
+"""
+# --coding:utf-8--
+
 import mywindow
 import mycolors as couleur
 
@@ -24,30 +58,22 @@ class Othello:
         self.couleur_pieces=[couleur.BLANC,couleur.NOIR]
         self.couleur_mouvement=couleur.ROUGE
         self.theme=[self.couleur_grille,self.couleur_pieces,self.couleur_mouvement]
-        self.plateau=Plateau.Board(self.theme)
         self.joueurs=liste_joueur
         for compteur in range(len(self.joueurs)):
             self.joueurs[compteur].side=compteur
-        self.nombre_joueurs=len(self.joueurs)
-        self.gagne=False
+        self.plateau=Plateau.Board(self.theme,len(self.joueurs))
         self.state=0
-        self.tour=self.state%self.nombre_joueurs
+        self.tour=self.state%self.plateau.nombre_joueurs
 
 
     def __call__(self):
         self.afficher()
 
-        cfg.debug(self.joueurs)
-        while self.fenetre.open and not self.gagne:
+        #cfg.debug(self.joueurs)
+        while self.fenetre.open and not self.plateau.gagne:
             self.fenetre.check()
-            cfg.debug("10")
             self.faireTour()
-            cfg.debug("11")
-            self.gagne=self.plateau.testVictoire()
-            cfg.debug("12")
-            cfg.debug("13")
-            #time.sleep(0.2)
-            cfg.debug("main boucle")
+            self.plateau.testVictoire()
         self.finalScene()
         print("c'est la fin")
 
@@ -89,16 +115,18 @@ class Othello:
 
     def faireTour(self) :
         """Faire un tour de jeu"""
-        self.tour = self.state % self.nombre_joueurs
+        self.tour = self.state % self.plateau.nombre_joueurs
         joueur_actif=self.joueurs[self.tour]#joueur a qui c'est le tour
-        self.plateau.mouvements=self.plateau.obtenir_mouvements_valides(joueur_actif.side,self.fenetre)#todo pas top
+        self.plateau.mouvements=self.plateau.obtenir_mouvements_valides(joueur_actif.side)#todo pas top
         #cfg.debug(self.plateau.mouvements)
         self.afficher()
         self.state+=1
         if len(self.plateau.mouvements)>=1:#Si des moves sont possibles
-            choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre)
+            choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre, self.tour)
+            if not choix_du_joueur:
+                return None
 
-            self.plateau.placer_pion(choix_du_joueur, joueur_actif.side)
+            self.plateau.placerPion(choix_du_joueur, joueur_actif.side)
         else :
             #Si aucun mouvement possible on demane l'avis du joueur_actif
             pass
