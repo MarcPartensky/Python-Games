@@ -37,7 +37,7 @@ import mycolors as couleur
 
 import board as Plateau
 
-import Player as Joueur
+import player as Joueur
 import time
 import pygame
 from pygame.locals import *##todo
@@ -48,7 +48,7 @@ from copy import deepcopy
 
 
 class Othello:
-    def __init__(self,fenetre, liste_joueur):
+    def __init__(self,fenetre,liste_joueur,affichage=True):
         self.nom="Othello"
         self.fenetre=fenetre
         self.fenetre.name=self.nom
@@ -64,69 +64,67 @@ class Othello:
         self.plateau=Plateau.Board(self.theme,len(self.joueurs))
         self.state=0
         self.tour=self.state%self.plateau.nombre_joueurs
+        self.gagnant=None
+        self.historique=[]
+        self.affichage=affichage
 
 
     def __call__(self):
         self.afficher()
-
         #cfg.debug(self.joueurs)
         while self.fenetre.open and not self.plateau.gagne:
             self.fenetre.check()
             self.faireTour()
             self.plateau.testVictoire()
-        self.finalScene()
-        print("c'est la fin")
+        self.afficherSceneFinale()
+        print("C'est la fin, pour le moment...")
 
 
-    def finalScene(self):
+    def afficherSceneFinale(self):
         """Afficher le resultat de la partie une fois qu'elle est terminee."""
-        #self.afficher()
-        self.tour = self.state % self.nombre_joueurs
-        joueur_actif=self.joueurs[self.tour]
-        if self.gagne:
-            message="Joueur "+str(joueur_actif.side+1)+" won!"
-        if not self.gagne: #to complete with moves counter
-            message="Match Nul"
-        position=list(self.fenetre.centerText(message))
-        position[0]-=50
-        taille=[int(len(message)*self.fenetre.taille_du_texte/2.7),70]
-        self.fenetre.print(message,position,taille,color=couleur.NOIR,couleur_de_fond=couleur.BLANC)
-        self.fenetre.flip()
-        while self.fenetre.open:
-            self.fenetre.check()#On attend qu'on ferme la fenetre
-        #Todo retourner menu principal
+        if self.affichage:
+            self.afficher()
 
-    def getInput(self):
-        """Actualise les parametre du jeu, ou se trouve le curseur, est-ce qu'on clique ?"""
-        entree=self.entree
-        while (entree is self.entree) and self.fenetre.open:
-            self.fenetre.check()
-            click=self.fenetre.click()
-            curseur=self.fenetre.point()
-            entree=(click,curseur)
-        self.entree=entree
-        return self.entree
+            self.plateau.testVictoire()
+            if self.plateau.gagne:
+                comptes=[]
+                for i in range(len(self.joueurs)):
+                    comptes.append(sum([self.plateau.grille[y].count(i) for y in range(len(self.plateau.grille))]))
+                print("Comptes final:",comptes)
+                self.gagnant=comptes.index(max(comptes))
+                message="Joueur "+str(self.gagnant+1)+" gagne!"
+            else: #to complete with moves counter
+                message="Match Nul"
+            position=list(self.fenetre.centerText(message))
+            position[0]-=50
+            taille=[int(len(message)*self.fenetre.taille_du_texte/2.7),70]
+            self.fenetre.print(message,position,taille,color=couleur.NOIR,couleur_de_fond=couleur.BLANC)
+            self.fenetre.flip()
+            while self.fenetre.open:
+                self.fenetre.check()#On attend qu'on ferme la fenetre
+            #Todo retourner menu principal
 
     def afficher(self):
         """Affiche tout : le plateau"""
-        self.fenetre.clear()
-        self.plateau.afficher(self.fenetre)
-        self.fenetre.flip()
+        if self.affichage:
+            self.fenetre.clear()
+            self.plateau.afficher(self.fenetre)
+            self.fenetre.flip()
 
     def faireTour(self) :
         """Faire un tour de jeu"""
         self.tour = self.state % self.plateau.nombre_joueurs
         joueur_actif=self.joueurs[self.tour]#joueur a qui c'est le tour
-        self.plateau.mouvements=self.plateau.obtenir_mouvements_valides(joueur_actif.side)#todo pas top
-        #cfg.debug(self.plateau.mouvements)
+        self.plateau.mouvements=self.plateau.obtenirMouvementsValides(joueur_actif.side)#todo pas top
         self.afficher()
         self.state+=1
         if len(self.plateau.mouvements)>=1:#Si des moves sont possibles
             choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre, self.tour)
             if not choix_du_joueur:
                 return None
-
-            self.plateau.placerPion(choix_du_joueur, joueur_actif.side)
+            self.plateau.placerPion(choix_du_joueur,joueur_actif.side)
+            if self.affichage: self.plateau.afficherAnimationPion(self.fenetre,choix_du_joueur)
+            self.historique.append([self.plateau.grille,joueur_actif,choix_du_joueur])
         else :
             #Si aucun mouvement possible on demane l'avis du joueur_actif
             pass

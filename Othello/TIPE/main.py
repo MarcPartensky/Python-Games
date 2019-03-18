@@ -1,6 +1,6 @@
-import Othello
+import othello
 import mywindow
-import Player as Joueur
+import player as Joueur
 
 """
 TOdo :
@@ -10,7 +10,7 @@ obtenir_side_joueur_oppose => le board doit connaitre le nombre de joueur dans b
 FAire API pour IA avec des fonctions 'basique' comme :
 Replacer les grille[y][x] par des grille[x][y]
 
-Faire la metohde  colorer_case dans board.py
+Faire la methode  colorer_case dans board.py
 
 faire ia basique
 
@@ -19,9 +19,7 @@ test vistoire dans le board.py
 
 Pour marc :
 Indiquer dans la fenetre à qui c'est le tour
-debuger le conquer
-debuger les mouvs possibles
-retourner pions
+faire plus de trucs chelous
 
 La deco inutile à faire :
 Mini animation pour indiquer le dernier pion posé : colorer ses rebord de la couleur NEW_COLOR_PIECES, à ajouter dans les constantes
@@ -32,7 +30,7 @@ Ajouter un menu très basique=>nouvelle class est nouveau fichier .py
 
 
 if __name__=="__main__":
-    fenetre=mywindow.Window([800,800],set=False)
-    jeu=Othello.Othello(fenetre, [Joueur.Human(),Joueur.Human()])
+    fenetre=mywindow.Window(taille=[800,800],set=False)
+    jeu=othello.Othello(fenetre, [Joueur.Robot(),Joueur.Robot()])
     #jeu=Othello.Othello(fenetre, [Joueur.Robot(),Joueur.Robot()])
     jeu()

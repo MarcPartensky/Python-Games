@@ -58,7 +58,7 @@ class Player:
     def __init__(self):
         self.choix=None
 
-class Human(Player):
+class Humain(Player):
     def __init__(self):
         Player.__init__(self)
 
@@ -75,17 +75,12 @@ class Human(Player):
     def jouer(self,plateau,fenetre,side):
         while fenetre.open:
             fenetre.check()
-            #cfg.debug(fenetre.point())
-            #cfg.debug(plateau,bool(pygame.mouse.get_pressed()[0]))
             if bool(pygame.mouse.get_pressed()[0]):
-                #cfg.debug("on a clicke")
-                position=plateau.adjust(fenetre.point(),fenetre)#Donne des coordonnées
-                #cfg.debug("position:",position)
+                position=plateau.adjuster(fenetre.point(),fenetre)#Donne des coordonnées
                 if plateau.estDansGrille(position):
                     if position in plateau.mouvements:#On regarde si le clique est une possibilité propose par le plateau
                         self.choix=position
                         break
-            #cfg.debug('while true du joueur huamin pour jouer')
         return self.choix
 
 class Robot(Player):

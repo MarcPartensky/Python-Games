@@ -1,6 +1,6 @@
 from copy import deepcopy
 import random
-import Player
+import player
 from outils import intersection
 
 ZONE_COIN=4#Ne doit pas etre une liste
@@ -32,11 +32,11 @@ for i in range(len(LISTE_ZONES)):#Permet de generer LISTE_POSITION_ZONE
 
 
 
-class IA(Player.Robot) :
+class IA(player.Robot) :
     def __init__(self, plateau, side):
         self.plateau=plateau#il ne faut surtout pas faire des simulations sur ce plateau !!
         self.side=side
-        self.mouvements_possibles=plateau.obtenir_mouvements_valides(self.side)
+        self.mouvements_possibles=plateau.obtenirMouvementsValides(self.side)
 
     def testToutPionsDansZones(self, plateau, zones):
         """Test si tout les pions du plateau sont dans les zones zones"""
@@ -94,7 +94,7 @@ class IA(Player.Robot) :
                 #positions n'est pas une liste de positions mais jsute une couplde coo:
                 postions=[postions]
 
-        mouvements_possible_side=plateau.obtenir_mouvements_valides(side)
+        mouvements_possible_side=plateau.obtenirMouvementsValides(side)
 
         for position_posible_joueur_side in mouvements_possible_side :
             plateau_simulation=deepcopy(self.plateau)
@@ -158,7 +158,7 @@ def main(plateau_objet,side):
 ###################
     def prioriter_coup_possible(self):
         """ renvoie le meilleur coup possible par ordre de priorité des couleurs """
-        coups_possible = obtenir_mouvements_valides(side)
+        coups_possible = obtenirMouvementsValides(side)
 
         for cp in coups_possible :
             if obtenir_couleur_position(cp) >= obtenir_couleur_position(position):

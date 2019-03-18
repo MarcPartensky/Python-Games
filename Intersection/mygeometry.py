@@ -4,18 +4,20 @@ from mywindow import Window
 
 from mymaths import sign2,mean
 from math import sqrt,atan,pi,cos,sin
-import random
 from cmath import polar
 
+import random
+import time
+
 class Figure:
-    def __init__(self,segments,color=WHITE):
+    def __init__(self,forms,color=WHITE):
         """Create a figure object."""
-        self.segments=segments
+        self.forms=forms
         self.color=color
     def show(self,window):
         """Show segments."""
-        for segment in self.segments:
-            segment.show(window)
+        for form in self.forms:
+            form.show(window)
 
 
 class Form:
@@ -53,12 +55,38 @@ class Form:
                 if myside|otherside:
                     return True
         return False
-    def connex(self):
-        """Return the bool (the form is connex)."""
-        pass
-    def sparse(self):
+    def convex(self):
+        """Return the bool (the form is convex)."""
+        center=self.center()
+        cx,cy=center[0],center[1]
+        angles=[]
+        l=len(self.points)
+        for i in range(l-1):
+            A=self.points[(i+l-1)%l]
+            B=self.points[i%l]
+            C=self.points[(i+1)%l]
+            u=Vector(A.x-B.x,A.y-B.y)
+            v=Vector(C.x-B.x,C.y-B.y)
+            angle=v^u
+            if angle>pi:
+                return True
+        return False
+    def getSparse(self): #as opposed to makeSparse which keeps the same form and return nothing
         """Return the form with the most sparsed points."""
-        pass
+        center=self.center()
+        cx,cy=center[0],center[1]
+        list1=[]
+        for point in self.points:
+            px,py=point.x,point.y
+            vector=Vector(px-cx,py-cy)
+            angle=vector.polar()[1]
+            list1.append((angle,point))
+        list1=sorted(list1,key=lambda x:x[0])
+        points=[element[1] for element in list1]
+        return Form(points)
+    def makeSparse(self):
+        """Change the form into the one with the most sparsed points."""
+        self=self.Sparse()
     def __contains__(self,point):
         """Return the bool: (the point is in the form)."""
         x,y=point[0],point[1]
@@ -71,18 +99,16 @@ class Form:
             if segment|line:
                 return True
         return False
-        #Trace une ligne passant par
     def rotate(self,angle,center=None):
         """Rotate the form by rotating its points from the center of rotation.
         Use center of the shape as default center of rotation.""" #Actually not working
         if not center:
-            center=self.center()
-        c=self.center()
+            C=self.center()
         for i in range(len(self.points)):
-            self.points[i].rotate(angle,center)
-        """for point in self.points:
-            point.rotate(angle,center) #rotate should have a second optional argument that does the same thing than above"""
-
+            P=self.points[i]
+            v=Vector(P.x-C.x,P.y-C.y)
+            v.rotate(angle)
+            self.points[i]=v(C)
     def move(self,*step):
         """Move the object by moving all its points using step."""
         x,y=step[0],step[1]
@@ -98,12 +124,9 @@ class Form:
             vy=self.points[i].y-cy
             self.points[i].x=vx+x
             self.points[i].y=vy+y
-
-
     def moveUntil(self,position):
         """Move the object to the position until the point is hit."""
         pass
-
     def update(self,input):
         """Update the points."""
         for point in self.points:
@@ -289,15 +312,15 @@ class Segment(Line):
 class Vector:
     def __init__(self,*args,arrow=(3,3),width=1,color=WHITE):
         """Create a vector."""
-        a=list(*args)
-        print(a)
-        self.x=a[0]
-        self.y=a[1]
+        self.x=args[0]
+        self.y=args[1]
         self.width=width
         self.color=color
-    def show(self,p,window):
+    def show(self,p,window,color=None):
         """Show the vector."""
-        print(p[0],p[1])
+        if not color:
+            color=self.color
+        p1=Point(p[0],p[1],color=self.color)
         p2=Point(self.x+p[0],self.y+p[1],color=self.color)
         s=Segment(p1,p2,width=self.width,color=self.color)
         s.show(window)
@@ -329,8 +352,8 @@ class Vector:
         """Rotate a vector using the angle of rotation."""
         n,a=self.polar()
         a+=angle
-        self.x+=n*cos(a)
-        self.y+=n*sin(a)
+        self.x=n*cos(a)
+        self.y=n*sin(a)
     def __getitem__(self,index):
         """Return x or y value using given index."""
         if index==0:
@@ -350,6 +373,26 @@ class Vector:
             return points[0]
         else:
             return points
+    def angle(self):
+        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
+        return self.polar()[1]
+
+    def __xor__(self,other):
+        """Return the angle between two vectors."""
+        return self.angle()-other.angle()
+
+
+class Manager:
+    def __init__(self,window,forms):
+        self.window=window
+        self.forms=forms
+    def __call__(self):
+        while self.window.open:
+            self.window.check()
+            self.update()
+    def update(self):
+        for form in self.forms:
+            form.update()
 
 
 
@@ -366,11 +409,23 @@ if __name__=="__main__":
     p2=Point(250,400)
     p3=Point(800,500)
     p4=Point(400,400,color=(0,255,0))
-    points=[p1,p2,p3,p4]
-    for point in points:
-        point.show(window)
-    #f=Form([p1,p2,p3],color=(0,0,255))
+    points=[p1,p3,p2,p4]
+    f=Form([Point(random.randint(1,700),random.randint(1,600)) for i in range(10)],color=(0,0,255))
     #f.show(window)
+    f2=f.getSparse()
+    p1.show(window)
+    p2.show(window)
+    v=Vector(p2[0]-p1[0],p2[1]-p1[1],color=(255,0,0))
+    center=f2.center()
+    while window.open:
+        window.check()
+        window.clear()
+        #v.rotate(0.1)
+        v.show(center,window)
+        f2.rotate(0.1)
+        time.sleep(0.1)
+        f2.show(window)
+        window.flip()
     #Segment(f[0],f[1],color=(255,0,0)).center().show(window)
     #print(p4 in f)
     #window.clear()
@@ -380,16 +435,5 @@ if __name__=="__main__":
     #a.show(window)
     #b.show(window)
     #p=b|a
-    a=p2-p1
-    a=Vector(a)
-    b=Vector(60,-20)
-    a.show(p2,window)
-    b.show(p2,window)
-    window()
-
-
-
-    #print(list(p))
-
-
-a=Vector(1,5)
+    #window()
+    #a=Vector(1,5)

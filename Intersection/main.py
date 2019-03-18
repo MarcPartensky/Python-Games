@@ -1,7 +1,7 @@
 from mywindow import Window
 from mylab import Lab
 from mycolors import *
-from mygeometry import Form,Point
+from mygeometry import Form,Point,Rigid
 import random
 
 class Room(Lab):
@@ -44,6 +44,6 @@ class Room(Lab):
                         self.window.focus=point
 
 if __name__=="__main__":
-    entities=[Form([Point(random.random()*900,random.random()*400) for i in range(3)]) for i in range(3)]
+    entities=[Body([Point(random.random()*900,random.random()*400)) for i in range(3)]) for i in range(3)]
     r=Room(name="Geometry",entities=entities)
     r()
