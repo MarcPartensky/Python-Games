@@ -32,13 +32,13 @@ class Trainer:
         x_train,y_train=[],[]
         historique=game.historique
         contestants=game.plateau.nombre_joueurs
-        print(game.historique)
+        #print(game.historique)
         for action in game.historique:
             action_grid,action_id_player,action_choice=action
             #print(action_grid)
             action_grid=self.exchangePieces(action_grid,id_player,game.gagnant,contestants)
             #print(action_grid)
-            print(game.gagnant,action_id_player)
+            #print(game.gagnant,action_id_player)
             if game.gagnant==action_id_player:
                 x_train.append(action_grid)
                 y_train.append(action_choice)
@@ -82,7 +82,12 @@ class NeuralNetwork:
             x_train=np.array(x_train)
             y_train=np.array(y_train)
             print(x_train)
-            print(y_train)
+            print(type(x_train))
+            print(type(x_train[0]))
+            print(type(x_train[0][0]))
+            print(type(x_train[0][0][0]))
+            #print(type(x_train))
+            #print(y_train)
             self.model.fit(x_train,y_train,epochs=epochs)
         else:
             raise Exception("Neural Network has no training data.")
