@@ -135,7 +135,7 @@ class Window:
             down=True
         else:
             down=False
-        return (right,up,right,down)
+        return [right,up,right,down]
 
 
     def select(self):
