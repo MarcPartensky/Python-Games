@@ -1,5 +1,9 @@
+from math import pi,sqrt,atan,cos,sin
+mean=lambda x:sum(x)/len(x)
+
+
 class Point:
-    def __init__(self,*args,radius=5,fill=False,color=WHITE):
+    def __init__(self,*args,radius=5,fill=False,color=(255,255,255)):
         """Create a point using x, y, radius, fill and color."""
         self.x=args[0]
         self.y=args[1]
@@ -36,7 +40,6 @@ class Point:
         vn,va=v.polar()
         self.x=s.x+vn*cos(sa+va)
         self.y=s.y+vn*sin(sa+va)
-        print(self.x,self.y)
     def move(self,*step):
         """Move the point using given step."""
         self.x+=step[0]
@@ -44,20 +47,15 @@ class Point:
     def moveTo(self,position):
         """Move the point to position using given position."""
         pass
-    def show(self,window):
+    def show(self,window,color=None,radius=None,fill=None):
         """Show a point using window."""
-        window.draw.circle(window.screen,self.color,[int(self.x),int(self.y)],self.radius,not self.fill)
+        if not color: color=self.color
+        if not radius: radius=self.radius
+        if not fill: fill=self.fill
+        window.draw.circle(window.screen,color,[int(self.x),int(self.y)],radius,not(fill))
     def __add__(self,other):
-        """Add two points together by making the sum of their components."""
-        """ if other.color==self.color:
-            color=self.color
-        else:
-            color=None
-        if other.width=self.width:
-            width=self.width
-        else:
-            width=None
-        if"""
+        """Add the components of 2 objects."""
         return Point(self.x+other[0],self.y+other[1])
     def __sub__(self,other):
+        """Substract the components of 2 objects."""
         return Point(self.x-other[0],self.y-other[1])

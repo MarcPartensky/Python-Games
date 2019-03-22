@@ -111,7 +111,6 @@ class IA(player.Robot) :
         plateau_simulation=deepcopy(self.plateau)
         plateau_simulation.placer_pion(position, self.side)
         side_adversaire=plateau_simulation.obtenir_side_joueur_oppose(self.side)
-        resultat=False
         return self.test_si_le_joueur_side_peut_prendre_position(plateau_simulation, side_adversaire, position)
 
     def obtenirLesPositionsDansZone(self, positions, zone):#Todo, utiliser les fonctions build-in de python

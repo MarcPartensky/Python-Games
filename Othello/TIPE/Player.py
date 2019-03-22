@@ -87,12 +87,12 @@ class Robot(Player):
         Player.__init__(self)
 
     def jouer(self,plateau,fenetre,side):
-        return self.randomPlay(plateau)
-        #return self.main(plateau)#todo verif si c'est bien possible
+        return self.main(plateau)#todo verif si c'est bien possible
 
     def main(self, plateau):
-        """"Methode à surchager"""
-        pass
+        """"Methode à surcharger"""
+        cfg.debug("Random actif, Robot.main n'a pas ete surcharge")
+        return self.randomPlay(plateau)
 
     def old_jouer(self,input,plateau,fenetre,side):
         return self.randomPlay(plateau)

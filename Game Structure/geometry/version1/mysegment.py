@@ -1,5 +1,7 @@
+from myline import Line
+
 class Segment(Line):
-    def __init__(self,p1,p2,width=1,color=WHITE):
+    def __init__(self,p1,p2,width=1,color=(255,255,255)):
         """Create the segment using 2 points, width and color."""
         Line.__init__(self,p1,p2,width,color)
         self.p1=p1
@@ -13,6 +15,20 @@ class Segment(Line):
         """Show the segment using window."""
         window.draw.line(window.screen,self.color,[self.p1.x,self.p1.y],[self.p2.x,self.p2.y],self.width)
     def __len__(self):
+        """Return the number of points."""
+        return 2
+    def __getitem__(self,index):
+        """Return the point corresponding to the index given."""
+        return [self.p1,self.p2][index]
+    def __setitem__(self,index,value):
+        """Change the value the point corresponding value and index given."""
+        if index==0:
+            self.p1==value
+        elif index==1:
+            self.p2==value
+        else:
+            raise Exception("The index given is not valid.")
+    def length(self):
         """Return the length of the segment."""
         x=p1.x-p2.x
         y=p1.y-p2.y

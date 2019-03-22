@@ -31,9 +31,9 @@ class Simulateur:
 
 if __name__=="__main__":
     fenetre=Window(taille=[800,800],fullscreen=False)
-    joueurs=[Beast(3),Robot()]
-    nombre_parties=100
-    affichage=False
+    joueurs=[Robot(),Robot()]
+    nombre_parties=50
+    affichage=True
     simulation=Simulateur(fenetre,joueurs,nombre_parties,affichage)
     simulation()
     print(simulation)

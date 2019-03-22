@@ -1,31 +1,47 @@
+from mypoint import Point
+from myvector import Vector
+from mysegment import Segment
+from myline import Line
+
+from math import sqrt,pi
+
+mean=lambda x:sum(x)/len(x)
+
 class Form:
-    def __init__(self,points,closed=True,fill=False,width=1,color=WHITE):
+    def __init__(self,points,closed=True,fill=False,width=1,color=(255,255,255)):
         """Create the form object using points."""
         self.points=points
         self.closed=closed
         self.fill=fill
         self.width=1
         self.color=color
+
     def __add__(self,point):
         """Add a point to the form."""
         self.points+=point
+
     def __sub__(self,point):
         """Remove a point to the form."""
         self.points.remove(point)
-    def center(self):
+
+    def center(self,color=None):
         """Return the point of the center."""
+        if not color: color=self.color
         mx=mean([p.x for p in self.points])
         my=mean([p.y for p in self.points])
-        return Point(mx,my)
+        return Point(mx,my,color=color)
+
     def sides(self):
         """"Return the list of the form sides."""
         return [Segment(self.points[i%len(self.points)],self.points[(i+1)%len(self.points)],color=self.color,width=self.width) for i in range(len(self.points))]
+
     def show(self,window):
         """Show the form using a window."""
         for point in self.points:
             point.show(window)
         for side in self.sides():
             side.show(window)
+
     def __or__(self,other):
         """Return the bool: (2 sides are crossing)."""
         for myside in self.sides():
@@ -33,6 +49,7 @@ class Form:
                 if myside|otherside:
                     return True
         return False
+
     def convex(self):
         """Return the bool (the form is convex)."""
         center=self.center()
@@ -49,6 +66,7 @@ class Form:
             if angle>pi:
                 return True
         return False
+
     def getSparse(self): #as opposed to makeSparse which keeps the same form and return nothing
         """Return the form with the most sparsed points."""
         center=self.center()
@@ -62,9 +80,11 @@ class Form:
         list1=sorted(list1,key=lambda x:x[0])
         points=[element[1] for element in list1]
         return Form(points)
+
     def makeSparse(self):
         """Change the form into the one with the most sparsed points."""
-        self=self.Sparse()
+        self=self.getSparse()
+
     def __contains__(self,point):
         """Return the bool: (the point is in the form)."""
         x,y=point[0],point[1]
@@ -72,27 +92,35 @@ class Form:
         p2=Point(0,0)
         line=Line(p1,p2)
         line.show(window)
-        print(line.__dict__)
+        #print(line.__dict__)
         for segment in self.sides():
             if segment|line:
                 return True
+
+    def inForm(self,point):
+        for i in range(len(self.points)):
+            A=self.points[i]
+
+
         return False
-    def rotate(self,angle,center=None):
+    def rotate(self,angle,C=None):
         """Rotate the form by rotating its points from the center of rotation.
         Use center of the shape as default center of rotation.""" #Actually not working
-        if not center:
+        if not C:
             C=self.center()
         for i in range(len(self.points)):
             P=self.points[i]
             v=Vector(P.x-C.x,P.y-C.y)
             v.rotate(angle)
             self.points[i]=v(C)
+
     def move(self,*step):
         """Move the object by moving all its points using step."""
         x,y=step[0],step[1]
         for i in range(len(self.points)):
             self.points[i].x+=x
             self.points[i].y+=y
+
     def moveTo(self,position):
         """Move the object to an absolute position."""
         x,y=position[0],position[1]
@@ -102,23 +130,51 @@ class Form:
             vy=self.points[i].y-cy
             self.points[i].x=vx+x
             self.points[i].y=vy+y
+
     def moveUntil(self,position):
         """Move the object to the position until the point is hit."""
         pass
+
     def update(self,input):
         """Update the points."""
         for point in self.points:
             point.update(input)
+
     def __getitem__(self,index):
         """Return the point of index index."""
         return self.points[index]
+
     def __setitem__(self,index,value):
         """Change the points of a form."""
         self.points[index]=value
-    def triangleArea(self,form):
-        """Return the area of a triangle of type form."""
-        a,b,c=form.sides()
-        A=1/4*sqrt(4*a.l**2*b.l**2-(a.l**2+b.l**2-c.l**2)**2)
+
+    def area(self):
+        """Return the area of the form using its own points."""
+        l=len(self.points)
+        if l==0 or l==1:
+            return 0
+        elif l==3:
+            a,b,c=[Vector(segment) for segment in self.sides()]
+            A=1/4*sqrt(4*a.norm()**2*b.norm()**2-(a.norm()**2+b.norm()**2-c.norm()**2)**2)
+            return A
+        else:
+            area=0
+            C=self.center()
+            for i in range(l):
+                A=self.points[i]
+                B=self.points[(i+1)%l]
+                triangle=Form([A,B,C])
+                area+=Form.area(triangle)
+            return area
+
     def __len__(self):
         """Return number of points."""
         return len(self.points)
+
+    def __xor__(self,other):
+        """Return the list of forms that are in the union of 2 forms."""
+        pass
+        
+    def __and__(self,other):
+        """Return the list of forms that are in the intersection of 2 forms."""
+        pass

@@ -1,5 +1,5 @@
 class Line:
-    def __init__(self,p1,p2,width=1,color=WHITE):
+    def __init__(self,p1,p2,width=1,color=(255,255,255)):
         """Create the line using 2 points, width and color."""
         self.width=width
         self.color=color

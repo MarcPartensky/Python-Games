@@ -79,9 +79,9 @@ class NeuralNetwork:
     def train(self,epochs=3):
         if len(self.training_data)>0:
             x_train,y_train=self.training_data
-            x_train=np.array(x_train)
-            y_train=np.array(y_train)
-            print(x_train)
+            x_train=self.convert(x_train)
+            x_train=np.array(self.convert(x_train))
+            y_train=np.array(self.convert(y_train))
             print(type(x_train))
             print(type(x_train[0]))
             print(type(x_train[0][0]))
@@ -91,6 +91,17 @@ class NeuralNetwork:
             self.model.fit(x_train,y_train,epochs=epochs)
         else:
             raise Exception("Neural Network has no training data.")
+
+    def convert(self,tree):
+        if type(tree)==list:
+            tree=[]
+            for element in tree:
+                tree.append(self.convert(element))
+            return tree
+        else:
+            return float(tree)
+
+
 
     def jouer(self,plateau,fenetre,tour):
         input=np.array(plateau.grille)
