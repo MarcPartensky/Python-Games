@@ -5,10 +5,23 @@ mean=lambda x:sum(x)/len(x)
 class Point:
     def __init__(self,*args,radius=5,fill=False,color=(255,255,255)):
         """Create a point using x, y, radius, fill and color."""
-        self.x=args[0]
-        self.y=args[1]
-        self.n=sqrt(self.x**2+self.y**2)
-        self.a=atan(self.y/self.x)
+        args=list(args)
+        if len(args)==1:
+            args=args[0]
+            if type(args)==list or type(args)==tuple:
+                self.x=args[0]
+                self.y=args[1]
+            else:
+                raise Exception("The object used to define the point has not been recognised.")
+        elif len(args)==2:
+            if (type(args[0])==int and type(args[1])==int) or (type(args[0]==float) and type(args[1])==float):
+                self.x=args[0]
+                self.y=args[1]
+            else:
+                raise Exception("The list of objects used to define the point has not been recognised.")
+        else:
+            raise Exception("The list object used to define the point has not been recognised because it contains too many components.")
+
         self.radius=radius
         self.fill=fill
         self.color=color

@@ -3,44 +3,78 @@ from myvector import Vector
 from mysegment import Segment
 from myline import Line
 
+from mycolors import WHITE
+
 from math import sqrt,pi
 
 mean=lambda x:sum(x)/len(x)
 
 class Form:
-    def __init__(self,points,closed=True,fill=False,width=1,color=(255,255,255)):
+    def __init__(self,points,closed=True,fill=False,side_width=1,point_radius=5,point_color=WHITE,side_color=WHITE,area_color=WHITE):
         """Create the form object using points."""
         self.points=points
-        self.closed=closed
+        self.point_radius=point_radius
+        self.point_color=point_color
+        self.side_width=side_width
+        self.side_color=side_color
+        self.area_color=area_color
         self.fill=fill
-        self.width=1
-        self.color=color
 
-    def __add__(self,point):
+    def __iadd__(self,point):
         """Add a point to the form."""
-        self.points+=point
+        self.points.append(point)
+        return self
 
-    def __sub__(self,point):
+    def __isub__(self,point):
         """Remove a point to the form."""
         self.points.remove(point)
+        return self
+
+    def __iter__(self):
+        """Needed in order to allow the client to iterate the points of the form through a for loop."""
+        self.iterator=0
+        return self
+
+    def __next__(self):
+        """Allow the client to iterate the points of the form through a for loop."""
+        if self.iterator < len(self.points):
+            iterator=self.iterator
+            self.iterator+=1
+            return self.points[iterator]
+        else:
+            raise StopIteration
+
 
     def center(self,color=None):
         """Return the point of the center."""
-        if not color: color=self.color
+        if not color: color=self.point_color
         mx=mean([p.x for p in self.points])
         my=mean([p.y for p in self.points])
         return Point(mx,my,color=color)
 
     def sides(self):
         """"Return the list of the form sides."""
-        return [Segment(self.points[i%len(self.points)],self.points[(i+1)%len(self.points)],color=self.color,width=self.width) for i in range(len(self.points))]
+        return [Segment(self.points[i%len(self.points)],self.points[(i+1)%len(self.points)],color=self.side_color,width=self.side_width) for i in range(len(self.points))]
 
-    def show(self,window):
+    def show(self,window,point_color=None,side_color=None,area_color=None,side_width=None,point_radius=None,color=None,fill=None):
         """Show the form using a window."""
+        if color:
+            area_color=color
+            side_color=color
+            point_color=color
+        if not area_color: area_color=self.area_color
+        if not point_color: point_color=self.point_color
+        if not side_color: side_color=self.side_color
+        if not side_width: side_width=self.side_width
+        if not point_radius: point_radius=self.point_radius
+        if not fill: fill=self.fill
+        points=[(p.x,p.y) for p in self.points]
+        if len(points)>1:
+            window.draw.polygon(window.screen,area_color,points,not(fill))
         for point in self.points:
-            point.show(window)
+            point.show(window,color=point_color,radius=point_radius)
         for side in self.sides():
-            side.show(window)
+            side.show(window,color=side_color,width=side_width)
 
     def __or__(self,other):
         """Return the bool: (2 sides are crossing)."""
@@ -174,7 +208,7 @@ class Form:
     def __xor__(self,other):
         """Return the list of forms that are in the union of 2 forms."""
         pass
-        
+
     def __and__(self,other):
         """Return the list of forms that are in the intersection of 2 forms."""
         pass

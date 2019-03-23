@@ -1,4 +1,5 @@
 from myline import Line
+from mypoint import Point
 
 class Segment(Line):
     def __init__(self,p1,p2,width=1,color=(255,255,255)):
@@ -11,9 +12,11 @@ class Segment(Line):
         x=(self.p1.x+self.p2.x)/2
         y=(self.p1.y+self.p2.y)/2
         return Point(x,y,color=self.color)
-    def show(self,window):
+    def show(self,window,color=None,width=None):
         """Show the segment using window."""
-        window.draw.line(window.screen,self.color,[self.p1.x,self.p1.y],[self.p2.x,self.p2.y],self.width)
+        if not color: color=self.color
+        if not width: width=self.width
+        window.draw.line(window.screen,color,[self.p1.x,self.p1.y],[self.p2.x,self.p2.y],width)
     def __len__(self):
         """Return the number of points."""
         return 2

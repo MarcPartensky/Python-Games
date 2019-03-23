@@ -7,8 +7,6 @@ from pygame.locals import *
 import time
 import json
 
-
-
 class Window:
     made=0
     draw=pygame.draw
@@ -199,6 +197,11 @@ class Window:
         x,y=(rcx-wcx,rcy-wcy)
         return (x,y)
 
+    def rename(self,name):
+        """Rename the window using name."""
+        self.name=name
+        pygame.display.set_caption(self.name)
+
 
     def randomColor(self):
         """Return random color."""
@@ -273,6 +276,7 @@ class Window:
     def __del__(self):
         """Executed before the window is destroyed."""
         self.log("Window has been closed.")
+
 
 
 
