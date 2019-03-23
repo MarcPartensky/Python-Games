@@ -45,8 +45,8 @@ class Window:
     def build(self):
         """Creates apparent window."""
         pygame.init()
-        self.info = pygame.display.Info()
-        self.font = pygame.font.SysFont(self.text_font, self.text_size)
+        self.info=pygame.display.Info()
+        self.font=pygame.font.SysFont(self.text_font, self.text_size)
         if self.size is None:
             if self.fullscreen:
                 self.size=[self.info.current_w,self.info.current_h]
@@ -176,14 +176,12 @@ class Window:
 
     def print(self,text,position,size=None,color=None,font=None):
         """Display text on screen using position, size, color and font."""
-        if size is None:
-            size=self.text_size
-        if color is None:
-            color=self.text_color
-        if font is None:
-            font=self.font
-        label = font.render(text, 1, color)
-        self.screen.blit(label, position)
+        if not size: size=self.text_size
+        if not color: color=self.text_color
+        if not font: font=self.text_font
+        font=pygame.font.SysFont(font,size)
+        label=font.render(text,1,color)
+        self.screen.blit(label,position)
 
     def drawRect(self,coordonnates,color):
         """Draw a rectangle on the screen using color and coordonnates relative to window's fiducials."""
