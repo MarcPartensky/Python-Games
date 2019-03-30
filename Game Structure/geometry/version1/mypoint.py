@@ -25,6 +25,12 @@ class Point:
         self.radius=radius
         self.fill=fill
         self.color=color
+    def __call__(self):
+        """Return the coordonnates of the points."""
+        return [self.x,self.y]
+    def __position__(self):
+        """Return the coordonnates of the points."""
+        return [self.x,self.y]
     def __contains__(self,other):
         """Return bool if objects is in point."""
         ox,oy=other[0],other[1]

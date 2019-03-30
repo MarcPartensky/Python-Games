@@ -1,6 +1,7 @@
 import othello
 import mywindow
-import player as Joueur
+from player import Robot,Humain
+from beast import Beast
 
 """
 TOdo :
@@ -34,6 +35,6 @@ Faire mini schema des heritage de classe
 
 if __name__=="__main__":
     fenetre=mywindow.Window(taille=[800,800],set=False,fullscreen=True)
-    jeu=othello.Othello(fenetre, [Joueur.Robot(),Joueur.Robot()])
+    jeu=othello.Othello(fenetre, [Robot(),Beast()])
     #jeu=Othello.Othello(fenetre, [Joueur.Robot(),Joueur.Robot()])
     jeu()

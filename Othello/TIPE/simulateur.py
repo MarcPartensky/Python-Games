@@ -1,6 +1,7 @@
 from mywindow import Window
 from othello import Othello
-from player import Beast,Robot,Humain
+from player import Robot,Humain
+from beast import Beast
 #from neuralnetwork import NeuralNetwork
 
 class Simulateur:

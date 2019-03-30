@@ -4,6 +4,8 @@ from mysegment import Segment
 from mypoint import Point
 from myline import Line
 
+from mywindow import Window
+
 class Vector:
     def polar(position):
         """Return the polar position [norm,angle] using cartesian position [x,y]."""
@@ -14,7 +16,7 @@ class Vector:
         return [position[0]*cos(position[1]),position[0]*sin(position[1])]
 
 
-    def __init__(self,*args,arrow=(3,3),width=1,color=(255,255,255)):
+    def __init__(self,*args,color=(255,255,255),width=1,arrow=[0.1,0.5]):
         """Create a vector."""
         args=list(args)
         if len(args)==1:
@@ -42,17 +44,24 @@ class Vector:
                 raise Exception("The list of objects used to define the vector has not been recognised.")
         else:
             raise Exception("The object used to define the vector has not been recognised.")
-        self.width=width
         self.color=color
+        self.width=width
+        self.arrow=arrow
 
-    def show(self,p,window,color=None):
+
+    def show(self,p,window,color=None,width=None):
         """Show the vector."""
-        if not color:
-            color=self.color
-        p1=Point(p[0],p[1],color=self.color)
-        p2=Point(self.x+p[0],self.y+p[1],color=self.color)
-        s=Segment(p1,p2,width=self.width,color=self.color)
-        s.show(window)
+        if not color: color=self.color
+        if not width: width=self.width
+        q=self(p)
+        v=-self.arrow[0]*self #wtf
+        v1=v%self.arrow[1]
+        v2=v%-self.arrow[1]
+        a=v1(q)
+        b=v2(q)
+        window.draw.line(window.screen,color,p(),q(),width)
+        window.draw.line(window.screen,color,q(),a(),width)
+        window.draw.line(window.screen,color,q(),b(),width)
 
     def __neg__(self):
         """Return the negative vector."""
@@ -68,13 +77,26 @@ class Vector:
         """Return the scalar product between two vectors."""
         return self.x*other.x+self.y*other.y
 
-    def __mul__(self,factor):
+    def __imul__(self,factor):
         """Multiply a vector by a given factor."""
-        if type(factor)==Vector:
-            pass
-        else:
+        if type(factor)==int or type(factor)==float:
             self.x*=factor
             self.y*=factor
+        else:
+            raise Exception("Type "+str(type(factor))+" is not valid. Expected float or int types.")
+
+    def __mul__(self,factor,color=None,width=None,arrow=None):
+        """Multiply a vector by a given factor."""
+        if not color: color=self.color
+        if not width: width=self.width
+        if not arrow: arrow=self.arrow
+        if type(factor)==int or type(factor)==float:
+            return Vector(self.x*factor,self.y*factor,color=color,width=width,arrow=arrow)
+        else:
+            raise Exception("Type "+str(type(factor))+" is not valid. Expected float or int types.")
+
+    __rmul__=__mul__ #Allow front extern multiplication using back extern multiplication with scalars
+
     def __truediv__(self,factor):
         """Multiply a vector by a given factor."""
         if type(factor)==Vector:
@@ -94,6 +116,14 @@ class Vector:
         self.x=n*cos(a)
         self.y=n*sin(a)
 
+    def __mod__(self,angle):
+        """Return the rotated vector using the angle of rotation."""
+        n,a=Vector.polar([self.x,self.y])
+        a+=angle
+        return Vector(n*cos(a),n*sin(a))
+
+    __imod__=__mod__
+
     def __getitem__(self,index):
         """Return x or y value using given index."""
         if index==0:
@@ -110,11 +140,12 @@ class Vector:
 
     def __call__(self,*points):
         """Return points by applying the vector on those."""
-        points=[point+self for point in points]
+        print(points)
+        new_points=[point+self for point in points]
         if len(points)==1:
-            return points[0]
+            return new_points[0]
         else:
-            return points
+            return new_points
 
     def angle(self):
         """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
@@ -131,3 +162,20 @@ class Vector:
     def __invert__(self):
         """Return the unit vector."""
         n,a=self.polar()
+
+if __name__=="__main__":
+    window=Window("Vector")
+    p1=Point(50,100)
+    p2=Point(500,400)
+    p3=Point(300,200)
+    v1=Vector(p1,p2)
+    v2=0.8*v1
+    p4=v2(p1)
+    v2.color=(255,0,0)
+    p4.color=(0,255,0)
+    v1.show(p1,window)
+    v2%=0.3
+    v2.show(p1,window)
+    p2.show(window)
+    p4.show(window)
+    window()

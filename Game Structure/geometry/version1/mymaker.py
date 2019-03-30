@@ -11,8 +11,8 @@ from pygame.locals import *
 
 class Maker(Plane):
     """Form maker is a tool which purpose is to be able to create forms in real time and interact with them."""
-    def __init__(self,forms=[],view=None,theme=None):
-        Plane.__init__(self,view,theme)
+    def __init__(self,forms=[],theme={},view=None):
+        Plane.__init__(self,theme,view)
         self.forms=forms
         self.selection=None
 

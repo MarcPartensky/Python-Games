@@ -6,20 +6,22 @@ class Plane:
         """Create a plane using optionals theme and view."""
         self.createTheme(theme)
         self.createView(view)
-        self.warnings=[0,0,0]
+        self.warnings={"update":0,"show":0,"event":0}
 
     def createTheme(self,theme={}):
         """Initializes the position and the colors for the view of the plane using optional theme."""
-        if "background" in theme: self.background_color=theme["background"]
-        else: self.background_color=(0,0,0)
-        if "grid" in theme: self.grid_colors=theme["grid"]
-        else: self.grid_colors=[(10,10,10),(50,50,50),(100,100,100)]
+        if not "background" in theme: theme["background"]= (0,0,0)
+        if not "grid"       in theme: theme["grid"]=       [(100,100,100),(50,50,50),(10,10,10)]
+        self.theme=theme
 
     def createView(self,view=None):
         """Initializes the position and the units for the view of the plane using optional view."""
+        """View must be a list of length 2."""
         if view:
             self.position= view[0]
             self.units=    view[1]
+            self.default_position= view[0][:]
+            self.default_units=    view[1][:]
         else:
             self.default_position= [ 0, 0]   #position of the center of the view in the plane's coordonnates
             self.default_units=    [40,40]   #units of the conversion from window/plane
@@ -31,7 +33,6 @@ class Plane:
         window.rename("Plane")
         while window.open:
             window.check()
-            window.clear()
             self.eventsPlane(window)
             self.event(window)  #To overload by the client
             self.update(window) #To overload by the client
@@ -41,20 +42,20 @@ class Plane:
 
     def update(self,window):
         """Method to be overloaded in other programs."""
-        if not self.warnings[0]:
-            self.warnings[0]=1
+        if not self.warnings["update"]:
+            self.warnings["update"]=1
             print("The update method needs to be overloaded.")
 
     def event(self,window):
         """Method to be overloaded in other programs."""
-        if not self.warnings[1]:
-            self.warnings[1]=1
+        if not self.warnings["event"]:
+            self.warnings["event"]=1
             print("The event method needs to be overloaded.")
 
     def show(self,window):
         """Method to be overloaded in other programs."""
-        if not self.warnings[2]:
-            self.warnings[2]=1
+        if not self.warnings["show"]:
+            self.warnings["show"]=1
             print("The show method needs to be overloaded.")
 
     def eventsPlane(self,window):
@@ -81,15 +82,15 @@ class Plane:
     def getUnitsColor(self,x):
         """Get the color given a x position."""
         if x%100==0:
-            return self.grid_colors[0]
+            return self.theme["grid"][0]
         elif x%10==0:
-            return self.grid_colors[1]
+            return self.theme["grid"][1]
         else:
-            return self.grid_colors[2]
+            return self.theme["grid"][2]
 
     def showPlane(self,window):
         """Show the elements on screen using the window."""
-        window.clear(self.background_color)
+        window.clear(self.theme["background"])
         self.showGrid(window)
         #self.showUnits(window) #Does not work
 

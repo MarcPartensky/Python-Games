@@ -39,10 +39,12 @@ class Window:
         self.pause_cool_down=1
         self.time=time.time()
         self.pause_time=0.2
+        self.built=False
 
     def build(self):
         """Creates apparent window."""
         pygame.init()
+        self.built=True
         self.info=pygame.display.Info()
         self.font=pygame.font.SysFont(self.text_font, self.text_size)
         if self.size is None:
@@ -164,7 +166,7 @@ class Window:
         if not size: size=self.text_size
         l=len(message)
         letter_size=size/4
-        x=sx//2-letter_size*l//2
+        x=sx//2-4*letter_size*l//7
         y=sy//2-size/3
         return (x,y)
 

@@ -69,7 +69,7 @@ class Form:
         if not point_radius: point_radius=self.point_radius
         if not fill: fill=self.fill
         points=[(p.x,p.y) for p in self.points]
-        if len(points)>1:
+        if len(points)>1 and fill:
             window.draw.polygon(window.screen,area_color,points,not(fill))
         for point in self.points:
             point.show(window,color=point_color,radius=point_radius)

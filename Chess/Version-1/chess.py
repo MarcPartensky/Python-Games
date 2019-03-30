@@ -1,10 +1,12 @@
 from mywindow import *
 from mycolors import *
-from myminimax import *
+#from myminimax import Minimax
 
-from pieces import *
-from board import *
-from player import *
+from pieces import Piece,Horse,Bishop,Tower,Pawn,Queen,King
+from board import Board
+from player import Player
+from human import Human
+from robot import Robot
 
 import json
 import time
@@ -25,9 +27,9 @@ class Chess:
         self.name="Chess"
         self.theme_mode=0
         self.loadThemes()
-        self.window=Window(self.name,[700,700])
+        self.window=Window(name=self.name,size=[700,700])
         self.player1=Human(1)
-        self.player2=Human(2)
+        self.player2=Robot(2)
         self.board=Board()
         self.delta=0.00000001
         self.cursor=None

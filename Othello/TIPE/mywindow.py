@@ -181,9 +181,9 @@ class Window:
         self.screen.blit(picture, position)
 
     def centerText(self,message,taille=None):
+        """Center the text in the middle of the screen."""
         sx,sy=self.taille
-        if not taille:
-            taille=self.taille_du_texte
+        if not taille: taille=self.taille_du_texte
         l=len(message)
         letter_size=taille/4
         x=sx//2-letter_size*l//2
@@ -203,12 +203,9 @@ class Window:
         x,y=position
         pygame.draw.rect(self.screen,self.reverseColor(couleur_de_fond),position+taille,0)
         pygame.draw.rect(self.screen,couleur_de_fond,(x+1,y+1,sx-2,sy-2),0)
-        if not taille:
-            taille=self.taille_du_texte
-        if not color:
-            color=self.text_color
-        if not font:
-            font=self.font
+        if not taille: taille=self.taille_du_texte
+        if not color: color=self.text_color
+        if not font: font=self.font
         label = font.render(text, 1, color)
         self.screen.blit(label, position)
 
@@ -268,25 +265,6 @@ class Window:
         image.fill(color[0:3]+(0,),None,pygame.BLEND_RGBA_ADD)
         return image
 
-    def oldTrace(self,position,color=WHITE,radius=5):
-        """Trace a point on the screen using position, taille, color."""
-        pygame.draw.circle(self.screen,color,position,radius,0)
-        #print("position: ",position)
-
-
-    def trace(self,position,taille,color=WHITE,radius=5,form=0,width=0):
-        """Trace a point on the screen using position, taille, color."""
-        for tool in self.hand:
-            tool.taille=taille
-            tool.position=position
-            tool.points.append(position)
-            tool.color=color
-            tool.radius=radius
-            tool.connect=False
-            tool.form=form
-            tool.width=width
-            tool.draw(self.screen)
-        #print("position: ",position)
 
     def wavelengthToRGB(self,wavelength):
         """Convert wavelength to rgb color type."""
@@ -320,6 +298,11 @@ class Window:
     def __del__(self):
         """Executed before the window is destroyed."""
         self.log("Window has been closed.")
+
+    def __call__(self):
+        """Refresh and pause."""
+        self.flip()
+        self.pause()
 
 
 if __name__=="__main__":
