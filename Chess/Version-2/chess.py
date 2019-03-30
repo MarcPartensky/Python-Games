@@ -185,8 +185,8 @@ if __name__=="__main__":
     directory=os.getcwd()
     #print(directory)
     #print("\n\n")
-    robot=Robot(1,prediction=3)
     human=Human(1)
+    robot=Robot(2,prediction=3)
     players=[human,robot]
     window=Window(build=False,size=[700,700])
     game=Chess(window,players)

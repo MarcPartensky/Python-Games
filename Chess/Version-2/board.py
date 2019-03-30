@@ -256,12 +256,12 @@ class Board:
 
     def removeSuicideMoves(self,dying_piece,choosed_piece,moves):
         new_moves=[]
-        print("In removeSuicideMoves:")
-        print("moves:",moves)
+        #print("In removeSuicideMoves:")
+        #print("moves:",moves)
         #print("dying:",dying)
-        print("dying_piece:",dying_piece)
-        print("choosed_piece:",choosed_piece)
-        print("")
+        #print("dying_piece:",dying_piece)
+        #print("choosed_piece:",choosed_piece)
+        #print("")
         for move in moves:
             dying=self.canDieNextTurn(dying_piece,choosed_piece,move)
             if not dying:
@@ -273,13 +273,13 @@ class Board:
         new_board.choose(choosed_piece,choosed_piece.position,choosed_move)
         enemy_side=new_board.otherSide(dying_piece.side)
         all_enemy_moves=new_board.getSideMoves(enemy_side,1)
-        print("In canDieNextTurn:")
-        print("choosed_piece and choosed_move:",choosed_piece,choosed_move)
-        print("dying_piece:",dying_piece)
-        print("enemy_move:",all_enemy_moves)
-        print("new_board:")
-        print(new_board)
-        print("")
+        #print("In canDieNextTurn:")
+        #print("choosed_piece and choosed_move:",choosed_piece,choosed_move)
+        #print("dying_piece:",dying_piece)
+        #print("enemy_move:",all_enemy_moves)
+        #print("new_board:")
+        #print(new_board)
+        #print("")
         for enemy_move in all_enemy_moves:
             if enemy_move==dying_piece.position:
                 return True
@@ -307,6 +307,7 @@ class Board:
         if not raw: king=self.getById("King",piece.side)
             #moves=self.removeSuicideMoves(king,piece,moves)
         random.shuffle(moves)
+        print(moves)
         return moves
 
     def getRawMoves(self,piece):
@@ -515,10 +516,12 @@ class Board:
 
     def move(self,piece,position,move):
         self.choose(piece,position,move)
+        self.state+=1
         self.checkPromotion(self.action) #Here "check" means verify
         enemy_side=self.otherSide(piece.side)
         if self.isAlive("King",enemy_side):
             self.updateCheck() #Here "check" is the techical chess term
+        #self.state+=1
 
     def choose(self,piece,position,move):
         mx,my=move
@@ -546,8 +549,8 @@ class Board:
             self.grid[my][mx]=piece
         else:
             #The piece is a king
-            print("In choose:")
-            print("piece:",piece)
+            #print("In choose:")
+            #print("piece:",piece)
             if move in self.getRoqueMoves(piece):
                 tower,tower_move=self.getTowerMoveFromRoque(piece,move)
                 tpx,tpy=tower.position
@@ -556,9 +559,9 @@ class Board:
                 self.grid[tpy][tpx]=None
                 tower.state+=1
                 self.grid[ty][tx]=tower
-                print("tower move:")
-                print(tx,ty)
-                print(tpx,tpy)
+                #print("tower move:")
+                #print(tx,ty)
+                #print(tpx,tpy)
             print(move,self.getRoqueMoves(piece))
             print("")
             piece.position=move
@@ -581,7 +584,7 @@ class Board:
             self.piece_selecter=self.grid[y][x]
 
     def updateHistoric(self):
-        self.state+=1
+        #self.state+=1
         self.historic.append(self.action)
         self.grid_historic.append(deepcopy(self.grid))
         self.piece_selecter=None
