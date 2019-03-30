@@ -21,6 +21,7 @@ class Board:
         self.draw=False
         self.winner=None
         self.historic=[]
+        self.grid_historic=[]
         self.action=None
         self.moves_selecter=[]
         self.piece_selecter=None
@@ -118,8 +119,6 @@ class Board:
         x,y=move
         spot=self.alphabet[x%sx]+str(sy-y)
         text="|"+str(state)+"| : "+str(self.colors[side-1])+" "+name+" moved in "+spot
-
-        text+="\n\n"
         return text
 
 
@@ -224,11 +223,11 @@ class Board:
                 new_moves.append(move)
         return new_moves
 
-    def getSideMoves(self,side,level=1):
+    def getSideMoves(self,side,raw=True):
         pieces=self.getSidePieces(side)
         moves=[]
         for piece in pieces:
-            moves+=self.getMoves(piece,piece.position,level)
+            moves+=self.getMoves(piece,piece.position,raw)
         return moves
 
     def removeFromSets(self,set1,set2):
@@ -257,14 +256,14 @@ class Board:
 
     def removeSuicideMoves(self,dying_piece,choosed_piece,moves):
         new_moves=[]
+        print("In removeSuicideMoves:")
+        print("moves:",moves)
+        #print("dying:",dying)
+        print("dying_piece:",dying_piece)
+        print("choosed_piece:",choosed_piece)
+        print("")
         for move in moves:
             dying=self.canDieNextTurn(dying_piece,choosed_piece,move)
-            print("In removeSuicideMoves:")
-            print("dying:",dying)
-            print("dying_piece:",dying_piece)
-            print("choosed_piece:",choosed_piece)
-            print("move:",move)
-            print("")
             if not dying:
                 new_moves.append(move)
         return new_moves
@@ -293,17 +292,27 @@ class Board:
 
 
 
-    def getMoves(self,piece,position,raw=0):
-        print("In getMoves")
-        normal_moves=self.extractMoves(piece,position)
-        print("normal moves",normal_moves)
-        special_moves=self.extractSpecialMoves(piece,position)
-        print("special moves",special_moves)
-        moves=normal_moves+special_moves
-        moves=self.correctMoves(moves)
-        king=self.getById("King",piece.side)
-        if not raw:
-            moves=self.removeSuicideMoves(king,piece,moves)
+    def getMoves(self,piece,position,raw=False):
+        #print("In getMoves")
+        #print("piece:",piece)
+        #print("position:",position)
+        moves=self.extractMoves(piece,position)
+        #print("normal moves",normal_moves)
+        if isinstance(piece,King) or isinstance(piece,Pawn):
+            moves+=self.extractSpecialMoves(piece,position)
+        #print("special moves",special_moves)
+        #print("")
+        #moves=normal_moves+special_moves
+        #moves=self.correctMoves(moves)
+        if not raw: king=self.getById("King",piece.side)
+            #moves=self.removeSuicideMoves(king,piece,moves)
+        random.shuffle(moves)
+        return moves
+
+    def getRawMoves(self,piece):
+        moves=self.extractMoves(piece,piece.position)
+        if isinstance(piece,King) or isinstance(piece,Pawn):
+            moves+=self.extractSpecialMoves(piece,position)
         random.shuffle(moves)
         return moves
 
@@ -333,65 +342,105 @@ class Board:
     def extractSpecialMoves(self,piece,position):
         px,py=position
         sx,sy=self.size
+        moves=[]
+        if isinstance(piece,Pawn):
+            moves+=self.getDiagonalKillMoves(piece)
+            moves+=self.getEnPassantMoves(piece)
+            moves+=self.getTwoStepsMoves(piece)
+        if isinstance(piece,King):
+            moves+=self.getRoqueMoves(piece)
+        return moves
+
+    def getDiagonalKillMoves(self,piece):
         o=((self.state+1)%2)*2-1
         moves=[]
-        if not isinstance(piece,Pawn) and not isinstance(piece,King):
-            return moves
-        if isinstance(piece,Pawn):
-            #Capacity to eat on direct diagonals
-            x,y=(px+1,py+o)
-            if self.inGrid(x,y):
-                entity=self.grid[y][x]
-                if entity is not None:
-                    if entity.side is not piece.side:
-                        moves.append((x,y))
-
-            #Capacity to eat on direct diagonals
-            x,y=(px-1,py+o)
-            if self.inGrid(x,y):
-                entity=self.grid[y][x]
-                if entity is not None:
-                    if entity.side is not piece.side:
-                        moves.append((x,y))
-
-            #Two steps at the begining
-            if piece.state==0:
-                if not self.grid[py+o][px] and not self.grid[py+2*o][px]:
-                    move=(px,py+2*o)
-                    moves.append(move)
-
-            #En passant
-            x,y=(px,py+o)
-            if len(self.historic)>0:
-                piece,position,move=self.historic[-1]
-                if isinstance(piece,Pawn):
-                    ex,ey=position
-                    emx,emy=move
-                    x,y=(px-1,py)
-                    if self.inGrid(x,y):
-                        if (x,y)==(emx,emy) and (ex,ey-o)==(emx,emy):
-                            moves.append((x,y+o))
-                    x,y=(px+1,py)
-                    if self.inGrid(x,y):
-                        if (x,y)==(emx,emy) and (ex,ey-o)==(emx,emy):
-                            moves.append((x,y+o))
-                return moves
-        if isinstance(piece,King):
-            #Roc
-            if piece.state==0 and not piece.check:
-                neighbours=self.getNeighbours(piece)
-                #print("Piece and neighbours:",piece,self.getNeighbours(piece))
-                for neighbour in neighbours:
-                    if isinstance(neighbour,Tower):
-                        if neighbour.state==0:
-                            if neighbour.side is piece.side:
-                                nx,ny=neighbour.position
-                                px,py=piece.position
-                                qx=(nx-px)/abs(nx-px)
-                                position=(px+2*dx,y)
-                                moves.append(neighbour.position)
-                return moves
+        px,py=piece.position
+        x,y=(px-1,py+o)
+        if self.inGrid(x,y):
+            entity=self.grid[y][x]
+            if entity is not None:
+                if entity.side is not piece.side:
+                    moves.append((x,y))
+        x,y=(px+1,py+o)
+        if self.inGrid(x,y):
+            entity=self.grid[y][x]
+            if entity is not None:
+                if entity.side is not piece.side:
+                    moves.append((x,y))
         return moves
+
+
+
+    def getTwoStepsMoves(self,piece):
+        o=((self.state+1)%2)*2-1
+        moves=[]
+        px,py=piece.position
+        if piece.state==0:
+            if not self.grid[py+o][px] and not self.grid[py+2*o][px]:
+                move=(px,py+2*o)
+                moves.append(move)
+        return moves
+
+
+    def getEnPassantMoves(self,piece):
+        o=((self.state+1)%2)*2-1
+        moves=[]
+        px,py=piece.position
+        x,y=(px,py+o)
+        if len(self.historic)>0:
+            piece,position,move=self.historic[-1]
+            if isinstance(piece,Pawn):
+                ex,ey=position
+                emx,emy=move
+                x,y=(px-1,py)
+                if self.inGrid(x,y):
+                    if (x,y)==(emx,emy) and (ex,ey-o)==(emx,emy):
+                        moves.append((x,y+o))
+                x,y=(px+1,py)
+                if self.inGrid(x,y):
+                    if (x,y)==(emx,emy) and (ex,ey-o)==(emx,emy):
+                        moves.append((x,y+o))
+        return moves
+
+    def getRoqueMoves(self,piece):
+        o=((self.state+1)%2)*2-1
+        moves=[]
+        px,py=piece.position
+        if piece.state==0 and not piece.check:
+            neighbours=self.getNeighbours(piece)
+            for neighbour in neighbours:
+                if isinstance(neighbour,Tower):
+                    if neighbour.state==0:
+                        if neighbour.side is piece.side:
+                            nx,ny=neighbour.position
+                            px,py=piece.position
+                            dx=int((nx-px)/abs(nx-px))
+                            position=(px+2*dx,py)
+                            moves.append(position)
+        return moves
+
+    def getTowerMoveFromRoque(self,piece,move):
+        px,py=piece.position
+        mx,my=move
+        if abs(mx-px)!=2:
+            return None
+        else:
+            o=int((mx-px)/(abs(mx-px)))
+            print("o:",o)
+            tower_move=(px+o,py)
+            x=px+o
+            while abs(x)<10:
+                print("x:",x)
+                print("entity:",self.grid[py][x])
+                tower=self.grid[py][x]
+                if tower:
+                    return (tower,tower_move)
+                x+=o
+            return None
+
+
+
+
 
     def getNeighbours(self,piece):
         vectors,norm=piece.moves
@@ -446,16 +495,17 @@ class Board:
 
     def canKill(self,killer):
         moves=self.getMoves(killer,killer.position)
-        print("moves:",moves)
+        #print("moves:",moves)
         victims=[]
         for move in moves:
             x,y=move
+            #print("canKill move:",move)
             entity=self.grid[y][x]
             if entity:
                 victims.append(entity)
-        print("killer:",killer)
-        print("victims:",victims)
-        print("")
+        #print("killer:",killer)
+        #print("victims:",victims)
+        #print("")
         return victims
 
 
@@ -473,16 +523,16 @@ class Board:
     def choose(self,piece,position,move):
         mx,my=move
         px,py=position
-        piece.state+=1
         self.action=[piece,position,move]
-        piece.position=move
         o=((self.state+1)%2)*2-1
-        print("In choose:")
-        print("piece:",piece)
-        print("position:",position)
-        print("move:",move)
-        if not isinstance(piece,Pawn) and not isinstance(piece,Tower):
+        #print("In choose:")
+        #print("piece:",piece)
+        #print("position:",position)
+        #print("move:",move)
+        if not isinstance(piece,Pawn) and not isinstance(piece,King):
+            piece.position=move
             self.grid[py][px]=None
+            piece.state+=1
             self.grid[my][mx]=piece
         elif isinstance(piece,Pawn):
             #prise en passant
@@ -490,26 +540,50 @@ class Board:
                 self.grid[py][mx]=None
             if mx==px-1 and my==py+o:
                 self.grid[py][mx]=None
+            piece.position=move
             self.grid[py][px]=None
+            piece.state+=1
             self.grid[my][mx]=piece
         else:
-            #The piece is a tower
+            #The piece is a king
+            print("In choose:")
+            print("piece:",piece)
+            if move in self.getRoqueMoves(piece):
+                tower,tower_move=self.getTowerMoveFromRoque(piece,move)
+                tpx,tpy=tower.position
+                tx,ty=tower_move
+                tower.position=tower_move
+                self.grid[tpy][tpx]=None
+                tower.state+=1
+                self.grid[ty][tx]=tower
+                print("tower move:")
+                print(tx,ty)
+                print(tpx,tpy)
+            print(move,self.getRoqueMoves(piece))
+            print("")
+            piece.position=move
             self.grid[py][px]=None
+            piece.state+=1
             self.grid[my][mx]=piece
+
 
 
 
     def reverseMove(self):
-        if self.state>1:
-            self.grid[y][x]=None
-            del self.historic[-1]
+        if len(self.historic)>1 and len(self.grid_historic)>1:
             self.state-=1
+            del self.historic[-1]
             self.action=self.historic[-1]
-            self.piece_selecter,position,move=self.historic[-1]
+            del self.grid_historic[-1]
+            self.grid=self.grid_historic[-1]
+            piece,position,move=self.historic[-1]
+            x,y=position
+            self.piece_selecter=self.grid[y][x]
 
     def updateHistoric(self):
         self.state+=1
         self.historic.append(self.action)
+        self.grid_historic.append(deepcopy(self.grid))
         self.piece_selecter=None
         self.moves_selecter=[]
         self.moving=self.action[0]

@@ -107,10 +107,15 @@ class Chess:
             self.click=self.window.click()
             self.cursor=self.board.point(self.window)
             keys=pygame.key.get_pressed()
-            if keys[K_RSHIFT] or keys[K_LSHIFT]:
+            if keys[K_LEFT] or keys[K_DOWN]:
                 self.board.reverseMove()
                 typing=True
-            if keys[K_SPACE]:
+            if keys[K_RSHIFT] or keys[K_SPACE]:
+                self.loadThemes()
+                l=len(self.themes)
+                self.theme_mode=(self.theme_mode+l-1)%l
+                typing=True
+            if keys[K_LSHIFT]:
                 self.loadThemes()
                 self.theme_mode=(self.theme_mode+1)%len(self.themes)
                 typing=True
@@ -181,7 +186,8 @@ if __name__=="__main__":
     #print(directory)
     #print("\n\n")
     robot=Robot(1,prediction=3)
-    players=[Human(1),Human(2)]
+    human=Human(1)
+    players=[human,robot]
     window=Window(build=False,size=[700,700])
     game=Chess(window,players)
     game()
