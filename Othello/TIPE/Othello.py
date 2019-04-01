@@ -60,7 +60,7 @@ class Othello:
         self.theme=[self.couleur_grille,self.couleur_pieces,self.couleur_mouvement]
         self.joueurs=liste_joueur
         for compteur in range(len(self.joueurs)):
-            self.joueurs[compteur].side=compteur
+            self.joueurs[compteur].initialisation(compteur)# i.e. : self.joueurs[compteur].side=compteur
         self.plateau=Plateau.Board(self.theme,len(self.joueurs))
         self.state=0
         self.tour=self.state%self.plateau.nombre_joueurs
@@ -72,6 +72,7 @@ class Othello:
     def __call__(self):
         self.afficher()
         #cfg.debug(self.joueurs)
+
         while self.fenetre.open and not self.plateau.gagne:
             self.fenetre.check()
             self.faireTour()
@@ -118,11 +119,13 @@ class Othello:
         self.afficher()
         self.state+=1
         if len(self.plateau.mouvements)>=1:#Si des moves sont possibles
-            choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre, self.tour)
+            #time.sleep(1)
+            choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre)
             if not choix_du_joueur:
                 return None
             self.plateau.placerPion(choix_du_joueur,joueur_actif.side)
-            #if self.affichage: self.plateau.afficherAnimationPion(self.fenetre,choix_du_joueur)
+            #if self.affichage:
+            self.plateau.afficherAnimationPion(self.fenetre,choix_du_joueur)
             self.historique.append([self.plateau.grille,joueur_actif.side,choix_du_joueur])
         else :
             #Si aucun mouvement possible on demane l'avis du joueur_actif

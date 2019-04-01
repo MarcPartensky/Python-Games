@@ -2,6 +2,7 @@ from mywindow import Window
 from othello import Othello
 from player import Robot,Humain
 from beast import Beast
+from ia import IA
 #from neuralnetwork import NeuralNetwork
 
 class Simulateur:
@@ -32,9 +33,9 @@ class Simulateur:
 
 if __name__=="__main__":
     fenetre=Window(taille=[800,800],fullscreen=False)
-    joueurs=[Robot(),Robot()]
+    joueurs=[IA(),Beast(3)]
     nombre_parties=50
-    affichage=True
+    affichage=False
     simulation=Simulateur(fenetre,joueurs,nombre_parties,affichage)
     simulation()
     print(simulation)

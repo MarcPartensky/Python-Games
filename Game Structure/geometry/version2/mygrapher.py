@@ -1,5 +1,5 @@
 from mywindow import Window
-from myplane2 import Plane
+from myplane import Plane
 from mycolors import *
 
 from math import cos,sin,exp
@@ -20,6 +20,7 @@ class Grapher(Plane):
 
     def show(self,window):
         """Show the elements on screen using the window."""
+        self.showGrid(window)
         self.showFunctions(window)
 
 

@@ -55,6 +55,15 @@ class Player:
     def __init__(self):
         self.choix=None
 
+    def initialisation(self, side):
+        self.side = side
+        self.cote=side#todo faire changement partout
+        self.cote_oppose=1-self.side#todo
+
+    def reinitialiser(self, plateau):
+        pass
+
+
 class Humain(Player):
     def __init__(self):
         Player.__init__(self)
@@ -69,7 +78,7 @@ class Humain(Player):
                     self.choix=position
         return self.choix
 
-    def jouer(self,plateau,fenetre,side):
+    def jouer(self,plateau,fenetre):
         while fenetre.open:
             fenetre.check()
             if bool(pygame.mouse.get_pressed()[0]):
@@ -84,7 +93,7 @@ class Robot(Player):
     def __init__(self):
         Player.__init__(self)
 
-    def jouer(self,plateau,fenetre,side):
+    def jouer(self,plateau,fenetre):
         return self.main(plateau)#todo verif si c'est bien possible
 
     def main(self, plateau):

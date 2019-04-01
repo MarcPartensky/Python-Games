@@ -16,16 +16,17 @@ class Beast(Player): #a ete rajoute pour faire des tests, ne sera pas present a 
                         [-2,-2,-1,-1,-1,-1,-2,-2],
                         [ 9,-2, 1, 1, 1, 1,-2, 9]]
 
-    def jouer(self,board,window,side):
+    def jouer(self,board,window):
         self.board=board
-        self.side=side
+        #self.side=side
         tree=self.treePlay(board.grille,self.side)
+        print("Beast:",tree)
         if self.container(tree):
             minimax=Minimax(tree,start=0)
             result=minimax()
         else:
             result=None
-        if result is not None:
+        if result:
             return board.mouvements[result]
         else:
             return choice(board.mouvements)

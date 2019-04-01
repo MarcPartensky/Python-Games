@@ -55,6 +55,7 @@
 # --coding:utf-8--
 
 from outils import intersection
+import outils
 from outils import linearBijection as bijection
 import mycolors as couleur
 import config as cfg
@@ -125,7 +126,9 @@ class Board:
         """Renvoie la liste de la positione de tout les pions"""
         return self.obtenirPions(range(self.nombre_joueurs))
 
+
     def obtenirPions(self,cotes):
+
         """Obtenir toute les position de toutes les pieces de cotes de joueurs"""
         if not isinstance(cotes,list):
             cotes=[cotes]
@@ -139,6 +142,16 @@ class Board:
                         positions.append([x,y])
         return positions
 
+    def obtenirNombrePionsJoueur(self, cote):#Todo à optimiser
+        nombre=0
+        sx, sy = self.taille
+        for y in range(sy):
+            for x in range(sx):
+                if self.estCaseJoueur((x,y), cote) :
+                    nombre+=1
+        return nombre
+
+
     def obtenirEnvironnement(self,positions):
         """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
         environnement=[]
@@ -151,7 +164,7 @@ class Board:
                 if self.estDansGrille([x,y]):
                     if self.estCaseVide([x,y]) :
                         environnement.append([x,y])
-        environnement=list(intersection(environnement))
+        environnement=list(outils.intersection_(environnement))
         return environnement
 
     def insererPion(self,positions,cote) :
@@ -173,7 +186,7 @@ class Board:
     def placerPion(self,position,cote):
         """Place un pion sur le plateau"""
         self.insererPion(position,cote)
-        self.conquerir(position,cote)
+        return self.conquerir(position,cote)
 
     def estCaseVide(self, position):
         """Determine si la case a la position donnee est une case vide."""
@@ -240,11 +253,13 @@ class Board:
         for direction in directions:
             ligne=self.obtenirLigne(position,direction)
             self.conquerirLigne(p_side,ligne)
+        return True
 
     def obtenirLigne(self,position,vecteur):
         """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
         line=[]
         vx,vy=vecteur
+        #cfg.debug(position)
         x,y=position
         while self.estDansGrille([x,y]):
             x+=vx
