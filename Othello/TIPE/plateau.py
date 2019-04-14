@@ -42,7 +42,8 @@
 #   17.  estMouvementValide   ...................................... ligne 191
 #   18.  estMouvementValideDansLigne   ............................. ligne 202
 #   19.  conquerir   ............................................... ligne 220
-#   20.  obtenirLigne   ............................................ ligne 228
+#   19.  obtenirLigneInclus ........................................ ligne ..
+#   20.  obtenirLigneExclus   ...................................... ligne 228
 #   21.  conquerirLigne   .......................................... ligne 239
 #   22.  manger   .................................................. ligne 256
 #   24.  afficher   ................................................ ligne 261
@@ -124,9 +125,7 @@ class Plateau:
         #Lorsqu'on utilise cette fonction il est inutile de vérifier si le plateau est complet, celle-ci se comportera comme attendue.
         jouable=False
         for i in range(self.nombre_de_joueurs):
-            log("i:",i)
             coups=self.obtenirMouvementsValides(i)
-            log("coups valides:",coups)
             if len(coups)>0:
                 jouable=True
                 break
@@ -138,20 +137,18 @@ class Plateau:
         l'ensemble des coups qui sont possibles. Cela permet plus d'efficacité
         dans l'exécution du code."""
         complet=self.estComplet() #Détermine si le plateau est complet
-        log("complet:",complet)
         if complet: #S'il est complet alors la partie est finie
             return True
         else: #Sinon on peut vérifier si celui-ci est jouable.
             jouable=self.estJouable() #Détermine si le plateau est jouable
-            log("jouable:",jouable)
             return not(jouable) #Si le plateau n'est pas jouable alors la partie est finie
 
     def obtenirCoteGagnant(self):
         """Renvoie le gagnant de la partie au stade actuel."""
+        pions0=self.obtenirPions(0) #Récupère les positions (x,y) pions du joueur0
         pions1=self.obtenirPions(1) #Récupère les positions (x,y) pions du joueur1
-        pions2=self.obtenirPions(2) #Récupère les positions (x,y) pions du joueur2
-        compte_des_pions=(len(pions1),len(pions2))
-        if len(pions1)!=len(pions2):
+        compte_des_pions=(len(pions0),len(pions1))
+        if len(pions0)!=len(pions1):
             cote_gagnant=compte_des_pions.index(max(compte_des_pions)) #Détermine un gagnant meme si la partie n'est pas encore finie
         else:
             cote_gagnant=None
@@ -173,11 +170,6 @@ class Plateau:
                     self.gagne=False
                     break
         return self.gagne
-
-    def obtenirPositionsPions(self):
-        """Renvoie la liste de la positione de tout les pions."""
-        return self.obtenirPions(range(self.nombre_de_joueurs))
-
 
     def obtenirPions(self,cotes):
         """Obtenir toute les position de toutes les pieces de cotes de joueurs"""
@@ -205,6 +197,7 @@ class Plateau:
 
     def obtenirEnvironnement(self,positions):
         """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
+        if type(positions)!=list: positions=[positions]
         environnement=[]
         directions=self.obtenirDirections()
         for position in positions:
@@ -218,10 +211,40 @@ class Plateau:
         environnement=list(set(environnement))
         return environnement
 
+    def obtenirAlentours(self,positions):
+        """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
+        if type(positions)!=list: positions=[positions]
+        environnement=[]
+        directions=self.obtenirDirections()
+        for position in positions:
+            px,py=position
+            for pas in directions:
+                stx,sty=pas
+                x,y=(px+stx,py+sty)
+                if self.estDansGrille((x,y)):
+                    environnement.append((x,y))
+        environnement=list(set(environnement))
+        return environnement
+
+    def obtenirEnvironnement(self,positions):
+        """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
+        if type(positions)!=list: positions=[positions]
+        environnement=[]
+        directions=self.obtenirDirections()
+        for position in positions:
+            px,py=position
+            for pas in directions:
+                stx,sty=pas
+                x,y=(px+stx,py+sty)
+                if not self.estDansGrille((x,y)):
+                    if self.estCaseVide((x,y)) :
+                        environnement.append((x,y))
+        environnement=list(set(environnement))
+        return environnement
+
     def insererPion(self,positions,cote) :
         """insererPion insere un pion dans la grille sans se soucier de conquerir le territoire"""
-        if not type(positions)==list: positions=[positions]
-        log(positions)
+        if type(positions)!=list: positions=[positions]
         for position in positions:
             x,y=position
             self.grille[y][x]=cote
@@ -254,13 +277,10 @@ class Plateau:
         cote=self.obtenirCoteOppose(joueur_cote)
         positions=self.obtenirPions(cote)
         positions_possibles=self.obtenirEnvironnement(positions)
-        log("positions_possibles:",positions_possibles)
         mouvements_valides=[]
         for position_possible in positions_possibles:
-            log(".positions_possible:",position_possible)
             if self.estMouvementValide(position_possible,joueur_cote):
                 mouvements_valides.append(position_possible)
-        log("mouvements_valides:",mouvements_valides)
         return mouvements_valides
 
     def estMouvementValide(self,mouvement,cote):
@@ -268,24 +288,33 @@ class Plateau:
         directions=self.obtenirDirections()
         resultat=False
         for direction in directions:
-            log("..direction",direction)
-            ligne=self.obtenirLigne(mouvement,direction)
+            ligne=self.obtenirLigneExclus(mouvement,direction)
             validite=self.estMouvementValideDansLigne(cote,ligne)
             if validite:
                 resultat=True
                 break
         return resultat
 
-    def obtenirLigne(self,position,vecteur):
+    def obtenirLigneInclus(self,position,vecteur):
         """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
-        ligne=[]
         vx,vy=vecteur
         x,y=position
+        ligne=[(x,y)]
         while self.estDansGrille((x,y)):
             x+=vx
             y+=vy
             ligne.append((x,y))
-        log("...ligne:",ligne)
+        return ligne
+
+    def obtenirLigneExclus(self,position,vecteur):
+        """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
+        vx,vy=vecteur
+        x,y=position
+        ligne=[]
+        while self.estDansGrille((x,y)):
+            x+=vx
+            y+=vy
+            ligne.append((x,y))
         return ligne
 
     def estMouvementValideDansLigne(self,cote,ligne):
@@ -307,13 +336,12 @@ class Plateau:
                         possible=True
                 else: #Sinon la case est vide et on arrete la vérification
                     break
-
-        log("....valide:",valide)
         return valide
 
     def obtenirDirections(self):
         """Recupere les directions avec les vecteurs orientés selon chaque axe."""
-        directions=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
+        #directions=[(x,y) for x in range(-1,2) for y in range(-1,2) if (x,y)!=(0,0)]
+        directions=[(1,0),(1,1),(0,1),(-1,1),(-1,0),(-1,-1),(0,-1),(1,-1)]
         return directions
 
     def conquerir(self,position,p_cote):
@@ -321,7 +349,7 @@ class Plateau:
         retouner les autres pions"""
         directions=self.obtenirDirections()
         for direction in directions:
-            ligne=self.obtenirLigne(position,direction)
+            ligne=self.obtenirLigneExclus(position,direction)
             self.conquerirLigne(p_cote,ligne)
         return True
 
@@ -356,22 +384,36 @@ class Plateau:
 
     def afficherDecorationGrille(self,fenetre):
         """Affiche les 4 points pour délimiter le carré central du plateau."""
-        pass #A Valentin de faire, son expérience dans le domaine est sans égal.
+        pass #A Valentin de faire, son expérience dans le domaine est sans égal
 
-    def colorerCase(self,position_plateau,couleur,fenetre) :
+    def afficherMessage(self,message,position,couleur,fenetre):
+        """Affiche un message en utilisant une position plateau, une couleur, et une fenetre."""
+        x,y=position
+        position=(x-3/7,y-2/5) #Déplacement arbitraire
+        position=self.obtenirPositionBrute(position,fenetre)
+        fenetre.drawText(message,position,couleur)
+
+    def colorerCase(self,positions,couleur,fenetre):
         """Colorie une case du plateau d'une certaine couleur en affichant les contours d'un carre de couleur.
         Cette fonction est utile pour debug.
         Utilise la position dans le systeme de coordonnees du plateau, une couleur et une fenetre."""
-        x,y=self.obtenirPositionBrute(position_plateau,fenetre)
-        wsx,wsy=fenetre.taille #Taille de la fenetre en coordonnees de la fenetre
-        sx,sy=self.taille #Taille du plateau en coordonnes du plateau
-        cx=wsx/sx #Taille d'une case en x en coordonnees de la fenetre
-        cy=wsy/sy #Taille d'une case en y en coordonnees de la fenetre
-        mx=x-cx//2+1 #Position d'une case en x en coordonnees de la fenetre
-        my=y-cy//2+1 #Position d'une case en y en coordonnees de la fenetre
-        for i in range(0,4):
-            fenetre.draw.rect(fenetre.screen,couleur,[mx+i,my+i,cx-2*i,cy-2*i],1)
+        if not type(positions) is list: positions=[positions]
+        for position in positions:
+            x,y=self.obtenirPositionBrute(position,fenetre)
+            wsx,wsy=fenetre.taille #Taille de la fenetre en coordonnees de la fenetre
+            sx,sy=self.taille #Taille du plateau en coordonnes du plateau
+            cx=wsx/sx #Taille d'une case en x en coordonnees de la fenetre
+            cy=wsy/sy #Taille d'une case en y en coordonnees de la fenetre
+            mx=x-cx//2+1 #Position d'une case en x en coordonnees de la fenetre
+            my=y-cy//2+1 #Position d'une case en y en coordonnees de la fenetre
+            for i in range(2,6):
+                fenetre.draw.rect(fenetre.screen,couleur,[mx+i,my+i,cx-2*i,cy-2*i],1)
 
+    def colorerLigne(self,ligne,couleur,fenetre):
+        """Colorie la ligne."""
+        log("colorer:ligne:",ligne)
+        ligne=outils.obtenirLigne(ligne[0],ligne[-1])
+        self.colorerCase(ligne,couleur,fenetre)
 
     def afficherFond(self,fenetre):
         """Affiche un fond colore."""

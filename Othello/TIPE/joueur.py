@@ -165,3 +165,22 @@ class Robot(Joueur):
         else: #Sinon dans la plupart des cas on affiche uniquement son type.
             text="Joueur Robot"
         return text
+
+class Developpeur(Joueur):
+    def __init__(self):
+        super().__init__()
+
+    def jouer(self,plateau,fenetre):
+        """Le joueur choisi un coup parmi ceux que le plateau lui propose et peux le sélectionner a l'aide de la fenêtre."""
+        while fenetre.open:
+            fenetre.check()
+            curseur=fenetre.point()#Renvoie les coordonnees du curseur
+            position=plateau.obtenirPositionPlateau(curseur,fenetre) #Transforme les coordonnees du curseur dans le systeme de coordonnees du plan
+            plateau.afficher(fenetre)
+            plateau.colorerCase(position,couleurs.BLEU,fenetre)
+            fenetre.flip()
+            click=fenetre.click()
+            if click:
+                self.choix=position
+                break
+        return self.choix

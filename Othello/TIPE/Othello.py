@@ -62,7 +62,7 @@ class Othello:
         if fenetre:
             self.chargerFenetre(fenetre) #Charge une fenetre existante
             self.chargerTheme(theme) #Charge un theme même si celui-ci est None
-            log(self.fenetre,self.theme)
+            log("Fenetre et theme:",self.fenetre,self.theme)
             self.plateau=Plateau(theme=self.theme)
         else:
             self.fenetre=None
@@ -106,6 +106,7 @@ class Othello:
         """Determine le gagnant de la partie a la fin du jeu."""
         jouable=self.plateau.estJouable()
         cote_gagnant=self.plateau.obtenirCoteGagnant()
+        print(cote_gagnant)
         #Faire attention au fait que le plateau ne connait que des cotés, et à
         #aucun moment il ne possède les vrais joueurs comme attributs.
         #Effectivement, ce sont les joueurs qui utilise le plateau et non l'inverse.

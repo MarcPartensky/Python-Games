@@ -1,12 +1,10 @@
 import random
+from config import log
 import config
 
 def intersection_(liste):#todo revoir
-    for i in range(len(liste)):
-        liste[i]=tuple(liste[i])
-    liste=list(frozenset(liste))
-    for i in range(len(liste)):
-        liste[i]=list(liste[i])
+    """Intersection."""
+    liste=list(set(liste))
     return liste
 
 def linearBijection(x,ensemble_entree,ensemble_sortie):
@@ -62,6 +60,63 @@ exemple :
     elif len(args)==2:
         return intersection2(args[0], args[1])
     return intersection(intersection2(args[0], args[1]), *args[2:])
+
+
+def arrangementsConsecutifs(liste,n):
+    """Renvoie la liste des arrangements consécutifs de taille n."""
+    arrangements=[]
+    for i in range(len(liste)):
+        arrangement=[]
+        for j in range(n):
+            arrangement.append(liste[(i+j)%n])
+        arrangements.append(arrangement)
+    return arrangements
+
+def estRemplie(ligne,composante):
+    """Determine si une ligne est remplie d'une même composante."""
+    resultat=True
+    for element in ligne:
+        if element!=composante:
+            resultat=False
+            break
+    return resultat
+
+def vecteur(arrivee,depart):
+    """Renvoie le vecteur obtenu par les 2 positions"""
+    vecteur=tuple([a-d for (a,d) in zip(arrivee,depart)])
+    return vecteur
+
+def pgcd(a,b):
+    """Calcul du 'Plus Grand Commun Diviseur' entre les 2 nombres entiers a et b."""
+    if b==0:
+        return a
+    else:
+        r=a%b
+        return pgcd(b,r)
+
+def obtenirLigne(position1,position2):
+    """Renvoie la ligne dont les positions position1 et position2 sont les extrémités."""
+    p1x,p1y=position1
+    p2x,p2y=position2
+    vx,vy=p2x-p1x,p2y-p1y
+    p=pgcd(vx,vy)
+    log("p:",p)
+    if p==0: return [position1,position2]
+    vx//=p
+    vy//=p
+    log("p1x,p1y:",p1x,p1y)
+    log("vx,vy:",vx,vy)
+    ligne=[]
+    for i in range(p+1):
+        position=(p1x+i*vx,p1y+i*vy)
+        log("position:",position)
+        ligne.append(position)
+    #ligne=[position1,position2]
+    return ligne
+
+print(obtenirLigne((1,2),(5,6)))
+
+print(estRemplie([1,1,1,2,1],1))
 
 #print(intersection([1,2,3],[2,3],[5,3,4]))
 #print(intersection([(1,2),(3,4)],[(1,2),(2,2)]))

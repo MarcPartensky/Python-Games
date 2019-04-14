@@ -34,8 +34,7 @@ class Window:
         self.UP    = 1
         self.LEFT  = 2
         self.DOWN  = 3
-        if self.taille is None:
-            self.taille=(self.info.current_w//2,self.info.current_h//2)
+        if not self.taille: self.taille=(self.info.current_w//2,self.info.current_h//2)
         #self.mouse_position=pygame.mouse.get_pos()
         #self.mouse_click=bool(pygame.mouse.get_pressed()[0])
         self.selecter_color=self.reverseColor(self.couleur_de_fond)
@@ -199,15 +198,22 @@ class Window:
 
     def print(self,text,position,taille=None,color=None,couleur_de_fond=None,font=None):
         """Display text on screen using position, taille, color and font."""
-        sx,sy=taille
-        x,y=position
-        pygame.draw.rect(self.screen,self.reverseColor(couleur_de_fond),position+taille,0)
-        pygame.draw.rect(self.screen,couleur_de_fond,(x+1,y+1,sx-2,sy-2),0)
         if not taille: taille=self.taille_du_texte
         if not color: color=self.text_color
         if not font: font=self.font
-        label = font.render(text, 1, color)
-        self.screen.blit(label, position)
+        sx,sy=taille
+        x,y=position
+        pygame.draw.rect(self.screen,self.reverseColor(couleur_de_fond),list(position)+list(taille),0)
+        pygame.draw.rect(self.screen,couleur_de_fond,(x+1,y+1,sx-2,sy-2),0)
+        label=font.render(text,1,color)
+        self.screen.blit(label,position)
+
+    def drawText(self,text,position,couleur,taille=20):
+        """Display text on screen."""
+        font=pygame.font.SysFont(self.text_font,taille)
+        label=font.render(text,1,couleur)
+        self.screen.blit(label,position)
+
 
     def drawRect(self,coordonnates,color):
         """Draw a rectangle on the screen using color and coordonnates relative to window's fiducials."""
