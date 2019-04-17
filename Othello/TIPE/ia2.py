@@ -14,19 +14,14 @@ from mywindow import Window
 class IA(Joueur):
     def __init__(self):
         """Creer une instance de joueur."""
+        self.vitesse_demonstration=0.1
         super().__init__()
-        self.vitesse_demonstration=0.2
+        #Vitesse moyenne de démonstration
 
     def jouer(self,plateau,fenetre):
         """Renvoie le choix du joueur et le sauvegarde en attribut."""
-        fenetre.clear()
-        plateau.afficher(fenetre)
-        for i in range(2):
-            pions=self.obtenirTousLesPionsDefinitivementStables(plateau,i,fenetre)
-            plateau.presenter(pions,plateau.pieces_couleur[i],fenetre,message="stables",pause=False,clear=False)
-        fenetre.attendre()
+        self.presenterPionsStables(plateau,fenetre)
         choix=self.jouerAleatoire(plateau)
-        log("pions definitivement stables:",pions)
         self.choix=choix
         return choix
 
@@ -34,6 +29,26 @@ class IA(Joueur):
         """Joue aleatoirement dans le plateau."""
         mouvements=plateau.obtenirMouvementsValides(self.cote)
         return random.choice(mouvements)
+
+    def presenterPionsStables(self,plateau,fenetre):
+        """Presente les pions stables a l'ecran en les trouvant, cela s'effectue a l'aide du plateau et de la fenetre."""
+        fenetre.clear()
+        plateau.afficher(fenetre)
+        tous_les_pions=[]
+        for i in range(2):
+            pions=self.obtenirTousLesPionsDefinitivementStables(plateau,i,fenetre)
+            tous_les_pions.append(pions)
+            plateau.presenter(pions,plateau.pieces_couleur[i],fenetre,message="pions stables",pause=False)
+            if pions:
+                fenetre.attendre(self.vitesse_demonstration)
+        log("pions definitivement stables:",tous_les_pions)
+        fenetre.clear()
+        plateau.afficher(fenetre)
+        for i in range(2):
+            plateau.presenter(tous_les_pions[i],plateau.pieces_couleur[i],fenetre,message="pions stables",pause=False,clear=False)
+        if tous_les_pions.count([])!=2:
+            fenetre.attendre() #Par défaut la fenetre attend 1 seconde
+
 
     def compterPions(self,plateau,cote=None):
         """Compte les pions de tel couleur, par defaut compte ses propres pions."""

@@ -1,10 +1,15 @@
 from myminimax import Minimax
-from joueur import Joueur
+#from joueur import Joueur
+from ia2 import IA
 
 from copy import deepcopy
 from random import choice
 
-class BruteForce(Joueur): #a ete rajoute pour faire des tests, ne sera pas present a la fin du projet
+from config import log
+import config as cfg
+
+
+class BruteForce(IA): #a ete rajoute pour faire des tests, ne sera pas present a la fin du projet
     def __init__(self,level=1):
         self.level=level
         self.advantage=[[ 9,-2, 1, 1, 1, 1,-2, 9],
@@ -15,12 +20,14 @@ class BruteForce(Joueur): #a ete rajoute pour faire des tests, ne sera pas prese
                         [ 1,-1, 0, 0, 0, 0,-1, 1],
                         [-2,-2,-1,-1,-1,-1,-2,-2],
                         [ 9,-2, 1, 1, 1, 1,-2, 9]]
+        super().__init__()
 
     def jouer(self,board,window):
+        self.presenterPionsStables(board,window)
         self.board=board
         #self.cote=cote
         tree=self.treePlay(board.grille,self.cote)
-        print("[BruteForce]:",tree)
+        log("[BruteForce]: arbre des possibilitees",tree)
         if self.container(tree):
             minimax=Minimax(tree,start=0)
             result=minimax()

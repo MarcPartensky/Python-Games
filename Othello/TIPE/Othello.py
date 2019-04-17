@@ -93,7 +93,6 @@ class Othello:
         while not self.plateau.estFini():
             if self.fenetre:
                 self.fenetre.check()
-                log("fenetre ouverte:",self.fenetre.open)
                 if not self.fenetre.open: break
                 self.afficher()
             self.faireTour()
