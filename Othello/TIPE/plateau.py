@@ -226,21 +226,12 @@ class Plateau:
         environnement=list(set(environnement))
         return environnement
 
-    def obtenirEnvironnement(self,positions):
-        """Prend en parametre une liste de position de case et retourne la liste des postions des cases vide se trouvant juste à cote"""
-        if type(positions)!=list: positions=[positions]
-        environnement=[]
+
+    def obtenirLignesAlentours(self,position):
+        """Renvoie les lignes partant du pion de position 'position' et en partant dans toutes les directions dans le sens trigonométrique."""
         directions=self.obtenirDirections()
-        for position in positions:
-            px,py=position
-            for pas in directions:
-                stx,sty=pas
-                x,y=(px+stx,py+sty)
-                if not self.estDansGrille((x,y)):
-                    if self.estCaseVide((x,y)) :
-                        environnement.append((x,y))
-        environnement=list(set(environnement))
-        return environnement
+        lignes=[self.obtenirLigneExclus(position,direction) for direction in directions]
+        return lignes
 
     def insererPion(self,positions,cote) :
         """insererPion insere un pion dans la grille sans se soucier de conquerir le territoire"""
@@ -248,6 +239,17 @@ class Plateau:
         for position in positions:
             x,y=position
             self.grille[y][x]=cote
+
+    def obtenirCases(self,coordonnees):
+        """Renvoie une liste de contenu de cases avec les coordonnees de celles-ci."""
+        if type(coordonnees)==list:
+            cases=[]
+            for position in coordonnees:
+                cases.append(self.obtenirCases(position))
+            return cases
+        else:
+            x,y=coordonnees
+            return self.grille[y][x]
 
     def obtenirCase(self,coordonnees):
         """Retourne le contenu d'une case"""
@@ -295,26 +297,34 @@ class Plateau:
                 break
         return resultat
 
-    def obtenirLigneInclus(self,position,vecteur):
+    def obtenirLigneInclus(self,position,vecteur,taille=None):
         """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
+        if not taille: taille=max(self.taille)
         vx,vy=vecteur
         x,y=position
-        ligne=[(x,y)]
-        while self.estDansGrille((x,y)):
+        n=0
+        ligne=[]
+        while self.estDansGrille((x,y)) and n<taille:
+            ligne.append((x,y))
             x+=vx
             y+=vy
-            ligne.append((x,y))
+            n+=1
         return ligne
 
-    def obtenirLigneExclus(self,position,vecteur):
+    def obtenirLigneExclus(self,position,vecteur,taille=None):
         """Recupere la ligne des valeurs obtenue avec une position et un vecteur."""
+        if not taille: taille=max(self.taille)
         vx,vy=vecteur
         x,y=position
+        n=0
+        x+=vx
+        y+=vy
         ligne=[]
-        while self.estDansGrille((x,y)):
+        while self.estDansGrille((x,y)) and n<taille:
+            ligne.append((x,y))
             x+=vx
             y+=vy
-            ligne.append((x,y))
+            n+=1
         return ligne
 
     def estMouvementValideDansLigne(self,cote,ligne):
@@ -386,6 +396,21 @@ class Plateau:
         """Affiche les 4 points pour délimiter le carré central du plateau."""
         pass #A Valentin de faire, son expérience dans le domaine est sans égal
 
+    def presenter(self,positions,couleur,fenetre,message=None,clear=True,pause=True):
+        """Permet de debuger en 1 commande."""
+        if not type(positions)==list: positions=[positions]
+        if clear:
+            fenetre.clear()
+            self.afficher(fenetre)
+        if positions:
+            self.colorerCase(positions,couleur,fenetre)
+            if message:
+                self.afficherMessage(message,positions[0],couleurs.NOIR,fenetre)
+        fenetre.flip()
+        if pause:
+            fenetre.pause()
+
+
     def afficherMessage(self,message,position,couleur,fenetre):
         """Affiche un message en utilisant une position plateau, une couleur, et une fenetre."""
         x,y=position
@@ -397,7 +422,7 @@ class Plateau:
         """Colorie une case du plateau d'une certaine couleur en affichant les contours d'un carre de couleur.
         Cette fonction est utile pour debug.
         Utilise la position dans le systeme de coordonnees du plateau, une couleur et une fenetre."""
-        if not type(positions) is list: positions=[positions]
+        if not type(positions)==list: positions=[positions]
         for position in positions:
             x,y=self.obtenirPositionBrute(position,fenetre)
             wsx,wsy=fenetre.taille #Taille de la fenetre en coordonnees de la fenetre

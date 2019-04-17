@@ -32,6 +32,12 @@ while window.open:
     f2.show(window)
     f1.center(color=(0,255,0)).show(window)
     f2.center(color=(0,255,0)).show(window)
+    if f1*f2:
+        f1.color(RED)
+        f2.color(RED)
+    else:
+        f1.color(WHITE)
+        f2.color(WHITE)
     f1[0].show(window,color=(255,0,0))
     f1[1].show(window,(255,0,0))
 

@@ -10,7 +10,7 @@ from math import sqrt,pi
 mean=lambda x:sum(x)/len(x)
 
 class Form:
-    def __init__(self,points,closed=True,fill=False,side_width=1,point_radius=0.1,point_color=WHITE,side_color=WHITE,area_color=WHITE):
+    def __init__(self,points,fill=False,side_width=1,point_radius=0.1,point_color=WHITE,side_color=WHITE,area_color=WHITE):
         """Create the form object using points."""
         self.points=points
         self.point_radius=point_radius
@@ -69,6 +69,7 @@ class Form:
         if not point_radius: point_radius=self.point_radius
         if not fill: fill=self.fill
         points=[(p.x,p.y) for p in self.points]
+        print("fill:",fill)
         if len(points)>1 and fill:
             window.draw.polygon(window.screen,area_color,points,not(fill))
         for point in self.points:
@@ -113,7 +114,7 @@ class Form:
             list1.append((angle,point))
         list1=sorted(list1,key=lambda x:x[0])
         points=[element[1] for element in list1]
-        return Form(points)
+        return Form(points,fill=self.fill,side_width=self.side_width,point_radius=self.point_radius,point_color=self.point_color,side_color=self.side_color,area_color=self.area_color)
 
     def makeSparse(self):
         """Change the form into the one with the most sparsed points."""
@@ -212,3 +213,9 @@ class Form:
     def __and__(self,other):
         """Return the list of forms that are in the intersection of 2 forms."""
         pass
+
+    def color(self,_color=WHITE):
+        """Color the whole form with a new color."""
+        self.point_color=_color
+        self.side_color=_color
+        self.area_color=_color

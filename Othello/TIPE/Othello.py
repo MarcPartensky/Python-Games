@@ -106,11 +106,10 @@ class Othello:
         """Determine le gagnant de la partie a la fin du jeu."""
         jouable=self.plateau.estJouable()
         cote_gagnant=self.plateau.obtenirCoteGagnant()
-        print(cote_gagnant)
         #Faire attention au fait que le plateau ne connait que des cotés, et à
         #aucun moment il ne possède les vrais joueurs comme attributs.
         #Effectivement, ce sont les joueurs qui utilise le plateau et non l'inverse.
-        self.gagnant=self.joueurs[cote_gagnant]
+        if cote_gagnant: self.gagnant=self.joueurs[cote_gagnant]
 
     def afficherSceneFinale(self):
         """Afficher le resultat de la partie une fois qu'elle est terminee.

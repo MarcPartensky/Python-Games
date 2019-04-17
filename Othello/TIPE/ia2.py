@@ -1,8 +1,9 @@
 from joueur import Joueur
 
-from couleurs import *
+
 from config import log
 import config as cfg
+import couleurs
 import outils
 import random
 import copy
@@ -14,12 +15,16 @@ class IA(Joueur):
     def __init__(self):
         """Creer une instance de joueur."""
         super().__init__()
+        self.vitesse_demonstration=0.2
 
     def jouer(self,plateau,fenetre):
-        """Joue."""
-        pions=self.obtenirTousLesPionsDefinitivementStables(plateau,self.cote,fenetre)
-        for pion in pions:
-            plateau.colorerCase(pion,(255,255,0),fenetre)
+        """Renvoie le choix du joueur et le sauvegarde en attribut."""
+        fenetre.clear()
+        plateau.afficher(fenetre)
+        for i in range(2):
+            pions=self.obtenirTousLesPionsDefinitivementStables(plateau,i,fenetre)
+            plateau.presenter(pions,plateau.pieces_couleur[i],fenetre,message="stables",pause=False,clear=False)
+        fenetre.attendre()
         choix=self.jouerAleatoire(plateau)
         log("pions definitivement stables:",pions)
         self.choix=choix
@@ -36,7 +41,37 @@ class IA(Joueur):
         pions=plateau.obtenirPions(cote)
         return len(pions)
 
-    def obtenirLignes(self,plateau,cote):
+    def obtenirToutesLesLignes(self,plateau):
+        """Renvoie la liste de toutes les lignes possibles de la grille."""
+        lignes=[]
+        tx,ty=plateau.taille
+        m=max(plateau.taille)
+        for y in range(ty):
+            for x in range(tx):
+                for direction in plateau.obtenirDirections():
+                    for n in range(m):
+                        position=(x,y)
+                        ligne=plateau.obtenirLigneInclus(position,direction,n)
+                        lignes.append(tuple(ligne))
+        lignes=list(set(lignes))
+        vrai_lignes=[list(ligne) for ligne in lignes]
+        return vrai_lignes
+
+    def obtenirToutesLesLignesSansDirection(self,plateau):
+        """Renvoie toutes les lignes possibles de la grille mais sans prendre en compte l'ordre des positions de celles-ci."""
+        lignes=self.obtenirToutesLesLignes(plateau)
+        lignes_triees=[]
+        for ligne in lignes:
+            ligne.sort()
+            lignes_triees.append(tuple(ligne))
+        lignes_triees=list(set(lignes_triees))
+        lignes=[]
+        for ligne_triee in lignes_triees:
+            lignes.append(list(ligne_triee))
+        return lignes
+
+
+    def obtenirToutesLesLignesDePions(self,plateau,cote):
         """Renvoie la liste de toutes les lignes de pions de la meme couleur sur le plateau avec le côté du joueur en utilisant par defaut le cote du joueur actif."""
         """Chaque ligne est caractérisée par les pions situés aux extrémités et seules les lignes maximum sont comptées."""
         """Exemple: [((l1x1,l1y1),(l1x2,l1y2)),((l2x1,l2y1),(l2x2,l2y2))] contient les positions de 2 lignes l1 et l2."""
@@ -103,52 +138,38 @@ class IA(Joueur):
         return resultat
 
     def estDefinitivementStable(self,plateau,pion,fenetre):
-        """Determine si un pion est définitement stable."""
+        """Determine si un pion est définivement stable en utilisant une approche brute."""
         cote=plateau.obtenirCase(pion)
-        environnement=plateau.obtenirAlentours(pion)
-        log("environnement:",environnement)
-        plateau.afficher(fenetre)
-        plateau.afficherMessage("pion:",pion,NOIR,fenetre)
-        plateau.colorerCase(pion,BLEU,fenetre)
-        plateau.afficherMessage("environnement:",environnement[0],NOIR,fenetre)
-        plateau.colorerCase(environnement,ORANGE,fenetre)
-        fenetre.flip()
-        fenetre.pause()
-        log("pion:",pion)
-        log("environnement:",environnement)
+        lignes=plateau.obtenirLignesAlentours(pion) #lignes de positions
+        cote_oppose=plateau.obtenirCoteOppose(cote)
         stable=True
-        for position in environnement:
-            vecteur=outils.vecteur(pion,position)
-            log("vecteur:",vecteur)
-            ligne=plateau.obtenirLigneExclus(pion,vecteur)
-            log("ia:ligne:",ligne)
-            plateau.afficherMessage("ia:ligne:",ligne[0],NOIR,fenetre)
-            plateau.colorerCase(ligne,ROSE,fenetre)
-            fenetre.flip()
-            fenetre.pause()
-            if not outils.estRemplie(ligne,cote):
-                stable=False
+        for (i,ligne) in enumerate(lignes):
+            ci=(i+4)%8
+            ligne_oppose=lignes[ci] #Permet de récupérer la ligne qui est située a l'opposée de la i-ème ligne.
+            cases=plateau.obtenirCases(ligne) #lignes de contenus de cases
+            cases_opposees=plateau.obtenirCases(ligne_oppose)
+            if cote_oppose in cases:
+                if cfg.CASE_VIDE in cases_opposees:
+                    stable=False
+            if cfg.CASE_VIDE in cases:
+                if (cote_oppose in cases_opposees) or (cfg.CASE_VIDE in cases_opposees):
+                    stable=False
+            plateau.presenter(ligne,couleurs.BLEU,fenetre,message="ligne",pause=False)
+            plateau.presenter(ligne_oppose,couleurs.VIOLET,fenetre,message="ligne_oppose",clear=False,pause=False)
+            plateau.presenter(pion,couleurs.ROUGE,fenetre,"pion considéré",clear=False,pause=False)
+            fenetre.attendre(self.vitesse_demonstration)
+            if not stable:
                 break
-        log("stable:",stable)
         return stable
 
     def obtenirTousLesPionsDefinitivementStables(self,plateau,cote,fenetre):
         """Renvoie la liste de tous les pions qui sont definitivement stables."""
         stables=[]
         pions=plateau.obtenirPions(cote)
-        log("pions:",pions)
-        plateau.afficherMessage("pions",pions[0],NOIR,fenetre)
-        plateau.colorerCase(pions,ROUGE,fenetre)
-        fenetre.flip()
-        fenetre.pause()
+        #plateau.presenter(pions,couleurs.ROUGE,fenetre,"pions"+str(cote))
         for pion in pions:
             if self.estDefinitivementStable(plateau,pion,fenetre):
                 stables.append(pion)
-        if stables:
-            plateau.afficherMessage("stables",stables[0],NOIR,fenetre)
-            plateau.colorerCase(stables,VIOLET,fenetre)
-            fenetre.flip()
-            fenetre.pause()
         return stables
 
     def estDefinitivementStable3(self,plateau,pion):

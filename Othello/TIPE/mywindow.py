@@ -106,6 +106,17 @@ class Window:
         if self.open:
             time.sleep(0.1)
 
+    def attendre(self,temps_maximum=0.5):
+        """Wait for user to click on space."""
+        self.pausing=True
+        temps=time.time()
+        while self.pausing and self.open and time.time()-temps<temps_maximum:
+            self.check()
+            keys=pygame.key.get_pressed()
+            if keys[K_SPACE]:
+                self.pausing=False
+
+
     def sleep(self,waiting_time): #useless
         """Wait for giving time."""
         time.sleep(waiting_time)

@@ -72,8 +72,9 @@ class Draw:
         size=self.plane.getToScreen([side_size,side_size],self.window)
         self.window.draw.rect(screen,color,position+size,not filled)
 
-    def polygon(self,color,positions,filled=False): #No clue of what i'm doing to do here.
-        pass
+    def polygon(self,screen,color,positions,filled=False): #No clue of what i'm doing to do here.
+        screen_positions=self.plane.getToScreen(positions,self.window)
+        self.window.draw.polygon(screen,color,screen_positions,filled)
 
     def line(self,screen,color,start_position,end_position,width=1):
         start_position=self.plane.getToScreen(start_position,self.window)
