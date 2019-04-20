@@ -17,6 +17,8 @@ class Motion:
         text="Motion: position: "+str(self.position)+", velocity: "+str(self.velocity)+" and acceleration: "+str(self.acceleration)
         return text
 
+    __repr__=__str__
+
     def previous(self,t=1):
         """Return the previous motion using its actual one using optional time t."""
         previous_acceleration=Vector([a for a in self.acceleration])
@@ -32,6 +34,45 @@ class Motion:
         next_position=Vector([p+v*t for (p,v) in zip(self.position,self.velocity)])
         next_motion=Motion(next_position,next_velocity,next_acceleration)
         return next_motion
+
+    def __getitem__(self,index):
+        """Return the position, velocity or acceleration using the index."""
+        if index==0:   return self.position
+        elif index==1: return self.velocity
+        else:          return self.acceleration
+
+    def __setitem__(self,index,vector):
+        """Set the position, velocity or acceleration using the index."""
+        if index==0:   self.position=vector
+        elif index==1: self.velocity=vector
+        else:          self.acceleration=vector
+
+    def getPosition(self):
+        """Return the position of the motion."""
+        return self.position
+
+    def getVelocity(self):
+        """Return the velocity of the motion."""
+        return self.velocity
+
+    def getAcceleration(self):
+        """Return the acceleration of the motion."""
+        return self.acceleration
+
+    def setPosition(self,position):
+        """Set the position of the motion using position."""
+        self.position=position
+
+    def setVelocity(self,velocity):
+        """Set the velocity of the motion using velocity."""
+        self.velocity=velocity
+
+    def setAcceleration(self,acceleration):
+        """Set the acceleration of the motion."""
+        self.acceleration=acceleration
+
+    def
+
 
 
 if __name__=="__main__":
