@@ -171,6 +171,10 @@ class Plateau:
                     break
         return self.gagne
 
+    def charger(self,cote):
+        """Charge les attributs du plateau afin d'être préchargé pour les ias et ainsi économiser le temps de calcul."""
+        self.mouvements=self.obtenirMouvementsValides(cote)
+
     def obtenirPions(self,cotes):
         """Obtenir toute les position de toutes les pieces de cotes de joueurs"""
         if not isinstance(cotes,list): cotes=[cotes]

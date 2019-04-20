@@ -94,7 +94,7 @@ def pgcd(a,b):
         r=a%b
         return pgcd(b,r)
 
-def obtenirLigne(position1,position2):
+def obtenirLigneComplete(ligne):
     """Renvoie la ligne dont les positions position1 et position2 sont les extrémités."""
     p1x,p1y=position1
     p2x,p2y=position2
@@ -114,9 +114,14 @@ def obtenirLigne(position1,position2):
     #ligne=[position1,position2]
     return ligne
 
-print(obtenirLigne((1,2),(5,6)))
+def obtenirLigneReduite(ligne):
+    """Renvoie les extrémités d'une ligne."""
+    ligne=[ligne[0],ligne[-1]]
+    return ligne
 
-print(estRemplie([1,1,1,2,1],1))
+if __name__=="__main__": #Permet de débugger facilement les fonctions du module outils
+    print(obtenirLigneComplete([(1,2),(5,6)]))
+    print(estRemplie([1,1,1,2,1],1))
 
-#print(intersection([1,2,3],[2,3],[5,3,4]))
-#print(intersection([(1,2),(3,4)],[(1,2),(2,2)]))
+    #print(intersection([1,2,3],[2,3],[5,3,4]))
+    #print(intersection([(1,2),(3,4)],[(1,2),(2,2)]))

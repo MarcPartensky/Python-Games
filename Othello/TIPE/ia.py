@@ -39,8 +39,7 @@ for i in range(len(LISTE_ZONES)):#Permet de generer LISTE_POSITION_ZONE
 
 class IA(joueur.Robot) :
     def __init__(self):
-       pass
-
+       super().__init__()
 
     def reinitialiser(self, plateau):
         self.plateau=plateau#il ne faut surtout pas faire des simulations sur ce plateau !!

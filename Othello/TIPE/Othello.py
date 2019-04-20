@@ -35,7 +35,7 @@
 import mywindow
 import couleurs
 
-from plateau import Plateau
+from plateau_analysable import PlateauAnalysable as Plateau
 
 import joueur as Joueur
 import time
@@ -134,7 +134,8 @@ class Othello:
         """Faire un tour de jeu"""
         self.tour = self.state % self.plateau.nombre_de_joueurs
         joueur_actif=self.joueurs[self.tour]#joueur a qui c'est le tour
-        self.plateau.mouvements=self.plateau.obtenirMouvementsValides(self.tour)#todo pas top
+        self.plateau.charger(self.tour) #Necessaire pour tous les joueurs
+        self.plateau.chargerAnalyse(self.fenetre) #Economise du temps de calcul pour les ias qui s'en servent, et peut être affichée pour une démonstration
         self.state+=1
         if len(self.plateau.mouvements)>=1:#Si des moves sont possibles
             choix_du_joueur=joueur_actif.jouer(deepcopy(self.plateau),self.fenetre)

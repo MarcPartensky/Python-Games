@@ -23,9 +23,8 @@ class BruteForce(IA): #a ete rajoute pour faire des tests, ne sera pas present a
         super().__init__()
 
     def jouer(self,board,window):
-        self.presenterPionsStables(board,window)
+        #board.presenterPionsStables(window) #Pas encore au point
         self.board=board
-        #self.cote=cote
         tree=self.treePlay(board.grille,self.cote)
         log("[BruteForce]: arbre des possibilitees",tree)
         if self.container(tree):

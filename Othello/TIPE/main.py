@@ -39,7 +39,7 @@ Faire mini schema des heritage de classe
 
 if __name__=="__main__": #Ceci est exécuté uniquement si le fichier est exécuté directement et non depuis un autre fichier.
 
-    fenetre=Window(taille=[800,800],set=False,fullscreen=True) #Crée une fenêtre.
+    fenetre=Window(taille=[800,800],set=False,fullscreen=False) #Crée une fenêtre.
 
     developpeur1=Developpeur()
     developpeur2=Developpeur()
