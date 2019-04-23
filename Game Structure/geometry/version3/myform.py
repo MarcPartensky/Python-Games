@@ -7,9 +7,17 @@ from mycolors import WHITE
 
 from math import sqrt,pi
 
+import random
+
 mean=lambda x:sum(x)/len(x)
 
 class Form:
+    def random(points_number=None,min=-1,max=1):
+        """Create a random form using."""
+        if not points_number: points_number=random.randint(1,10)
+        points=[Point.random(min,max) for i in range(points_number)]
+        return Form(points)
+
     def __init__(self,points,fill=False,side_width=1,point_radius=0.1,point_color=WHITE,side_color=WHITE,area_color=WHITE):
         """Create the form object using points."""
         self.points=points
@@ -31,12 +39,12 @@ class Form:
         return self
 
     def __iter__(self):
-        """Needed in order to allow the client to iterate the points of the form through a for loop."""
+        """Iterate the points of the form."""
         self.iterator=0
         return self
 
     def __next__(self):
-        """Allow the client to iterate the points of the form through a for loop."""
+        """Return the next point threw an iteration."""
         if self.iterator < len(self.points):
             iterator=self.iterator
             self.iterator+=1
@@ -156,7 +164,7 @@ class Form:
             self.points[i].x+=x
             self.points[i].y+=y
 
-    def moveTo(self,position):
+    def setPosition(self,position):
         """Move the object to an absolute position."""
         x,y=position[0],position[1]
         cx,cy=self.center()
@@ -165,6 +173,12 @@ class Form:
             vy=self.points[i].y-cy
             self.points[i].x=vx+x
             self.points[i].y=vy+y
+
+    def getPosition(self,position):
+        """Return the position of the geometric center of the form."""
+        center=self.center()
+        x,y=center[0],center[1]
+        return [x,y]
 
     def moveUntil(self,position):
         """Move the object to the position until the point is hit."""
@@ -219,3 +233,9 @@ class Form:
         self.point_color=_color
         self.side_color=_color
         self.area_color=_color
+
+if __name__=="__main__":
+    form=Form.random(4)
+    print(form)
+    a,b,c,d=form
+    print(a,b,c,d)

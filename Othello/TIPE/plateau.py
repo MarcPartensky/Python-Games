@@ -175,6 +175,11 @@ class Plateau:
         """Charge les attributs du plateau afin d'être préchargé pour les ias et ainsi économiser le temps de calcul."""
         self.mouvements=self.obtenirMouvementsValides(cote)
 
+    def __contains__(self,pion):
+        """Determine si le plateau contient un pion."""
+        case=self.obtenirCase(pion)
+        return bool(case!=cfg.CASE_VIDE)
+
     def obtenirPions(self,cotes):
         """Obtenir toute les position de toutes les pieces de cotes de joueurs"""
         if not isinstance(cotes,list): cotes=[cotes]

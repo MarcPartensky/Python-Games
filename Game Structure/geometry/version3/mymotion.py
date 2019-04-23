@@ -2,14 +2,31 @@ from mysurface import Surface
 from myvector import Vector
 
 class Motion:
+    def random(min=-1,max=1):
+        """Create a random motion using optional minimum and maximum."""
+        position=Vector.random(min,max)
+        velocity=Vector.random(min,max)
+        acceleration=Vector.random(min,max)
+        return Motion(position,velocity,acceleration)
+
     def __init__(self,position=Vector([0.,0.]),velocity=Vector([0.,0.]),acceleration=Vector([0.,0.])):
+        """Create a motion using optional position, velocity and acceleration vectors."""
         self.position=position
         self.velocity=velocity
         self.acceleration=acceleration
 
-    def __call__(self,t=1):
+    def update(self,t=1):
         """Move entity according to its acceleration, velocity and position."""
-        self.velocity=[v+a*t for (v,a) in zip(self.velocity,self.acceleration)]
+        #ax,ay=self.acceleration
+        #vx,vy=self.velocity
+        #px,py=self.position
+        #vx+=ax*t
+        #vy+=ay*t
+        #px+=vx*t
+        #py+=vy*t
+        #self.velocity=Vector(vx,vy)
+        #self.positon=Vector(px,py)
+        self.velocity=Vector([v+a*t for (v,a) in zip(self.velocity,self.acceleration)])
         self.position=[p+v*t for (p,v) in zip(self.position,self.velocity)]
 
     def __str__(self):
@@ -71,12 +88,8 @@ class Motion:
         """Set the acceleration of the motion."""
         self.acceleration=acceleration
 
-    def
-
 
 
 if __name__=="__main__":
-    surface=Surface()
-    while surface.open:
-        surface.check()
-        surface.clear()
+    motion=Motion.random()
+    print(motion)

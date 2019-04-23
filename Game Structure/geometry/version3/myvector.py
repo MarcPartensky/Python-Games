@@ -8,7 +8,15 @@ from cmath import polar
 from mywindow import Window
 from mysurface import Surface
 
+import random
+
 class Vector:
+    def random(min=-1,max=1):
+        """Create a random vector using optional min and max."""
+        x=random.uniform(min,max)
+        y=random.uniform(min,max)
+        return Vector(x,y)
+
     def polar(position):
         """Return the polar position [norm,angle] using cartesian position [x,y]."""
         return list(polar(complex(position[0],position[1])))
@@ -65,6 +73,21 @@ class Vector:
         window.draw.line(window.screen,color,q(),a(),width)
         window.draw.line(window.screen,color,q(),b(),width)
 
+    def __iter__(self):
+        """Iterate the points of the form."""
+        self.iterator=0
+        return self
+
+    def __next__(self):
+        """Return the next point threw an iteration."""
+        if self.iterator < 2:
+            if self.iterator==0: value=self.x
+            if self.iterator==1: value=self.y
+            self.iterator+=1
+            return value
+        else:
+            raise StopIteration
+
     def __neg__(self):
         """Return the negative vector."""
         x=-self.x
@@ -104,12 +127,19 @@ class Vector:
         if type(factor)==Vector:
             pass
         else:
-            self.x/=factor
-            self.y/=factor
+            x=self.x/factor
+            y=self.y/factor
+            return Vector(x,y,width=self.width,color=self.color)
 
     def __add__(self,other):
         """Add two vectors together."""
         return Vector(self.x+other.x,self.y+other.y,width=self.width,color=self.color)
+
+    def __iadd__(self,other):
+        """Add a vector to another."""
+        self.x+=other.x
+        self.y+=other.y
+        return self
 
     def rotate(self,angle):
         """Rotate a vector using the angle of rotation."""
@@ -166,7 +196,7 @@ class Vector:
 
     def __str__(self):
         """Return a string description of the vector."""
-        text="Vector: x,y:   "+str(self.x)+", "+str(self.y)+", color: "+str(self.color)+", width: "+str(self.width)+" and arrow: "+str(self.arrow)
+        text="Vector:x,y:"+str(self.x)+","+str(self.y)+",color:"+str(self.color)+",width:"+str(self.width)+",arrow:"+str(self.arrow)
         return text
 
     __repr__=__str__
@@ -179,6 +209,8 @@ if __name__=="__main__":
     p2=Point(5,4)
     p3=Point(3,2)
     v1=Vector(p1,p2)
+    x,y=v1 #Unpacking test
+    print("x,y:",x,y)
     print(v1) #Give a string representation of the vector
     v2=0.8*v1 #Multiply vector by scalar 0.8
     p4=v2(p1)

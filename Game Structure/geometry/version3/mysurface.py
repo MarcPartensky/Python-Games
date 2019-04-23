@@ -12,7 +12,7 @@ class Surface:
         self.press=self.draw.window.press
         self.build=self.draw.window.build
         self.__call__=self.draw.window.__call__
-        self.show=self.draw.show
+        #self.show=self.draw.show
         self.control=self.draw.control
 
     def check(self):
@@ -29,6 +29,10 @@ class Surface:
             self.draw.plane.show(self.draw.window)
             self.flip()
 
+    def show(self):
+        """Show the plane on screen."""
+        self.draw.plane.show(self.draw.window)
+
 
 class Surface2(Window):
     def __init__(self,*args,**kwargs):
@@ -38,5 +42,6 @@ class Surface2(Window):
 
 
 if __name__=="__main__":
-    surface=Surface()
-    surface()
+    #surface=Surface()
+    #surface()
+    pass

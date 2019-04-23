@@ -73,19 +73,3 @@ class IA(Joueur):
                 resultat=True
                 break
         return resultat
-
-    def estPrenable(self,plateau,pion):
-        """Determine si un pion est prenable a l'instant."""
-        cote=plateau.obtenirCase(pion)
-        cote_ppose=plateau.obtenirCoteOppose(cote)
-        mouvements=plateau.obtenirMouvementsValides(cote)
-        return bool(pion in mouvements)
-
-    def obtenirPionsStables(self,plateau,cote):
-        """Renvoie la liste de tous les pions stables sur le plateau appartenant au joueur du côté 'cote'."""
-        pions=plateau.obtenirPions(cote)
-        pions_stables=[]
-        for pion in pions:
-            if self.estPionStable(pion):
-                pions_stables.append(pion)
-        return pions

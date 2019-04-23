@@ -4,6 +4,7 @@ from config import log
 import config as cfg
 import outils
 import couleurs
+import copy
 
 class PlateauAnalysable(Plateau):
 
@@ -14,9 +15,17 @@ class PlateauAnalysable(Plateau):
 
     def chargerAnalyse(self,fenetre):
         """Charge l'ensemble des ses attributs d'analyse pour les ias qui s'en servent."""
-        self.pions0_stables=self.obtenirTousLesPionsDefinitivementStables(0,fenetre)
-        self.pions1_stables=self.obtenirTousLesPionsDefinitivementStables(1,fenetre)
-        self.pions_stables=self.pions0_stables+self.pions1_stables
+        pions0_definitivement_stables=self.obtenirTousLesPionsDefinitivementStables(0,fenetre)
+        pions1_definitivement_stables=self.obtenirTousLesPionsDefinitivementStables(1,fenetre)
+        self.pions_definitivement_stables=[pions0_definitivement_stables,pions1_definitivement_stables]
+        pions0_stables=self.obtenirTousLesPionsStables(0,fenetre)
+        pions1_stables=self.obtenirTousLesPionsStables(1,fenetre)
+        self.pions_stables=[pions0_stables,pions1_stables]
+        #Un petit peu de présentation pour faire joli
+        for i in range(2):
+            self.presenter(self.pions_stables[i],self.pieces_couleur[i],fenetre,"stables",pause=False)
+            self.presenter(self.pions_definitivement_stables[i],self.pieces_couleur[i],fenetre,"definitivement_stables",clear=False,pause=False)
+            fenetre.attendre(0.5)
 
     def obtenirToutesLesLignes(self):
         """Renvoie la liste de toutes les lignes possibles de la grille."""
@@ -48,7 +57,7 @@ class PlateauAnalysable(Plateau):
             lignes.append(list(ligne_triee))
         return lignes
 
-    def presenterPionsStables(self,fenetre): #A voir
+    def presenterPionsStables(self,fenetre): #Obselète
         """Presente les pions stables a l'ecran en les trouvant, cela s'effectue avec la fenetre."""
         fenetre.clear()
         self.afficher(fenetre)
@@ -74,12 +83,15 @@ class PlateauAnalysable(Plateau):
         pions=self.obtenirPions(cote)
         #plateau.presenter(pions,couleurs.ROUGE,fenetre,"pions"+str(cote))
         for pion in pions:
-            if self.estDefinitivementStable(pion,fenetre):
+            if self.estUnPionDefinitivementStable(pion,fenetre):
                 stables.append(pion)
         return stables
 
-    def estDefinitivementStable(self,pion,fenetre):
-        """Determine si un pion est définivement stable en déterminant pour chaque ligne auquel il appartient, si il peut être définitivement stable."""
+    def estUnPionDefinitivementStable(self,pion,fenetre):
+        """Determine si un pion est définivement stable en déterminant pour chaque ligne auquel il appartient, si il peut être définitivement stable.
+        Pour cela, on se ramène à un problème plus simple: c'est à dire vérifier la stabilité d'un pion dans une ligne.
+        Ainsi on vérifie pour chaque ligne auquelle ce pion appartient, si celui-ci peut-être définitivment stable, et si c'est bien le cas,
+        alors ce pion est définitivment stable sans équivoque."""
         cote=self.obtenirCase(pion)
         lignes=self.obtenirLignesAlentours(pion) #lignes de positions
         cote_oppose=self.obtenirCoteOppose(cote)
@@ -95,6 +107,7 @@ class PlateauAnalysable(Plateau):
             if cfg.CASE_VIDE in cases:
                 if (cote_oppose in cases_opposees) or (cfg.CASE_VIDE in cases_opposees):
                     stable=False
+            """Présentation des lignes sur l'écran pour le mode démonstration."""
             self.presenter(ligne,couleurs.BLEU,fenetre,message="ligne",pause=False)
             self.presenter(ligne_oppose,couleurs.VIOLET,fenetre,message="ligne_oppose",clear=False,pause=False)
             self.presenter(pion,couleurs.ROUGE,fenetre,"pion considéré",clear=False,pause=False)
@@ -102,6 +115,49 @@ class PlateauAnalysable(Plateau):
             if not stable:
                 break
         return stable
+
+    def obtenirTousLesPionsStables(self,cote,fenetre):
+        """Renvoie la liste de tous les pions stables sur le plateau appartenant au joueur du côté 'cote'."""
+        pions=self.obtenirPions(cote)
+        pions_stables=[]
+        for pion in pions:
+            if self.estUnPionStable(pion):
+                pions_stables.append(pion)
+        return pions
+
+    def estUnPionStable(self,pion): #Cette fonction est toujours incomplète
+        """Détermine si un pion est stable."""
+        cote=self.obtenirCase(pion)
+        cote_oppose=self.obtenirCoteOppose(cote)
+        mouvements=self.obtenirMouvementsValides(cote_oppose)
+        stable=True
+        for mouvement in mouvements:
+            nouveau_plateau=copy.deepcopy(self)
+            nouveau_plateau.placerPion(mouvement,cote_oppose)
+            nouveau_cote=nouveau_plateau.obtenirCase(pion)
+            if nouveau_cote!=cote:
+                log("cotes:",cote,nouveau_cote)
+                if not nouveau_plateau.estUnPionStable(pion):
+                    stable=False
+        return stable
+
+
+    def estUnPionPrenable(self,pion): #Pas fini
+        """Determine si un pion est prenable a l'instant en utilisant le pion."""
+        cote_pion=self.obtenirCase(pion)
+        cote_oppose=self.obtenirCoteOppose(cote)
+        mouvements=self.obtenirMouvementsValides(cote_oppose)
+        prenable=True
+        for mouvement in mouvements:
+            nouveau_plateau=copy.deepcopy(self)
+            nouveau_plateau.placerPion(mouvement)
+            nouveau_cote_pion=nouveau_plateau.obtenirCase(pion)
+            if nouveau_cote_pion!=cote_pion:
+                prenable=False
+                break
+        return prenable
+
+
 
     def estLigneDefinitivementStable(self,ligne):
         """Determine si une ligne est stable."""
