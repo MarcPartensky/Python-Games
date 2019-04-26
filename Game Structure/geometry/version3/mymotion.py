@@ -1,6 +1,8 @@
 from mysurface import Surface
 from myvector import Vector
 
+import mycolors
+
 class Motion:
     def random(min=-1,max=1):
         """Create a random motion using optional minimum and maximum."""
@@ -11,6 +13,9 @@ class Motion:
 
     def __init__(self,position=Vector([0.,0.]),velocity=Vector([0.,0.]),acceleration=Vector([0.,0.])):
         """Create a motion using optional position, velocity and acceleration vectors."""
+        position.color=mycolors.GREEN
+        velocity.color=mycolors.BLUE
+        acceleration.color=mycolors.RED
         self.position=position
         self.velocity=velocity
         self.acceleration=acceleration
@@ -43,6 +48,23 @@ class Motion:
         previous_position=Vector([p-v*t for (p,v) in zip(self.position,self.velocity)])
         previous_motion=Motion(previous_position,previous_velocity,previous_acceleration)
         return previous_motion
+
+    def __iter__(self):
+        """Iterate the points of the form."""
+        self.iterator=0
+        return self
+
+    def __next__(self):
+        """Return the next point threw an iteration."""
+        if self.iterator<3:
+            if self.iterator==0: value=self.position
+            if self.iterator==1: value=self.velocity
+            if self.iterator==2: value=self.acceleration
+            self.iterator+=1
+            return value
+        else:
+            raise StopIteration
+
 
     def next(self,t=1):
         """Return the next motion using its actual one using optional time t."""

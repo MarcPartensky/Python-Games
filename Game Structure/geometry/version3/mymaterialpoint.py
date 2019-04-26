@@ -57,9 +57,10 @@ class MaterialPoint:
 
     def showMotion(self,window):
         """Show the motion of a material point on the window."""
-        for vector in self.motion:
-            x,y=self.motion.getPosition()
-            vector.show(Point(x,y),window)
+        position,velocity,acceleration=self.motion #Extract the vectors out of the motion.
+        point=Point(tuple(position))
+        velocity.show(point,window)
+        acceleration.show(point,window)
 
     def update(self,t=1):
         """Update the motion of the material point."""
@@ -84,6 +85,13 @@ class MaterialPoint:
         else:
             raise StopIteration
 
+    def __str__(self):
+        """Return the string representation of a point."""
+        return "Point:"+str(self.__dict__)
+
+    __repr__=__str__
+
+
 
 FallingPoint=lambda :MaterialPoint(Motion.random(),[myforce.gravity])
 
@@ -98,7 +106,8 @@ if __name__=="__main__":
         surface.control()
         surface.show()
         for point in points:
+            surface.print(str(point),tuple(point))
             point.show(surface)
             point.showMotion(surface)
-            point.update()
+            point.update(t=0.1)
         surface.flip()

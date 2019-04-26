@@ -110,3 +110,9 @@ class Point:
         """Truncate the position of the point by making the x and y components integers."""
         self.x=int(self.x)
         self.y=int(self.y)
+
+    def __str__(self):
+        """Return the string representation of a point."""
+        return "Point:"+str(self.__dict__)
+
+    __repr__=__str__
