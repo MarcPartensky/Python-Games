@@ -11,7 +11,7 @@ def linearBijection(x,ensemble_entree,ensemble_sortie):
     """Renvoie la valeur de f(x) par la bijection de l'ensemble_entree et l'ensemble_sortie."""
     min1,max1=ensemble_entree
     min2,max2=ensemble_sortie
-    return x/(max1-min1)*(max2-min2)+min2
+    return (x-min1)/(max1-min1)*(max2-min2)+min2
 
 def est_superieur(l1, l2) :#doit supporter les coeff negatifs
     """"demander alex"""

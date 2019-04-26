@@ -41,9 +41,10 @@ class Plane:
         """Flip the plane's window."""
         window.flip()
 
-    def clear(self,window):
+    def clear(self,window,color=None):
         """Clear the plane."""
-        window.clear(self.theme["background"])
+        if not color: color=self.theme["background"]
+        window.clear(color)
 
     def control(self,window):
         """Control the view of the plane."""
@@ -51,7 +52,7 @@ class Plane:
         keys=window.press()
         if keys[K_RSHIFT]:
             self.zoom([1.1,1.1])
-        if keys[K_LSHIFT] and (ux>2 and uy>2):
+        if keys[K_LSHIFT] and (ux>2 and uy>2): #The second condition is useless but prevent the user from watching errors due to too far zooming out.
             self.zoom([0.9,0.9])
         if keys[K_RETURN]:
             self.units=    self.default_units[:]
@@ -95,16 +96,8 @@ class Plane:
 
     def showGrid(self,window):
         """Show the grid using the window."""
-        px,py=self.position
-        wsx,wsy=window.size
-        ux,uy=self.units
-        nx=int(wsx/ux)
-        ny=int(wsy/uy)
-        #Get the edge of the plane's view in its coordonnates
-        mx=int(-nx+px)
-        Mx=int(nx+px)
-        my=int(-ny+py)
-        My=int(ny+py)
+        mx,my,Mx,My=self.getPlaneCorners(window) #Get the corners of the plane
+        mx,my,Mx,My=int(mx),int(my),int(Mx),int(My) #Truncate the values
         #For each line find the begining and the end in the plane's coordonnates then convert it into screen's coordonnates.
         for x in range(mx,Mx+1):
             color=self.getUnitsColor(x)
@@ -126,6 +119,14 @@ class Plane:
         """Allow the user to zoom into the plane."""
         for i in range(2):
             self.units[i]*=zoom[i]
+
+    def xZoom(self,zoom):
+        """Allow the user to zoom into the plane according to the x component."""
+        self.units[0]*=zoom
+
+    def yZoom(self,zoom):
+        """Allow the user to zoom into the plane according to the y component."""
+        self.units[1]*=zoom
 
     def getToScreen(self,position,window):
         """Return a screen position using a position in the plane."""
@@ -161,16 +162,26 @@ class Plane:
             planes_positions.append(self.getFromScreen(position,window))
         return plane_positions
 
-    def getCornersFromCoordonnates(self,coordonnates):
+    def getPlaneCorners(self,window):
+        """Return the corners of the present view."""
+        wsx,wsy=window.size
+        mx,my=self.getFromScreen([0,wsy],window)
+        Mx,My=self.getFromScreen([wsx,0],window)
+        corners=(mx,my,Mx,My)
+        return corners
+
+    #The following functions are class methods
+
+    def getCornersFromCoordonnates(coordonnates):
         """Return the corners (top_left_corner,bottom_right_corner) using the coordonnates (position+size)."""
         """[x,y,sx,sy] -> [mx,my,Mx,My]"""
         x,y,sx,sy=coordonnates
         mx,my=x-sx/2,y-sy/2
         Mx,My=x+sx/2,y+sy/2
-        rect=(mx,my,Mx,My)
-        return rect
+        corners=(mx,my,Mx,My)
+        return corners
 
-    def getCoordonnatesFromCorners(self,corners):
+    def getCoordonnatesFromCorners(corners):
         """Return the coordonnates (position+size) using the corners (top_left_corner,bottom_right_corner)."""
         """[mx,my,Mx,My] -> [x,y,sx,sy]"""
         mx,my,Mx,My=corners
@@ -179,7 +190,7 @@ class Plane:
         coordonnates=(x,y,sx,sy)
         return coordonnates
 
-    def getCoordonnatesFromRect(self,rect):
+    def getCoordonnatesFromRect(rect):
         """Return the coordonnates (position,size) using the rect (top_left_corner,size)."""
         """[x,y,sx,sy] -> [mx,my,sx,sy]"""
         mx,my,sx,sy=rect
@@ -187,7 +198,7 @@ class Plane:
         coordonnates=[x,y,sx,sy]
         return coordonnates
 
-    def getRectFromCoordonnates(self,coordonnates):
+    def getRectFromCoordonnates(coordonnates):
         """Return the rect (top_left_corner,size) using the coordonnates (position,size)."""
         """[mx,my,sx,sy] -> [x,y,sx,sy]"""
         x,y,sx,sy=coordonnates
@@ -195,7 +206,7 @@ class Plane:
         rect=[mx,my,sx,sy]
         return rect
 
-    def getRectFromCorners(self,corners):
+    def getRectFromCorners(corners):
         """Return the rect (top_left_corner,size) using the corners (top_left_corner,bottom_right_corner)."""
         """[mx,my,Mx,My] -> [mx,my,sx,sy]"""
         mx,my,Mx,My=corners
@@ -203,13 +214,13 @@ class Plane:
         rect=[mx,my,sx,sy]
         return rect
 
-    def getCornersFromRect(self,rect):
+    def getCornersFromRect(rect):
         """Return the (top_left_corner,bottom_right_corner) using the corners rect (top_left_corner,size)."""
         """[mx,my,Mx,My] -> [mx,my,sx,sy]"""
         mx,my,sx,sy=rect
         Mx,My=mx+sx,my+sy
         corners=[mx,my,Mx,My]
-        return rect
+        return corners
 
 
 if __name__=="__main__":

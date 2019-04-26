@@ -41,16 +41,19 @@ class Draw:
     def rect(self,screen,color,rect,filled=False):
         position=rect[:2]
         size=rect[2:]
+        sx,sy=size
         position=self.plane.getToScreen(position,self.window)
-        size=self.plane.getToScreen(size,self.window)
-        self.window.draw.rect(screen,color,rect,not filled)
+        ux,uy=self.plane.units
+        size=[sx*ux,sy*uy]
+        rect=position+size
+        self.window.draw.rect(screen,color,rect,not(filled))
 
     def ellipse(self,screen,color,rect,filled=False):
-        coordonnates=self.plane.getCoordonnatesFromRect(rect)
+        coordonnates=Plane.getCoordonnatesFromRect(rect)
         x,y,sx,sy=coordonnates
         py,px=self.plane.getToScreen((x,y),self.window)
         psx,psy=self.plane.getToScreen((sx,sy),self.window)
-        pmx,pmy,pMx,pMy=self.plane.getRectFromCoordonnates([px,py,psx,psy])
+        pmx,pmy,pMx,pMy=Plane.getRectFromCoordonnates([px,py,psx,psy])
         rect=[pmx,pmy,pMx,pMy]
         self.window.draw.ellipse(screen,color,rect,filled)
 
@@ -92,8 +95,8 @@ class Draw:
         self.plane.showGrid(self.window)
         self.window.flip()
 
-    def clear(self):
-        self.plane.clear(self.window)
+    def clear(self,**kwargs):
+        self.plane.clear(self.window,**kwargs)
 
     def check(self):
         self.window.check()

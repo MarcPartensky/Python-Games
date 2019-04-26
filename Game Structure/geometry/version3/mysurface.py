@@ -39,6 +39,11 @@ class Surface:
         position=self.draw.plane.getToScreen(position,self.draw.window)
         self.draw.window.print(text,position,**kwargs)
 
+    def getCorners(self):
+        """Return the corners of the plane."""
+        corners=self.draw.plane.getPlaneCorners(self.draw.window)
+        return corners
+
 
 class Surface2(Window):
     def __init__(self,*args,**kwargs):
