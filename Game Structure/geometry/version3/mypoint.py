@@ -90,3 +90,23 @@ class Point:
     def __sub__(self,other):
         """Substract the components of 2 objects."""
         return Point(self.x-other[0],self.y-other[1])
+
+    def __iter__(self):
+        """Iterate the points of the form."""
+        self.iterator=0
+        return self
+
+    def __next__(self):
+        """Return the next point threw an iteration."""
+        if self.iterator < 2:
+            if self.iterator==0: value=self.x
+            if self.iterator==1: value=self.y
+            self.iterator+=1
+            return value
+        else:
+            raise StopIteration
+
+    def truncate(self):
+        """Truncate the position of the point by making the x and y components integers."""
+        self.x=int(self.x)
+        self.y=int(self.y)

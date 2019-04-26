@@ -12,11 +12,14 @@ import random
 mean=lambda x:sum(x)/len(x)
 
 class Form:
-    def random(points_number=None,min=-1,max=1):
-        """Create a random form using."""
+    def random(points_number=None,min=-1,max=1,**kwargs):
+        """Create a random form using the point_number, the minimum and maximum position for x and y components and optional arguments."""
         if not points_number: points_number=random.randint(1,10)
         points=[Point.random(min,max) for i in range(points_number)]
-        return Form(points)
+        form=Form(points,**kwargs)
+        print(form.point_radius)
+        form.makeSparse()
+        return form
 
     def __init__(self,points,fill=False,side_width=1,point_radius=0.1,point_color=WHITE,side_color=WHITE,area_color=WHITE):
         """Create the form object using points."""
@@ -53,12 +56,13 @@ class Form:
             raise StopIteration
 
 
-    def center(self,color=None):
+    def center(self,color=None,radius=None):
         """Return the point of the center."""
         if not color: color=self.point_color
+        if not radius: radius=self.point_radius
         mx=mean([p.x for p in self.points])
         my=mean([p.y for p in self.points])
-        return Point(mx,my,color=color)
+        return Point(mx,my,color=color,radius=radius)
 
     def sides(self):
         """"Return the list of the form sides."""
@@ -77,7 +81,6 @@ class Form:
         if not point_radius: point_radius=self.point_radius
         if not fill: fill=self.fill
         points=[(p.x,p.y) for p in self.points]
-        print("fill:",fill)
         if len(points)>1 and fill:
             window.draw.polygon(window.screen,area_color,points,not(fill))
         for point in self.points:
@@ -126,26 +129,20 @@ class Form:
 
     def makeSparse(self):
         """Change the form into the one with the most sparsed points."""
-        self=self.getSparse()
+        form=self.getSparse()
+        self.points=form.points
 
     def __contains__(self,point):
-        """Return the bool: (the point is in the form)."""
+        """Return the boolean: (the point is in the form)."""
         x,y=point[0],point[1]
         p1=Point(x,y)
         p2=Point(0,0)
         line=Line(p1,p2)
         line.show(window)
-        #print(line.__dict__)
         for segment in self.sides():
             if segment|line:
                 return True
 
-    def inForm(self,point):
-        for i in range(len(self.points)):
-            A=self.points[i]
-
-
-        return False
     def rotate(self,angle,C=None):
         """Rotate the form by rotating its points from the center of rotation.
         Use center of the shape as default center of rotation.""" #Actually not working
@@ -157,7 +154,7 @@ class Form:
             v.rotate(angle)
             self.points[i]=v(C)
 
-    def move(self,*step):
+    def move(self,step):
         """Move the object by moving all its points using step."""
         x,y=step[0],step[1]
         for i in range(len(self.points)):
@@ -179,6 +176,14 @@ class Form:
         center=self.center()
         x,y=center[0],center[1]
         return [x,y]
+
+    def getPoints(self):
+        """Return the points of the form."""
+        return self.points
+
+    def setPoints(self,points):
+        """Set the points of the form."""
+        self.points=points
 
     def moveUntil(self,position):
         """Move the object to the position until the point is hit."""
@@ -235,7 +240,21 @@ class Form:
         self.area_color=_color
 
 if __name__=="__main__":
-    form=Form.random(4)
+    from mysurface import Surface
+    surface=Surface()
+    form=Form.random(10,min=-50,max=50)
+    form.makeSparse()
+    form.fill=True
     print(form)
-    a,b,c,d=form
-    print(a,b,c,d)
+    #a,b,c,d=form
+    #print(a,b,c,d)
+    while surface.open:
+        surface.check()
+        surface.clear()
+        surface.control()
+        surface.show()
+        form.rotate(0.1)
+        form.move((0,1))
+        form.move((-1,0))
+        form.show(surface)
+        surface.flip()

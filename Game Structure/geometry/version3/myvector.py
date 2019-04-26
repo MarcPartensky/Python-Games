@@ -5,9 +5,7 @@ from myline import Line
 from math import cos,sin
 from cmath import polar
 
-from mywindow import Window
-from mysurface import Surface
-
+import mycolors
 import random
 
 class Vector:
@@ -192,7 +190,10 @@ class Vector:
 
     def __invert__(self):
         """Return the unit vector."""
-        n,a=self.polar()
+        a=self.angle()
+        position=Vector.cartesian([1,a])
+        return Vector(position)
+
 
     def __str__(self):
         """Return a string description of the vector."""
@@ -202,13 +203,16 @@ class Vector:
     __repr__=__str__
 
 
-
 if __name__=="__main__":
-    window=Surface()
+    from mysurface import Surface
+    window=Surface(fullscreen=True)
     p1=Point(5,1)
     p2=Point(5,4)
     p3=Point(3,2)
     v1=Vector(p1,p2)
+    v3=~v1
+    v3.color=mycolors.ORANGE
+    print(tuple(v3))
     x,y=v1 #Unpacking test
     print("x,y:",x,y)
     print(v1) #Give a string representation of the vector
@@ -224,6 +228,8 @@ if __name__=="__main__":
         v1.show(p1,window)
         v2%=0.3 #Rotate the form by 0.3 radian
         v2.show(p1,window)
+        v3.show(p1,window)
+        window.print("This is p1",tuple(p1))
         p2.show(window)
         p4.show(window)
         window.flip()

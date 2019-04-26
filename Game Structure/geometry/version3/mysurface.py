@@ -2,9 +2,10 @@ from mydraw import Draw
 from mywindow import Window
 
 class Surface:
-    def __init__(self,draw=Draw()):
+    def __init__(self,draw=None,**kwargs):
         """Create a surface."""
-        self.draw=draw
+        if not draw: self.draw=Draw(**kwargs)
+        else: self.draw=draw
         self.screen=self.draw.window.screen
         self.open=self.draw.window.open
         self.clear=self.draw.clear
@@ -33,6 +34,11 @@ class Surface:
         """Show the plane on screen."""
         self.draw.plane.show(self.draw.window)
 
+    def print(self,text,position,**kwargs):
+        """Print a text the window's screen using text and position and optional arguments."""
+        position=self.draw.plane.getToScreen(position,self.draw.window)
+        self.draw.window.print(text,position,**kwargs)
+
 
 class Surface2(Window):
     def __init__(self,*args,**kwargs):
@@ -42,6 +48,6 @@ class Surface2(Window):
 
 
 if __name__=="__main__":
-    #surface=Surface()
+    surface=Surface()
     #surface()
-    pass
+    #pass

@@ -30,9 +30,12 @@ Client:
 
 
 class Draw:
-    def __init__(self,plane=Plane(),window=Window()):
+    def __init__(self,plane=Plane(),window=None,**kwargs):
+        if window: self.window=window
+        else: window=Window(**kwargs)
         self.plane=plane
         self.window=window
+        self.window.text_size=30
 
 
     def rect(self,screen,color,rect,filled=False):
@@ -73,7 +76,7 @@ class Draw:
         self.window.draw.rect(screen,color,position+size,not filled)
 
     def polygon(self,screen,color,positions,filled=False): #No clue of what i'm doing to do here.
-        screen_positions=self.plane.getToScreen(positions,self.window)
+        screen_positions=self.plane.getAllToScreen(positions,self.window)
         self.window.draw.polygon(screen,color,screen_positions,filled)
 
     def line(self,screen,color,start_position,end_position,width=1):

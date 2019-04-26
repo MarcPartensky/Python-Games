@@ -9,6 +9,10 @@ from copy import deepcopy
 
 from pygame.locals import *
 
+"""This is an obselete project which demonstrates the potential of the whole project,
+the techniques used are old, however it works well with few adaptations with the
+modifications made to the new dependencies."""
+
 class Maker(Plane):
     """Form maker is a tool which purpose is to be able to create forms in real time and interact with them."""
     def __init__(self,forms=[],theme={},view=None):
@@ -63,19 +67,28 @@ class Maker(Plane):
 
     def show(self,window):
         """Show all the form using window."""
+        self.showGrid(window)
         for form in self.forms:
             self.showForm(form,window)
-            center=form.center(color=GREEN)
+            center=form.center(color=GREEN,radius=1)
+            center.truncate()
             center.show(window)
 
     def showForm(self,plane_form,window):
         """Show a form using window."""
         screen_form=self.getFormToScreen(plane_form,window)
-        screen_form.show(window)
+        screen_form.show(window,point_radius=1)
 
     def getFormToScreen(self,plane_form,window):
         """Create a new form according screen coordonnates using a form and the window."""
-        points=[Point(self.getToScreen(point,window)) for point in plane_form]
+        #This function deals with an issue which is that the forms that are
+        #defined uses screen coordonnates instead of the plane's one.
+        #This problem has been fixed in more recent versions by changing the
+        #nature of the windows given to the show functions of the forms by
+        #defining a new type of window which is called 'Surface' for now...
+        points=[Point(self.getToScreen(point,window),radius=1) for point in plane_form]
+        for point in points:
+            point.truncate()
         screen_form=deepcopy(plane_form)
         screen_form.points=points
         return screen_form
@@ -95,8 +108,19 @@ class Maker(Plane):
 
 
     def select(self,window):
-        """Still not clear what it does. (it means its useless)"""
+        """Still not clear what it does. (it means its useless)."""
         pass
+
+    def __call__(self,window):
+        """Main loop."""
+        while window.open:
+            window.check()
+            window.clear()
+            self.show(window)
+            self.control(window)
+            self.event(window)
+            self.update(window)
+            window.flip()
 
 
 if __name__=="__main__":

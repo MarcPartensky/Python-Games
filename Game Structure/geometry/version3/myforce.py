@@ -48,11 +48,11 @@ class Force:
         """Return next component depending on the components of the internal vector."""
         return next(self.vector)
 
+down=Vector([0,-1])
+gravity=Force(9.81*down)
+
 
 if __name__=="__main__":
-    down=Vector([0,-1])
-    gravity=Force(9.81*down)
-
     zero=Vector([0,0])
     propulsion=Force(zero)
 
