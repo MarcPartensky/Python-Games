@@ -26,7 +26,7 @@ class Point:
         for point in points:
             point.show(surface)
 
-    def __init__(self,*args,mode=0,size=[0.1,0.1],width=1,radius=0.1,fill=False,color=mycolors.WHITE):
+    def __init__(self,*args,mode=0,size=[0.1,0.1],width=1,radius=0.05,fill=False,color=mycolors.WHITE):
         """Create a point using x, y, radius, fill and color."""
         args=list(args)
         if len(args)==1:
@@ -894,7 +894,7 @@ class Form:
         form.makeSparse()
         return form
 
-    def __init__(self,points,fill=False,point_mode=0,point_radius=0.01,point_width=1,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE):
+    def __init__(self,points,fill=False,point_mode=0,point_radius=0.01,point_width=1,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE,point_show=True,side_show=True):
         """Create the form object using points."""
         self.points=points
         self.point_radius=point_radius
@@ -903,6 +903,8 @@ class Form:
         self.point_color=point_color
         self.side_color=side_color
         self.area_color=area_color
+        self.point_show=point_show
+        self.side_show=side_show
         self.fill=fill
 
     def __iadd__(self,point):
@@ -942,7 +944,7 @@ class Form:
         """"Return the list of the form sides."""
         return [Segment(self.points[i%len(self.points)],self.points[(i+1)%len(self.points)],color=self.side_color,width=self.side_width) for i in range(len(self.points))]
 
-    def show(self,window,point_color=None,side_color=None,area_color=None,side_width=None,point_radius=None,color=None,fill=None):
+    def show(self,window,point_color=None,side_color=None,area_color=None,side_width=None,point_radius=None,color=None,fill=None,point_show=None,side_show=None):
         """Show the form using a window."""
         if color:
             area_color=color
@@ -954,13 +956,17 @@ class Form:
         if not side_width: side_width=self.side_width
         if not point_radius: point_radius=self.point_radius
         if not fill: fill=self.fill
+        if not point_show: point_show=self.point_show
+        if not side_show: side_show=self.side_show
         points=[(p.x,p.y) for p in self.points]
         if len(points)>1 and fill:
             window.draw.polygon(window.screen,area_color,points,not(fill))
-        for point in self.points:
-            point.show(window,color=point_color,radius=point_radius)
-        for side in self.sides():
-            side.show(window,color=side_color,width=side_width)
+        if point_show:
+            for point in self.points:
+                point.show(window,color=point_color,radius=point_radius)
+        if side_show:
+            for side in self.sides():
+                side.show(window,color=side_color,width=side_width)
 
     def __or__(self,other):
         """Return the bool: (2 sides are crossing)."""
@@ -1122,7 +1128,8 @@ class Form:
 
 if __name__=="__main__":
     from mysurface import Surface
-    surface=Surface(fullscreen=False)
+    surface=Surface(name="Abstract Demonstration",fullscreen=True)
+
     p1=Point(10,0,radius=0.05,color=mycolors.YELLOW)
     p2=Point(20,20,radius=0.05,color=mycolors.YELLOW)
     origin=Point(0,0)
@@ -1130,11 +1137,6 @@ if __name__=="__main__":
     l1=Line(origin,math.pi/4,correct=False)
     l2=Line(p1,math.pi/2,correct=False)
     s1=Segment(p1,p2)
-    intersection=l1.crossSegment(s1)
-
-    #surface.draw.window.pause()
-
-
 
     while surface.open:
         #Surface specific commands

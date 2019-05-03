@@ -12,9 +12,16 @@ class Surface:
         self.flip=self.draw.window.flip
         self.press=self.draw.window.press
         self.build=self.draw.window.build
+        self.click=self.draw.window.click
         self.__call__=self.draw.window.__call__
         #self.show=self.draw.show
         self.control=self.draw.control
+
+    def point(self):
+        """Adapt the position of the cursor in plane's coordonnates."""
+        x,y=self.draw.window.point()
+        x,y=self.draw.plane.getFromScreen([x,y],self.draw.window)
+        return (x,y)
 
     def check(self):
         """Check if the surface is open."""
