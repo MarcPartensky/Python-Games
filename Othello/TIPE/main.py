@@ -21,7 +21,7 @@ Penser à faire une class "Coup" ou "Mouvement" qui prend un parametre une pos, 
 La plupart des methode de board.py qui retourne une liste de coo, retourne une liste de liste : autrement dit, les coo sont dans des liste et non des tuples => il faut chager ca et mettre les coo dans des tuples
 
 
-Pour marc :
+Pour marc :9
 Indiquer dans la fenetre à qui c'est le tour
 La fonction board.conquerir doit renvoyer le nombre de pion retourne
 

@@ -44,14 +44,6 @@ class IA(Joueur):
         mouvements=nouveau_plateau.obtenirMouvementsValides(cote_oppose)
         return mouvements
 
-    def estPionReprenable(self,plateau,pion,cote):
-        """Determine si un pion peut être repris juste après pion."""
-        nouveau_plateau=copy.deepcopy(plateau)
-        nouveau_plateau.placerPion(pion,cote)
-        cote_oppose=nouveau_plateau.obtenirCoteOppose(cote)
-        mouvements=nouveau_plateau.obtenirMouvementsValides(cote_oppose)
-        return bool(pion in mouvements)
-
     def estSurCoin(self,plateau,pion):
         """Determine si un pion est sur un coin."""
         tx,ty=plateau.taille

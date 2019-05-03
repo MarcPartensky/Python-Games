@@ -11,6 +11,8 @@ class PlateauAnalysable(Plateau):
     def __init__(self,*args,**kwargs):
         """Creer un plateau analysable."""
         self.vitesse_demonstration=0.1 #Possibilité de changer la vitesse de démonstration
+        self.pions_definitivement_stables=None
+        self.pions_stables=None
         super().__init__(*args,**kwargs)
 
     def chargerAnalyse(self,fenetre):
@@ -18,12 +20,16 @@ class PlateauAnalysable(Plateau):
         pions0_definitivement_stables=self.obtenirTousLesPionsDefinitivementStables(0,fenetre)
         pions1_definitivement_stables=self.obtenirTousLesPionsDefinitivementStables(1,fenetre)
         self.pions_definitivement_stables=[pions0_definitivement_stables,pions1_definitivement_stables]
+        pions0_prenables=self.obtenirTousLesPionsPrenables(0,fenetre)
+        pions1_prenables=self.obtenirTousLesPionsPrenables(1,fenetre)
+        self.pions_prenables=[pions0_prenables,pions1_prenables]
         pions0_stables=self.obtenirTousLesPionsStables(0,fenetre)
         pions1_stables=self.obtenirTousLesPionsStables(1,fenetre)
         self.pions_stables=[pions0_stables,pions1_stables]
         #Un petit peu de présentation pour faire joli
         for i in range(2):
-            self.presenter(self.pions_stables[i],self.pieces_couleur[i],fenetre,"stables",pause=False)
+            self.presenter(self.pions_stables[i],self.pieces_couleur[i],fenetre,"stables")
+            self.presenter(self.pions_prenables[i],self.pieces_couleur[i],fenetre,"prenables")
             self.presenter(self.pions_definitivement_stables[i],self.pieces_couleur[i],fenetre,"definitivement_stables",clear=False,pause=False)
             fenetre.attendre(0.5)
 
@@ -121,39 +127,53 @@ class PlateauAnalysable(Plateau):
         pions=self.obtenirPions(cote)
         pions_stables=[]
         for pion in pions:
-            if self.estUnPionStable(pion):
+            if self.estUnPionStable(pion,fenetre):
                 pions_stables.append(pion)
         return pions
 
-    def estUnPionStable(self,pion): #Cette fonction est toujours incomplète
+    def estUnPionStable(self,pion,fenetre,niveau=1): #Cette fonction est toujours pas fonctionnelle
         """Détermine si un pion est stable."""
+        cote=self.obtenirCase(pion) #Obtient le cote du joueur ayant pose le pion
+        cote_oppose=self.obtenirCoteOppose(cote) #Recupere le cote oppose avec le cote du joueur
+        mouvements=self.obtenirMouvementsValides(cote_oppose) #recupere tous les mouvements enemis
+        #Determine si un pion est imprenable
+        if not self.estUnPionPrenable(pion): #Si c'est le cas, il est stable
+            stable=True #On sauve le fait que le pion soit stable
+        else: #Sinon lorsqu'il est prenable, il est stable uniquement si celui-ci devient instable apres etre pris
+            stable=True #On suppose au départ le pion stable, et on cherche un mouvement qui perment de discréditer cette supposition
+            for mouvement in mouvements: #Fait une itération de chaque mouvement un par un
+                nouveau_plateau=copy.deepcopy(self) #On copie le plateau pour simuler chaque mouvement enemi
+                nouveau_plateau.placerPion(mouvement,cote_oppose) #On joue le mouvement enemi itéré dans le nouveau plateau
+                nouveau_cote=nouveau_plateau.obtenirCase(pion) #On récupère la couleur du pion après le mouvement enemi
+                if nouveau_cote!=cote: #Détermine si ce pion est pris i.e. la couleur de ce pion dans le nouveau plateau,est différente de celle d'avant
+                    nouveau_plateau.afficher(fenetre) #Réaffiche pour le debug
+                    nouveau_plateau.presenter(pion,couleurs.ORANGE,fenetre,"niveau:"+str(niveau),couleur_texte=couleurs.ORANGE) #Affiche le pion que l'on considère et le niveau de récusion
+                    if nouveau_plateau.estUnPionStable(pion,fenetre,niveau+1): #Détermine si ce pion devient stable après être pris
+                        stable=False #Si c'est le cas alors forcément il n'est pas devenu instable donc le pion ne pouvait pas être stable à la base
+                        break #Donc comme ce pion ne peut pas être stable, il n'y a pas de raison de vérifier s'il peut l'être pour d'autre mouvements
+        return stable #On renvoie le booléen correspondant à la stabilité du pion
+
+    def obtenirTousLesPionsPrenables(self,cote,fenetre):
+        """Renvoie la liste de tous les pions d'un côté 'cote' qui sont prenables au tour suivant."""
+        pions=self.obtenirPions(cote)
+        prenables=[]
+        for pion in pions:
+            if self.estUnPionPrenable(pion):
+                prenables.append(pion)
+        return prenables
+
+    def estUnPionPrenable(self,pion):
+        """Determine si un pion est prenable a l'instant en utilisant le pion."""
         cote=self.obtenirCase(pion)
         cote_oppose=self.obtenirCoteOppose(cote)
         mouvements=self.obtenirMouvementsValides(cote_oppose)
-        stable=True
+        prenable=False
         for mouvement in mouvements:
             nouveau_plateau=copy.deepcopy(self)
             nouveau_plateau.placerPion(mouvement,cote_oppose)
             nouveau_cote=nouveau_plateau.obtenirCase(pion)
             if nouveau_cote!=cote:
-                log("cotes:",cote,nouveau_cote)
-                if not nouveau_plateau.estUnPionStable(pion):
-                    stable=False
-        return stable
-
-
-    def estUnPionPrenable(self,pion): #Pas fini
-        """Determine si un pion est prenable a l'instant en utilisant le pion."""
-        cote_pion=self.obtenirCase(pion)
-        cote_oppose=self.obtenirCoteOppose(cote)
-        mouvements=self.obtenirMouvementsValides(cote_oppose)
-        prenable=True
-        for mouvement in mouvements:
-            nouveau_plateau=copy.deepcopy(self)
-            nouveau_plateau.placerPion(mouvement)
-            nouveau_cote_pion=nouveau_plateau.obtenirCase(pion)
-            if nouveau_cote_pion!=cote_pion:
-                prenable=False
+                prenable=True
                 break
         return prenable
 

@@ -1,5 +1,5 @@
 from mysurface import Surface
-from myvector import Vector
+from myabstract import Vector
 
 import mycolors
 

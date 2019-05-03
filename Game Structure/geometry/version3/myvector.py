@@ -1,6 +1,5 @@
-from mysegment import Segment
+from mydirection import Direction
 from mypoint import Point
-from myline import Line
 
 from math import cos,sin
 from cmath import polar
@@ -9,11 +8,36 @@ import mycolors
 import random
 
 class Vector:
-    def random(min=-1,max=1):
+    def random(min=-1,max=1,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a random vector using optional min and max."""
         x=random.uniform(min,max)
         y=random.uniform(min,max)
-        return Vector(x,y)
+        return Vector(x,y,color=color,width=width,arrow=arrow)
+
+    def createFromPolarCoordonnates(norm,angle,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector using norm and angle from polar coordonnates."""
+        x,y=Vector.cartesian([norm,angle])
+        return Vector(x,y,color=color,width=width,arrow=arrow)
+
+    def createFromSegment(segment,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector from a segment."""
+        return Vector.createFromTwoPoints(segment.p1,segment.p2,color=color,width=width,arrow=arrow)
+
+    def createFromTwoPoints(point1,point2,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector from 2 points."""
+        x=point2.x-point1.x
+        y=point2.y-point1.y
+        return Vector(x,y,color=color,width=width,arrow=arrow)
+
+    def createFromPoint(point,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector from a single point."""
+        return Vector(point.x,point.y,color=color,width=width,arrow=arrow)
+
+    def createFromLine(line,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector from a line."""
+        angle=line.angle()
+        x,y=Vector.cartesian([1,angle])
+        return Vector(x,y,color=color,width=width,arrow=arrow)
 
     def polar(position):
         """Return the polar position [norm,angle] using cartesian position [x,y]."""
@@ -23,29 +47,19 @@ class Vector:
         """Return the cartesian position [x,y] using polar position [norm,angle]."""
         return [position[0]*cos(position[1]),position[0]*sin(position[1])]
 
-
     def __init__(self,*args,color=(255,255,255),width=1,arrow=[0.1,0.5]):
         """Create a vector."""
         args=list(args)
         if len(args)==1:
             args=args[0]
-        if type(args)==Segment:
-            self.x=args.p2.x-args.p1.x
-            self.y=args.p2.y-args.p1.y
-        elif type(args)==Line:
-            self.x=args.vector.x
-            self.y=args.vector.y
-        elif type(args)==Point:
+        if type(args)==Point:
             self.x=args.x
             self.y=args.y
         elif type(args)==list or type(args)==tuple:
             if type(args[0])==Point and type(args[1])==Point:
                 self.x=args[1].x-args[0].x
                 self.y=args[1].y-args[0].y
-            elif type(args[0])==int and type(args[1])==int:
-                self.x=args[0]
-                self.y=args[1]
-            elif type(args[0])==float and type(args[1])==float:
+            elif (type(args[0])==int or type(args[0])==float) and (type(args[1])==int or type(args[1])==float):
                 self.x=args[0]
                 self.y=args[1]
             else:
@@ -78,7 +92,7 @@ class Vector:
 
     def __next__(self):
         """Return the next point threw an iteration."""
-        if self.iterator < 2:
+        if self.iterator<2:
             if self.iterator==0: value=self.x
             if self.iterator==1: value=self.y
             self.iterator+=1
@@ -96,9 +110,15 @@ class Vector:
         """Return if two vectors are colinear."""
         return self.x*other.y-self.y*other.x==0
 
+    __floordiv__=colinear
+
     def scalar(self,other):
         """Return the scalar product between two vectors."""
         return self.x*other.x+self.y*other.y
+
+    def cross(self,other):
+        """Determine if a vector crosses another using dot product."""
+        return self.scalar(other)==0
 
     def __imul__(self,factor):
         """Multiply a vector by a given factor."""
@@ -176,6 +196,15 @@ class Vector:
         else:
             return new_points
 
+    def apply(self,point):
+        """Return the point after applying the vector to it."""
+        return self+point
+
+    def allApply(self,points):
+        """Return the points after applying the vector to those."""
+        new_points=[point+self for point in points]
+        return new_points
+
     def angle(self):
         """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
         return Vector.polar([self.x,self.y])[1]
@@ -197,10 +226,9 @@ class Vector:
 
     def __str__(self):
         """Return a string description of the vector."""
-        text="Vector:x,y:"+str(self.x)+","+str(self.y)+",color:"+str(self.color)+",width:"+str(self.width)+",arrow:"+str(self.arrow)
+        text="Vector:"+str(self.__dict__)
         return text
 
-    __repr__=__str__
 
 
 if __name__=="__main__":
@@ -209,7 +237,8 @@ if __name__=="__main__":
     p1=Point(5,1)
     p2=Point(5,4)
     p3=Point(3,2)
-    v1=Vector(p1,p2)
+    v1=Vector.createFromTwoPoints(p1,p2)
+    v4=Vector.random(color=mycolors.YELLOW)
     v3=~v1
     v3.color=mycolors.ORANGE
     print(tuple(v3))

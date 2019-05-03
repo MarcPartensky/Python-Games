@@ -2,14 +2,27 @@ from math import pi,sqrt,atan,cos,sin
 import random
 mean=lambda x:sum(x)/len(x)
 
+import mycolors
+
 class Point:
-    def random(min=-1,max=1):
+    def random(min=-1,max=1,radius=0.1,fill=False,color=mycolors.WHITE):
         """Create a random point using optional minimum and maximum."""
         x=random.uniform(min,max)
         y=random.uniform(min,max)
-        return Point(x,y)
+        return Point(x,y,radius=radius,fill=fill,color=color)
 
-    def __init__(self,*args,radius=0.1,fill=False,color=(255,255,255)):
+    def turnPoints(angles,points):
+        """Turn the points around themselves."""
+        l=len(points)
+        for i in range(l-1):
+            points[i].turn(angles[i],points[i+1:])
+
+    def showPoints(surface,points):
+        """Show the points on the surface."""
+        for point in points:
+            point.show(surface)
+
+    def __init__(self,*args,mode=0,size=[0.1,0.1],width=1,radius=0.1,fill=False,color=mycolors.WHITE):
         """Create a point using x, y, radius, fill and color."""
         args=list(args)
         if len(args)==1:
@@ -27,6 +40,9 @@ class Point:
                 raise Exception("The list of objects used to define the point has not been recognised.")
         else:
             raise Exception("The list object used to define the point has not been recognised because it contains too many components.")
+        self.mode=mode
+        self.size=size
+        self.width=width
         self.radius=radius
         self.fill=fill
         self.color=color
@@ -63,25 +79,54 @@ class Point:
 
     def rotate(self,angle=pi,point=[0,0]):
         """Rotate the point using the angle and the center of rotation.
-        Uses [0,0] for the center of rotation by default."""
-        s=Vector(self.x,self.y)
+        Uses the origin for the center of rotation by default."""
         v=Vector(self.x-point[0],self.y-point[1])
-        sn,sa=s.polar()
-        vn,va=v.polar()
-        self.x=s.x+vn*cos(sa+va)
-        self.y=s.y+vn*sin(sa+va)
+        v.rotate(angle)
+        new_point=v(point)
+        self.x,self.y=new_point
+
+    def turn(self,angle=pi,points=[]):
+        """Turn the points around itself."""
+        for point in points:
+            point.rotate(angle,self)
 
     def move(self,*step):
         """Move the point using given step."""
         self.x+=step[0]
         self.y+=step[1]
 
-    def show(self,window,color=None,radius=None,fill=None):
-        """Show a point using window."""
+    def showCross(self,window,color=None,size=None,width=None):
+        """Show the point under the form of a cross using the window."""
+        if not color: color=self.color
+        if not size: size=self.size
+        if not width: width=self.width
+        x,y=self
+        sx,sy=size
+        xmin=x-sx/2
+        ymin=y-sy/2
+        xmax=x+sx/2
+        ymax=y+sy/2
+        window.draw.line(window.screen,color,[xmin,ymin],[xmax,ymax],width)
+        window.draw.line(window.screen,color,[xmin,ymax],[xmax,ymin],width)
+
+    def showCircle(self,window,color=None,radius=None,fill=None):
+        """Show a point under the form of a circle using the window."""
         if not color: color=self.color
         if not radius: radius=self.radius
         if not fill: fill=self.fill
         window.draw.circle(window.screen,color,[self.x,self.y],radius,not(fill))
+
+    def show(self,window,mode=None,color=None,size=None,width=None,radius=None,fill=None):
+        """Show the point on the window."""
+        if not mode: mode=self.mode
+        if mode==0 or mode=="circle":
+            self.showCircle(window,color=color,radius=radius,fill=fill)
+        if mode==1 or mode=="cross":
+            self.showCross(window,color=color,size=size,width=width)
+
+    def showText(self,window,text,size=20,color=mycolors.WHITE):
+        """Show the name of the point on the window."""
+        window.print(text,self,size=size,color=color)
 
     def __add__(self,other):
         """Add the components of 2 objects."""
@@ -115,4 +160,23 @@ class Point:
         """Return the string representation of a point."""
         return "Point:"+str(self.__dict__)
 
-    __repr__=__str__
+if __name__=="__main__":
+    from mysurface import Surface
+    from myvector import Vector
+    surface=Surface(fullscreen=True)
+    p1=Point(0,0,color=mycolors.RED,fill=True)
+    p2=Point(5,0,color=mycolors.GREEN,fill=True)
+    p3=Point(10,0,color=mycolors.BLUE,fill=True)
+    p4=Point(15,0,color=mycolors.YELLOW,fill=True)
+    p5=Point(20,0,color=mycolors.ORANGE,fill=True)
+    points=[p1,p2,p3,p4,p5]
+    points=[Point(5*i,0,radius=0.2) for i in range(10)]
+    angles=[i/1000 for i in range(1,len(points))]
+    while surface.open:
+        surface.check()
+        surface.control()
+        surface.clear()
+        surface.show()
+        Point.turnPoints(angles,points)
+        Point.showPoints(surface,points)
+        surface.flip()

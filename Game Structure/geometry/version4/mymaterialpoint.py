@@ -1,8 +1,7 @@
-from mypoint import Point
 from myforce import Force
-from mysegment import Segment
 from mymotion import Motion
-from myvector import Vector
+
+from myabstract import Point,Segment,Vector
 
 import myforce
 
@@ -12,11 +11,11 @@ class MaterialPoint:
         motion=Motion.random()
         return MaterialPoint(motion)
 
-    def createFromPoint(point):
+    def createFromPoint(point,forces=[]):
         """Create a material point from a Point instance."""
-        x,y=point #Using iter method of points
-        motion=Motion([x,y]) #Initializing a motion instance
-        return MaterialPoint(motion) #Initializing a material point instance
+        position=Vector.createFromPoint(point)
+        motion=Motion(position) #Initializing a motion instance
+        return MaterialPoint(motion,forces) #Initializing a material point instance
 
     def __init__(self,motion=Motion(),forces=[],mass=1):
         """Create a material point."""
@@ -56,6 +55,14 @@ class MaterialPoint:
         """Set the mass of the material point to the given mass."""
         self.mass=mass
 
+    def getMotion(self):
+        """Return the motion of the material point."""
+        return self.motion
+
+    def setMotion(self,motion):
+        """Set the motion of the material point."""
+        self.motion=motion
+
     def show(self,window):
         """Show the material point on the window."""
         position=self.getPosition()
@@ -66,14 +73,14 @@ class MaterialPoint:
     def showMotion(self,window):
         """Show the motion of a material point on the window."""
         position,velocity,acceleration=self.motion #Extract the vectors out of the motion.
-        point=Point(tuple(position))
+        position.show(point,window)
         velocity.show(point,window)
         acceleration.show(point,window)
 
     def update(self,t=1):
         """Update the motion of the material point."""
         force=Force.sum(self.forces)
-        print("MyMaterialPoint:force:",force)
+        print(force)
         x,y=force
         acceleration=Vector(x,y)/self.mass
         self.motion.setAcceleration(acceleration)

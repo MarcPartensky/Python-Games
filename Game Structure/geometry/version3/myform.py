@@ -96,6 +96,15 @@ class Form:
                     return True
         return False
 
+    def cross(self,other):
+        """Return the list of the points of intersection between the form and a segment or a line."""
+        points=[]
+        for side in self.sides():
+            cross=side|other
+            if cross:
+                points.append(cross)
+        return cross
+
     def convex(self):
         """Return the bool (the form is convex)."""
         center=self.center()
@@ -185,10 +194,6 @@ class Form:
         """Set the points of the form."""
         self.points=points
 
-    def moveUntil(self,position):
-        """Move the object to the position until the point is hit."""
-        pass
-
     def update(self,input):
         """Update the points."""
         for point in self.points:
@@ -205,13 +210,13 @@ class Form:
     def area(self):
         """Return the area of the form using its own points."""
         l=len(self.points)
-        if l==0 or l==1:
+        if l<3: #The form has no point, is a single point or a segment, so it has no area.
             return 0
-        elif l==3:
+        elif l==3: #The form is a triangle, so we can calculate its area.
             a,b,c=[Vector(segment) for segment in self.sides()]
             A=1/4*sqrt(4*a.norm()**2*b.norm()**2-(a.norm()**2+b.norm()**2-c.norm()**2)**2)
             return A
-        else:
+        else: #The form has more points than 3, so we can cut it in triangles.
             area=0
             C=self.center()
             for i in range(l):

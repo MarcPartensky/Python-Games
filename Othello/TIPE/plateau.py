@@ -76,6 +76,7 @@ class Plateau:
         self.gagne=False
         self.taille_x,self.taille_y=self.taille
         self.nombre_de_joueurs=2
+        self.demonstration=True
         if theme: self.couleur_grille,self.pieces_couleur,self.mouvements_couleur=theme
 
     def creerGrille(self):
@@ -405,19 +406,20 @@ class Plateau:
         """Affiche les 4 points pour délimiter le carré central du plateau."""
         pass #A Valentin de faire, son expérience dans le domaine est sans égal
 
-    def presenter(self,positions,couleur,fenetre,message=None,clear=True,pause=True):
+    def presenter(self,positions,couleur,fenetre,message=None,clear=True,pause=True,couleur_texte=couleurs.NOIR):
         """Permet de debuger en 1 commande."""
-        if not type(positions)==list: positions=[positions]
-        if clear:
-            fenetre.clear()
-            self.afficher(fenetre)
-        if positions:
-            self.colorerCase(positions,couleur,fenetre)
-            if message:
-                self.afficherMessage(message,positions[0],couleurs.NOIR,fenetre)
-        fenetre.flip()
-        if pause:
-            fenetre.pause()
+        if self.demonstration:
+            if not type(positions)==list: positions=[positions]
+            if clear:
+                fenetre.clear()
+                self.afficher(fenetre)
+            if positions:
+                self.colorerCase(positions,couleur,fenetre)
+                if message:
+                    self.afficherMessage(message,positions[0],couleur_texte,fenetre)
+            fenetre.flip()
+            if pause:
+                fenetre.pause()
 
 
     def afficherMessage(self,message,position,couleur,fenetre):

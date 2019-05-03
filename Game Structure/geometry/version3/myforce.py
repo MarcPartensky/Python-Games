@@ -3,10 +3,15 @@ from myvector import Vector
 import copy
 
 class Force:
+    def random(min=-1,max=1):
+        """Return a random force."""
+        vector=Vector.random(min,max)
+        return Force(vector)
+
     def sum(forces):
-        if not forces: return Force([0,0])
-        resulting_force=forces[0]
-        for force in forces[1:]:
+        """Return the force that correspond to the sum of the forces."""
+        resulting_force=Force(Vector())
+        for force in forces:
             resulting_force+=force
         return resulting_force
 
@@ -51,10 +56,15 @@ class Force:
 down=Vector([0,-1])
 gravity=Force(9.81*down)
 
-
 if __name__=="__main__":
     zero=Vector([0,0])
     propulsion=Force(zero)
+
+
+    random_force=Force.random()
+    random_force+=gravity
+    print(random_force)
+
 
     result=Force.sum([gravity,propulsion])
     print(result)
