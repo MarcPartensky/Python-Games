@@ -4,6 +4,7 @@ from mymotion import Motion
 from myabstract import Point,Segment,Vector
 
 import myforce
+import math
 
 class MaterialPoint:
     def random(min=-1,max=1):
@@ -22,6 +23,11 @@ class MaterialPoint:
         self.motion=motion
         self.mass=mass
         self.forces=forces
+
+    def getPoint(self):
+        """Return the abstract point of the material point."""
+        x,y=self.motion.getPosition()
+        return Point(x,y)
 
     def getPosition(self):
         """Return the position of the material point."""
@@ -63,28 +69,46 @@ class MaterialPoint:
         """Set the motion of the material point."""
         self.motion=motion
 
+    def getNextPosition(self,t):
+        """Return the next position of the object supposing there is no collisions."""
+        self.motion.update(t)
+        return self.getPosition()
+
+    def getNextVelocity(self,t):
+        """Return the next velocity of the object supposing there is no collisions."""
+        self.motion.update(t)
+        return self.getVelocity()
+
     def show(self,window):
         """Show the material point on the window."""
-        position=self.getPosition()
-        x,y=position
-        point=Point(x,y)
+        point=self.getPoint()
         point.show(window)
 
     def showMotion(self,window):
         """Show the motion of a material point on the window."""
         position,velocity,acceleration=self.motion #Extract the vectors out of the motion.
-        position.show(point,window)
-        velocity.show(point,window)
-        acceleration.show(point,window)
+        x,y=position
+        point=Point(x,y)
+        velocity.show(window,point)
+        acceleration.show(window,point)
 
     def update(self,t=1):
         """Update the motion of the material point."""
         force=Force.sum(self.forces)
-        print(force)
         x,y=force
         acceleration=Vector(x,y)/self.mass
         self.motion.setAcceleration(acceleration)
         self.motion.update(t)
+
+    def rotate(self,angle=math.pi,center=Point(0,0)):
+        """Rotate the point using an angle and the point of rotation."""
+        #for vector in self.motion:
+            #vector.rotate(angle)
+        #self.motion.position.rotate(angle)
+        point=self.getPoint()
+        point.rotate(angle,center)
+        vector=Vector.createFromPoint(point)
+        self.motion.setPosition(vector)
 
     def __iter__(self):
         """Iterate the position."""
@@ -106,6 +130,16 @@ class MaterialPoint:
         return "Point:"+str(self.__dict__)
 
     __repr__=__str__
+
+    def __getitem__(self,index):
+        """Return x or y value using given index."""
+        return self.getPosition()[index]
+
+    def __setitem__(self,index,value):
+        """Change x or y value using given index and value."""
+        position=self.getPosition()
+        position[index]=value
+        self.setPosition(position)
 
 
 

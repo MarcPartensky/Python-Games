@@ -72,6 +72,17 @@ class Zone(Plane):
             end=  self.getToScreen(end,window)
             window.draw.line(window.screen,color,start,end,1)
 
+class ReverseZone(Zone):
+    """Contrary to the zone when a wall is crossed the objects of the zone reappear to the other side of the zone."""
+    def __init__(self,*args,**kwargs):
+        """Create a reverse zone object."""
+        super().__init__(*args,**kwargs)
+    def getToScreen(self):
+        """Change stuff..."""
+        raise Exception("Not operational")
+        
+
+
 
 if __name__=="__main__":
     window=Window(fullscreen=True)

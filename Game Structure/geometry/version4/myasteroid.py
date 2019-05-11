@@ -20,10 +20,6 @@ class Game:
     def show(self):
         """Show the entities on screen."""
 
-class Map(Plane):
-    def __init__(self,*args,**kwargs):
-
-
 
 class Level:
     def __init__(self,entities):

@@ -9,7 +9,7 @@ class Brick(MaterialForm):
     def random(min=-1,max=1,**kwargs):
         """Create a random brick."""
         position=[random.randint(min,max) for i in range(2)]
-        return Brick(position,kwargs)
+        return Brick(position,**kwargs)
 
     def __init__(self,position,**kwargs):
         """Create a brick using its position."""
@@ -47,5 +47,6 @@ if __name__=="__main__":
         surface.control()
         surface.show()
         for brick in bricks:
+            brick.rotate(0.1)
             brick.show(surface)
         surface.flip()

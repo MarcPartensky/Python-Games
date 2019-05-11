@@ -7,9 +7,10 @@ from myforce import Force
 import mymaterialpoint
 import myforce
 import mycolors
+import math
 
 class MaterialForm:
-    def random(number=5,min=-1,max=1):
+    def random(corners=[-1,-1,1,1],number=5):
         """Create a random material form."""
         points=[MaterialPoint.random(min,max) for n in range(number)]
         return MaterialForm(points)
@@ -76,10 +77,15 @@ class MaterialForm:
         form=self.getForm()
         form.show(window)
 
-    def update(self):
+    def update(self,t=1):
         """Update the form by updating all its points."""
         for point in self.points:
-            point.update()
+            point.update(t)
+
+    def rotate(self,angle=math.pi,center=Point(0,0)):
+        """Rotate the form by rotating its points."""
+        for point in self.points:
+            point.rotate(angle,center)
 
 
     def getMass(self):
@@ -98,15 +104,30 @@ class MaterialForm:
         """Return the material point of number 'index'."""
         self.points[index]=point
 
+    def center(self):
+        """Return the center of the material form."""
+        form=self.getForm()
+        center=form.center()
+        x,y=center
+        position=Vector(x,y,color=mycolors.GREEN)
+        point_motion=Motion()
+        for point in self.points:
+            point_motion+=point.getMotion()
+        material_center=MaterialPoint(point_motion)
+        material_center.setPosition(position)
+        return material_center
+
     def showMotion(self,surface):
         """Show the motion on a surface."""
         form=self.getForm()
         center=form.center()
         x,y=center
+        position=Vector(x,y,color=mycolors.GREEN)
         point_motion=Motion()
         for point in self.points:
             point_motion+=point.getMotion()
         material_center=MaterialPoint(point_motion)
+        material_center.setPosition(position)
         material_center.showMotion(surface)
 
 
@@ -119,17 +140,29 @@ FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5
 
 if __name__=="__main__":
     surface=Surface()
-    form=Form.random()
-    form=MaterialForm.createFromForm(form,[Force(0.001,0),Force(0,0.001)])
-    print(form[0].forces)
-    print(form.getMass())
+    c1=[-10,-10,10,10]
+    f1=Form.random(c1)
+    f1=MaterialForm.createFromForm(f1,[Force(0.001,0),Force(0,0.001)])
+
+    c2=[-10,-10,10,10]
+    f2=Form.random(c2)
+    f2=MaterialForm.createFromForm(f2,[Force(0.001,0),Force(0,0.001)])
+
+    #print(form[0].forces)
+    #print(form.getMass())
+    origin=Point(0,0)
     while surface.open:
         surface.check()
         surface.clear()
         surface.control()
         surface.show()
-        form.update()
-        surface.draw.window.print("form.motion:"+str(form.getPosition()),(10,10))
-        form.show(surface)
-        form.showMotion(surface)
+        f1.update(t=0.1)
+        f2.update(t=0.1)
+        f1.rotate(0.1,f1.center().getPoint())
+        f2.rotate(-0.1,f2.center().getPoint())
+        surface.draw.window.print("form.motion:"+str(f1.getPosition()),(10,10))
+        f1.show(surface)
+        f2.show(surface)
+        f1.showMotion(surface)
+        f2.showMotion(surface)
         surface.flip()

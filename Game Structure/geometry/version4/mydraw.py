@@ -57,7 +57,7 @@ class Draw:
         rect=[pmx,pmy,pMx,pMy]
         self.window.draw.ellipse(screen,color,rect,filled)
 
-    def circle(self,screen,color,position,radius,filled):
+    def circle(self,screen,color,position,radius,filled=False):
         #self.ellipse(screen,color,position+[radius,radius],filled)
         position=self.plane.getToScreen(position,self.window)
         x,y=position
@@ -68,10 +68,9 @@ class Draw:
         #Need to implement ellipses
         #r=int(radius/self.plane.units[0])
         #r,ry=self.plane.getToScreen([radius,radius],self.window)
-        radius=int(sqrt(rx**2+ry**2))
+        radius=int((rx+ry)/2)
         #r=0.1
-        radius=max(radius,int(filled))
-        self.window.draw.circle(screen,color,position,radius,filled)
+        self.window.draw.circle(screen,color,position,radius,not(filled))
 
     def square(self,screen,color,position,side_size,filled=False):
         position=self.plane.getToScreen(position,self.window)

@@ -7,9 +7,7 @@ from cmath import polar
 from mycolors import *
 
 
-from mypoint import Point
-from myform import Form
-from myvector import Vector
+from myabstract import Point,Form,Vector
 
 import random
 import time

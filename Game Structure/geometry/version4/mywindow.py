@@ -106,6 +106,12 @@ class Window:
         if self.open:
             time.sleep(self.pause_time)
 
+    def wait(self,duration=0.1):
+        """Wait during given time."""
+        t=time.time()
+        while self.open and time.time()-t<duration:
+            self.check()
+
     def press(self):
         """Return all keys."""
         return pygame.key.get_pressed()

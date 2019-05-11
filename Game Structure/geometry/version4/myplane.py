@@ -48,24 +48,37 @@ class Plane:
 
     def control(self,window):
         """Control the view of the plane."""
-        ux,uy=self.units
+        self.controlZoom(window)
+        self.controlPosition(window)
+
+    def controlZoom(self,window):
+        """Control the zoom of the plane."""
         keys=window.press()
+        ux,uy=self.units
         if keys[K_RSHIFT]:
             self.zoom([1.1,1.1])
         if keys[K_LSHIFT] and (ux>2 and uy>2): #The second condition is useless but prevent the user from watching errors due to too far zooming out.
             self.zoom([0.9,0.9])
+
+    def controlPosition(self,window):
+        """Control the position of the plane."""
+        keys=window.press()
         if keys[K_RETURN]:
             self.units=    self.default_units[:]
             self.position= self.default_position[:]
+        ux,uy=self.units
+        wsx,wsy=window.size
+        x,y=self.position
         k=50 #Allow the user to move in the grid a reasonable velocity.
         if keys[K_LEFT]:
-            self.position[0]-=window.size[0]/self.units[0]/k
+            x-=wsx/ux/k
         if keys[K_RIGHT]:
-            self.position[0]+=window.size[0]/self.units[0]/k
+            x+=wsx/ux/k
         if keys[K_DOWN]:
-            self.position[1]-=window.size[1]/self.units[1]/k
+            y-=wsy/uy/k
         if keys[K_UP]:
-            self.position[1]+=window.size[1]/self.units[1]/k
+            y+=wsy/uy/k
+        self.position=[x,y]
 
     def getUnitsColor(self,x):
         """Get the color given a x position."""
@@ -114,6 +127,15 @@ class Plane:
             start=self.getToScreen(start,window)
             end=  self.getToScreen(end,window)
             window.draw.line(window.screen,color,start,end,1)
+
+    def setPosition(self,position):
+        """Replace the position of the plane by its new position."""
+        x,y=position
+        self.position=[x,y]
+
+    def getPosition(self):
+        """Return the position of the plane."""
+        return self.position
 
     def zoom(self,zoom):
         """Allow the user to zoom into the plane."""

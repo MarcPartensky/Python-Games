@@ -14,6 +14,7 @@ class Surface:
         self.build=self.draw.window.build
         self.click=self.draw.window.click
         self.__call__=self.draw.window.__call__
+        self.wait=self.draw.window.wait
         #self.show=self.draw.show
         self.control=self.draw.control
 
@@ -50,6 +51,19 @@ class Surface:
         """Return the corners of the plane."""
         corners=self.draw.plane.getPlaneCorners(self.draw.window)
         return corners
+
+    def controlZoom(self):
+        """Control the zoom of the surface's plane."""
+        self.draw.plane.controlZoom(self.draw.window)
+
+    def controlPosition(self):
+        """Control the position of the surface's plane."""
+        self.draw.plane.controlPosition(self.draw.window)
+
+    def getFromScreen(self,position):
+        """Behave like the get from screen of the plan without having to put the window in parameter."""
+        return self.draw.plane.getFromScreen(position,self.draw.window)
+
 
 
 class Surface2(Window):

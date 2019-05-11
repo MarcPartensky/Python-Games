@@ -1,17 +1,19 @@
-from myform import Form
-from mysurface import Surface
-from myforce import gravity,propulsion
+from myabstract import Form,Vector
+from mymotion import Motion
+from myforce import Force,gravity
+
+from pygame.locals import *
+import copy
 
 class Body:
     def __init__(self,form,name="Unnamed entity"):
         """Create body using form and optional name."""
         self.name=name
         self.form=form
-        self.next_motion=Motion()
-        self.previous_motion=Motion()
-        self.max_motion=Motion()# Not working
+        self.motion=Motion()
         #self.forces={"gravity":gravity,"propulsion":propulsion}
-        self.forces={"propulsion:",propulsion}
+        self.forces={"propulsion":Force(0,0)}
+        self.frixion=0.8
 
     def getMass(self):
         """Return the mass of the object using the area."""
@@ -20,31 +22,45 @@ class Body:
         mass=k*area
         return mass
 
-
-    def spawn(self,base):
-        pass
+    def spawn(self,position=(0,0)):
+        """Make the body spawn."""
+        x,y=position
+        self.motion.setPosition(Vector(x,y))
+        self.motion.setVelocity(Vector(0,0))
+        self.motion.setAcceleration(Vector(0,0))
 
     def show(self,window):
         """Show the form on the window."""
-        self.form.show()
+        position=self.motion.getPosition()
+        form=copy.deepcopy(self.form)
+        form.move(position)
+        form.show(window)
 
     def move(self,t=1):
         """Move entity according to its acceleration, velocity and position."""
-        self.motion(t)
-        self.last_motion(t)
+        self.motion.update(t)
 
-    def moveToward(self,position):
-        """Changes the force corresponding to the propulsion."""
-        #self.direction=
-        pass
-
-    def apply(self,forces):
+    def applyForces(self):
         """Apply the forces on the body."""
-        resulting_force=sum(self.forces)
-        self.next_motion.acceleration=resulting_force
+        forces=[force for force in self.forces.values()]
+        force=Force.mean(forces)
+        x,y=force
+        m=self.getMass()
+        acceleration=Vector(x,y)/m
+        self.motion.setAcceleration(acceleration)
 
-    def __call__(self):
-        pass
+    def applyFrixion(self):
+        """Apply the frixion on the body."""
+        velocity=self.motion.getVelocity()
+        velocity=velocity*self.frixion
+        print(velocity)
+        self.motion.setVelocity(velocity)
+
+    def update(self,t=1):
+        """Update the body by updatings its motion."""
+        self.applyForces()
+        self.applyFrixion()
+        self.move(t)
 
 
     def control(self,window):
@@ -62,12 +78,20 @@ class Body:
 
 
 if __name__=="__main__":
+    from mysurface import Surface
     surface=Surface()
-    body=Body()
+    form=Form.random()
+    body=Body(form)
     body.spawn()
     while surface.open:
         surface.check()
+        #surface.control()
         surface.clear()
-        body.control()
-        body.show(window)
+        surface.show()
+        surface.controlZoom()
+        body.control(surface)
+        body.update(t=0.1)
+        body.show(surface)
+        position=body.motion.getPosition()
+        surface.draw.plane.setPosition(position)
         surface.flip()

@@ -19,4 +19,9 @@ LIGHTBROWN = (229,219,222)
 LIGHTGREY  = (200,200,200)
 BEIGE      = (199,175,138)
 
+import random as rd
+
+
+random=lambda:tuple([rd.randint(0,255) for i in range(3)])
+
 print("mycolors imported")
