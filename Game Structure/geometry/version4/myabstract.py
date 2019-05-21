@@ -11,7 +11,11 @@ digits=2 #Number of digits of precision of the objects when displayed
 
 
 class Point:
-    def random(corners,radius=0.02,fill=False,color=mycolors.WHITE):
+    def origin():
+        """Return the point of coordonnates (0,0)."""
+        return Point(0,0)
+
+    def random(corners=[-1,-1,1,1],radius=0.02,fill=False,color=mycolors.WHITE):
         """Create a random point using optional minimum and maximum."""
         xmin,ymin,xmax,ymax=corners
         x=random.uniform(xmin,xmax)
@@ -29,31 +33,48 @@ class Point:
         for point in points:
             point.show(surface)
 
+    def createFromVector(vector):
+        """Create a point from a vector."""
+        return Point(vector.x,vector.y)
+
     def __init__(self,*args,mode=0,size=[0.1,0.1],width=1,radius=0.05,fill=False,color=mycolors.WHITE):
         """Create a point using x, y, radius, fill and color."""
         args=list(args)
-        if len(args)==1:
-            args=args[0]
-            if type(args)==list or type(args)==tuple:
-                self.x=args[0]
-                self.y=args[1]
-            else:
-                raise Exception("The object used to define the point has not been recognised.")
-        elif len(args)==2:
-            if (type(args[0])==int and type(args[1])==int) or (type(args[0]==float) and type(args[1])==float):
-                self.x=args[0]
-                self.y=args[1]
-            else:
-                raise Exception("The list of objects used to define the point has not been recognised.")
-        else:
-            raise Exception("The list object used to define the point has not been recognised because it contains too many components.")
-
+        if len(args)==1: args=args[0]
+        self.position=list(args)
         self.mode=mode
         self.size=size
         self.width=width
         self.radius=radius
         self.fill=fill
         self.color=color
+
+    def setX(self,value):
+        """Set the x component."""
+        self.position[0]=value
+
+    def getX(self):
+        """Return the x component."""
+        return self.position[0]
+
+    def delX(self):
+        """Delete the x component and so shifting to a new one."""
+        del self.position[0]
+
+    def setY(self,value):
+        """Set the y component."""
+        self.position[1]=value
+
+    def getY(self):
+        """Return the y component."""
+        return self.position[1]
+
+    def delY(self):
+        """Delete the y component."""
+        del self.position[1]
+
+    x=property(getX,setX,delX,"Allow the user to manipulate the x component easily.")
+    y=property(getY,setY,delY,"Allow the user to manipulate the y component easily.")
 
     def __eq__(self,other):
         """Determine if two points are equals by comparing its components."""
@@ -86,9 +107,10 @@ class Point:
         if index==0: self.x=value
         if index==1: self.y=value
 
-    def rotate(self,angle=pi,point=[0,0]):
+    def rotate(self,angle=pi,point=None):
         """Rotate the point using the angle and the center of rotation.
         Uses the origin for the center of rotation by default."""
+        if not point: point=Point(0,0)
         v=Vector(self.x-point[0],self.y-point[1])
         v.rotate(angle)
         new_point=v(point)
@@ -123,7 +145,7 @@ class Point:
         if not color: color=self.color
         if not radius: radius=self.radius
         if not fill: fill=self.fill
-        window.draw.circle(window.screen,color,[self.x,self.y],radius,not(fill))
+        window.draw.circle(window.screen,color,[self.x,self.y],radius,fill)
 
     def show(self,window,mode=None,color=None,size=None,width=None,radius=None,fill=None):
         """Show the point on the window."""
@@ -133,9 +155,9 @@ class Point:
         if mode==1 or mode=="cross":
             self.showCross(window,color=color,size=size,width=width)
 
-    def showText(self,window,text,size=20,color=mycolors.WHITE):
+    def showText(self,window,text,text_size=20,color=mycolors.WHITE):
         """Show the text next to the point on the window."""
-        window.print(text,self,size=size,color=color)
+        window.print(text,self,text_size,color=color)
 
     def __add__(self,other):
         """Add the components of 2 objects."""
@@ -187,17 +209,16 @@ class Point:
         y=round(self.y,digits)
         return "p("+str(x)+","+str(y)+")"
 
-    __repr__=__str__
-
 class Direction:
     def __init__(self):
         pass
 
 class Vector:
-    def random(min=-1,max=1,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+    def random(corners=[-1,-1,1,1],color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a random vector using optional min and max."""
-        x=random.uniform(min,max)
-        y=random.uniform(min,max)
+        xmin,ymin,xmax,ymax=corners
+        x=random.uniform(xmin,xmax)
+        y=random.uniform(ymin,ymax)
         return Vector(x,y,color=color,width=width,arrow=arrow)
 
     def sum(vectors):
@@ -248,17 +269,61 @@ class Vector:
     def __init__(self,*args,color=(255,255,255),width=1,arrow=[0.1,0.5]):
         """Create a vector."""
         args=list(args)
-        if len(args)==1:
-            args=args[0]
-            self.x,self.y=args
-        else:
-            self.x,self.y=args
+        if len(args)==1: args=args[0]
+        self.position=list(args)
         self.color=color
         self.width=width
         self.arrow=arrow
 
+    def setX(self,value):
+        """Set the x component."""
+        self.position[0]=value
 
-    def show(self,window,p,color=None,width=None):
+    def getX(self):
+        """Return the x component."""
+        return self.position[0]
+
+    def delX(self):
+        """Delete the x component and so shifting to a new one."""
+        del self.position[0]
+
+    def setY(self,value):
+        """Set the y component."""
+        self.position[1]=value
+
+    def getY(self):
+        """Return the y component."""
+        return self.position[1]
+
+    def delY(self):
+        """Delete the y component."""
+        del self.position[1]
+
+
+    def getAngle(self):
+        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
+        return Vector.polar(self.position)[1]
+
+    def setAngle(self,value):
+        """Change the angle of the points without changing its norm."""
+        n,a=Vector.polar(self.position)
+        self.position=Vector.cartesian([n,value])
+
+    def getNorm(self):
+        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
+        return Vector.polar(self.position)[0]
+
+    def setNorm(self,value):
+        """Change the angle of the points without changing its norm."""
+        n,a=Vector.polar(self.position)
+        self.position=Vector.cartesian([value,a])
+
+    x=property(getX,setX,delX,"Allow the user to manipulate the x component easily.")
+    y=property(getY,setY,delY,"Allow the user to manipulate the y component easily.")
+    norm=property(getNorm,setNorm,"Allow the user to manipulate the norm of the vector easily.")
+    angle=property(getAngle,setAngle,"Allow the user to manipulate the angle of the vector easily.")
+
+    def show(self,context,p,color=None,width=None):
         """Show the vector."""
         if not color: color=self.color
         if not width: width=self.width
@@ -268,9 +333,9 @@ class Vector:
         v2=v%-self.arrow[1]
         a=v1(q)
         b=v2(q)
-        window.draw.line(window.screen,color,p(),q(),width)
-        window.draw.line(window.screen,color,q(),a(),width)
-        window.draw.line(window.screen,color,q(),b(),width)
+        context.draw.line(context.screen,color,p(),q(),width)
+        context.draw.line(context.screen,color,q(),a(),width)
+        context.draw.line(context.screen,color,q(),b(),width)
 
     def showText(self,surface,point,text,color=None,size=20):
         """Show the text next to the vector."""
@@ -367,12 +432,11 @@ class Vector:
 
     def __getitem__(self,index):
         """Return x or y value using given index."""
-        return tuple(self)[index]
+        return self.position[index]
 
     def __setitem__(self,index,value):
         """Change x or y value using given index and value."""
-        if index==0: self.x=value
-        if index==1: self.y=value
+        self.position[index]=value
 
     def __call__(self,*points):
         """Return points by applying the vector on those."""
@@ -391,13 +455,6 @@ class Vector:
         new_points=[point+self for point in points]
         return new_points
 
-    def angle(self):
-        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
-        return Vector.polar([self.x,self.y])[1]
-
-    def norm(self):
-        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
-        return Vector.polar([self.x,self.y])[0]
 
     def __xor__(self,other):
         """Return the angle between two vectors."""
@@ -406,8 +463,8 @@ class Vector:
     def __invert__(self):
         """Return the unit vector."""
         a=self.angle
-        position=Vector.cartesian([1,a])
-        return Vector(position)
+        x,y=Vector.cartesian([1,a])
+        return Vector(x,y)
 
 
     def __str__(self):
@@ -416,8 +473,6 @@ class Vector:
         y=round(self.y,digits)
         text="v("+str(x)+","+str(y)+")"
         return text
-
-    __repr__=__str__
 
 
 
@@ -439,8 +494,6 @@ class Segment(Direction):
         """Return the string representation of a segment."""
         text="s("+str(self.p1)+","+str(self.p2)+")"
         return text
-
-    __repr__=__str__
 
     def __call__(self,t=1/2):
         """Return the point C of the segment so that Segment(p1,C)=t*Segment(p1,p2)."""
@@ -465,23 +518,58 @@ class Segment(Direction):
     def angle(self):
         """Return the angle of the segment."""
         vector=Vector.createFromSegment(self)
-        return vector.angle()
+        return vector.angle
 
     def show(self,window,color=None,width=None):
         """Show the segment using window."""
         if not color: color=self.color
         if not width: width=self.width
         window.draw.line(window.screen,color,[self.p1.x,self.p1.y],[self.p2.x,self.p2.y],width)
+        #self.showInBorders(window,color,width)
+
+    def showInBorders(self,window,color=None,width=None):
+        """Show the segment within the boundaries of the window."""
+        xmin,ymin,xmax,ymax=window.getCorners()
+        p=[Point(xmin,ymin),Point(xmax,ymin),Point(xmax,ymax),Point(xmin,ymax)]
+        f=Form(p)
+        if (self.p1 in f) and (self.p2 in f):
+            window.draw.line(window.screen,color,[self.p1.x,self.p1.y],[self.p2.x,self.p2.y],width)
+        elif (self.p1 in f) and not (self.p2 in f):
+            v=Vector.createFromTwoPoints(self.p1,self.p2)
+            hl=HalfLine(self.p1,v.angle)
+            p=f.crossHalfLine(hl)
+            if p:
+                print(len(p))
+                p=p[0]
+                window.draw.line(window.screen,color,[self.p1.x,self.p1.y],[p.x,p.y],width)
+        elif not (self.p1 in f) and (self.p2 in f):
+            v=Vector.createFromTwoPoints(self.p2,self.p1)
+            hl=HalfLine(self.p2,v.angle)
+            p=f.crossHalfLine(hl)
+            if p:
+                print(len(p))
+                p=p[0]
+                window.draw.line(window.screen,color,[p.x,p.y],[self.p2.x,self.p2.y],width)
+        else:
+            ps=f.crossSegment(self)
+            if len(ps)==2:
+                p1,p2=ps
+                window.draw.line(window.screen,color,[p1.x,p1.y],[p2.x,p2.y],width)
+
+
+
+
+
 
     def __contains__(self,point,e=10e-10):
         """Determine if a point is in a segment."""
         if point==self.p1: return True
         v1=Vector.createFromTwoPoints(point,self.p1)
         v2=self.getVector()
-        a1=v1.angle()
-        a2=v2.angle()
-        n1=v1.norm()
-        n2=v2.norm()
+        a1=v1.angle
+        a2=v2.angle
+        n1=v1.norm
+        n2=v2.norm
         return (abs(a1-a2)%(2*math.pi))<e and (n1<=n2)
 
     def __len__(self):
@@ -622,14 +710,14 @@ class Line(Direction):
 
     def createFromPointAndVector(point,vector,width=1,color=mycolors.WHITE):
         """Create a line using a point and a vector with optional features."""
-        angle=vector.angle()
+        angle=vector.angle
         line=Line(point,angle,width=1,color=(255,255,255))
         return line
 
     def createFromTwoPoints(point1,point2,width=1,color=mycolors.WHITE):
         """Create a line using two points with optional features."""
         vector=Vector.createFromTwoPoints(point1,point2)
-        angle=vector.angle()
+        angle=vector.angle
         line=Line(point1,angle,width,color)
         return line
 
@@ -708,11 +796,13 @@ class Line(Direction):
         self.point=point
         self.correctPoint()
 
-
     def getUnitVector(self):
         """Return the unit vector of the line."""
-        vector=Vector.createFromPolarCoordonnates(1,self.angle)
-        return vector
+        return Vector.createFromPolarCoordonnates(1,self.angle)
+
+    def setUnitVector(self,vector):
+        """Set the unit vector of the line."""
+        self.angle=vector.angle
 
     def getNormalVector(self):
         """Return the normal vector of the line."""
@@ -720,22 +810,33 @@ class Line(Direction):
         vector.rotate(math.pi/2)
         return vector
 
-    vector=getUnitVector
+    def setNormalVector(self,vector):
+        """Set the normal vector of the line."""
+        self.angle=vector.angle+math.pi/2
 
-    def slope(self):
+    def getSlope(self):
         """Return the slope of the line."""
         p1=self.point
         vector=self.getUnitVector()
-        p2=vector(p1) #Because of the way the angle of a line is defined, the x component of the second point is greater than the one of the first
+        p2=self.vector(p1) #Because of the way the angle of a line is defined, the x component of the second point is greater than the one of the first
         Dx=p2.x-p1.x
         Dy=p2.y-p1.y
         return Dy/Dx
 
-    def ordinate(self):
+    def setSlope(self):
+        """Set the slope of the line by changing its angle and point."""
+        a=self.vector()
+
+
+    def getOrdinate(self):
         """Return the ordinate of the line."""
         p=self.point
-        a=self.slope()
+        a=self.getSlope()
         if a: return p.y-a*p.x
+
+    def setOrdinate(self,value):
+        """Set the ordinate of the line by changing its position."""
+        pass
 
     def getFunction(self):
         """Return the affine function that correspond to the line."""
@@ -808,7 +909,7 @@ class Line(Direction):
     def getHeight(self,point):
         """Return the height line between the line and a point."""
         vector=self.getNormalVector()
-        angle=vector.angle()
+        angle=vector.angle
         line=Line(point,angle)
         return line
 
@@ -818,12 +919,12 @@ class Line(Direction):
         line=self.getHeight(point)
         intersection=self.crossLine(line)
         vector=Vector.createFromTwoPoints(point,intersection)
-        return vector.norm()
+        return vector.norm
 
     def projectPoint(self,point):
         """Return the projection of the point on the line."""
         vector=self.getNormalVector()
-        angle=vector.angle()
+        angle=vector.angle
         line=Line(point,angle,correct=False)
         projection=self.crossLine(line)
         return projection
@@ -931,6 +1032,11 @@ class Line(Direction):
             p1,p2=segment
             segment.show(surface,width=width,color=color)
 
+    vector=unit_vector=property(getUnitVector,setUnitVector,"Allow the client to manipulate the unit vector easily.")
+    normal_vector=property(getNormalVector,setNormalVector,"Allow the client to manipulate the normal vector easily.")
+    slope=property(getSlope,setSlope,"Allow the client to manipulate the slope of the line easily.")
+    ordinate=property(getOrdinate,setOrdinate,"Allow the client to manipulate the ordinate of the line easily.")
+
 
 class HalfLine(Line):
     def createFromLine(line):
@@ -968,7 +1074,7 @@ class HalfLine(Line):
         """Determine if a point is in the half line."""
         v1=self.vector()
         v2=Vector.createFromTwoPoints(self.point,point)
-        return abs(v1.angle()-v2.angle())<e
+        return abs(v1.angle-v2.angle)<e
 
     def __or__(self,other):
         """Return the intersection point between the half line and another object."""
@@ -1010,7 +1116,7 @@ class HalfLine(Line):
 
 
 class Form:
-    def random(corners,number=random.randint(1,10),**kwargs):
+    def random(corners=[-1,-1,1,1],number=random.randint(1,10),**kwargs):
         """Create a random form using the point_number, the minimum and maximum position for x and y components and optional arguments."""
         points=[Point.random(corners) for i in range(number)]
         form=Form(points,**kwargs)
@@ -1056,19 +1162,28 @@ class Form:
 
     def __eq__(self,other):
         """Determine if 2 forms are the same which check the equalities of their components."""
-        return self.points==other.points
+        return sorted(self.points)==sorted(other.points)
 
-    def center(self,color=None,radius=None):
+    def getCenter(self):
         """Return the point of the center."""
-        if not color: color=self.point_color
-        if not radius: radius=self.point_radius
         mx=mean([p.x for p in self.points])
         my=mean([p.y for p in self.points])
-        return Point(mx,my,color=color,radius=radius)
+        return Point(mx,my,color=self.point_color,radius=self.point_radius)
 
-    def sides(self):
+    def setCenter(self,center):
+        """Set the center of the form."""
+        cx,cy=self.center
+        nx,ny=center
+        self.points=[p+]
+
+    def getSegments(self):
         """"Return the list of the form sides."""
         return [Segment(self.points[i%len(self.points)],self.points[(i+1)%len(self.points)],color=self.side_color,width=self.side_width) for i in range(len(self.points))]
+
+    def setSegments(self,segments):
+        """Set the segments of the form by setting its points to new values."""
+        self.points=[s.p1 for s in segments]
+
 
     def show(self,window,point_color=None,side_color=None,area_color=None,side_width=None,point_radius=None,color=None,fill=None,point_show=None,side_show=None):
         """Show the form using a window."""
@@ -1126,7 +1241,7 @@ class Form:
             cross=other.crossSegment(side)
             if cross: points.append(cross)
         hp=other.getPoint()
-        objects=[(p,Vector.createFromTwoPoints(p,hp).norm()) for p in points]
+        objects=[(p,Vector.createFromTwoPoints(p,hp).norm) for p in points]
         objects=sorted(objects,key=lambda x:x[1])
         points=[p for (p,v) in objects]
         return points
@@ -1151,10 +1266,13 @@ class Form:
                 points.append(cross)
         return points
 
+    def crossSelf(self):
+        """Return the list of the points of intersections between the form and itself."""
+        return [p for p in sorted(self.crossForm(self)) if not (p in self.points)]
+
     def convex(self):
         """Return the bool (the form is convex)."""
-        center=self.center()
-        cx,cy=center[0],center[1]
+        x,y=self.center
         angles=[]
         l=len(self.points)
         for i in range(l-1):
@@ -1272,7 +1390,7 @@ class Form:
             return 0
         elif l==3: #The form is a triangle, so we can calculate its area.
             a,b,c=[Vector.createFromSegment(segment) for segment in self.sides()]
-            A=1/4*sqrt(4*a.norm()**2*b.norm()**2-(a.norm()**2+b.norm()**2-c.norm()**2)**2)
+            A=1/4*sqrt(4*a.norm**2*b.norm**2-(a.norm**2+b.norm**2-c.norm**2)**2)
             return A
         else: #The form has more points than 3, so we can cut it in triangles.
             area=0
@@ -1302,6 +1420,113 @@ class Form:
         self.side_color=_color
         self.area_color=_color
 
+class Circle:
+    def random(min=-1,max=1,fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+        """Create a random circle."""
+        point=Point.random(min,max)
+        radius=1
+        return Circle.createFromPointAndRadius(point,radius,color,fill)
+
+    def createFromPointAndRadius(point,radius,fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+        """Create a circle from point."""
+        return Circle(point.position,radius,color,fill)
+
+    def __init__(self,*args,radius,fill=False,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+        """Create a circle object using x, y and radius and optional color and width."""
+        if len(args)==1: args=args[0]
+        self.position=args
+        self.radius=radius
+        self.fill=fill
+        if color:
+            if not border_color: border_color=color
+            if not area_color: area_color=color
+            if not radius_color: radius_color=color
+            if not text_color: text_color=color
+        self.border_color=border_color
+        self.area_color=area_color
+        self.center_color=center_color
+        self.radius_color=radius_color
+        self.radius_width=radius_width
+        self.text_color=text_color
+        self.text_size=text_size
+
+    def getX(self):
+        """Return the x component of the circle."""
+        return self.position[0]
+
+    def setX(self,value):
+        """Set the x component of the circle."""
+        self.position[0]=value
+
+    def getY(self):
+        """Return the y component of the circle."""
+        return self.position[1]
+
+    def setY(self,value):
+        """Set the y component of the circle."""
+        self.position[1]=value
+
+    def getPoint(self):
+        """Return the point that correspond to the center of the circle."""
+        return Point(self.position)
+
+    def setPoint(self,point):
+        """Set the center point of the circle by changing the position of the circle."""s
+        self.position=point.position
+
+    x=property(getX,setX,"Allow the user to manipulate the x component easily.")
+    y=property(getY,setY,"Allow the user to manipulate the y component easily.")
+    center=point=property(getPoint,setPoint,"Allow the user to manipulate the point easily.")
+
+
+    def center(self):
+        """Return the point that correspond to the center of the circle."""
+        return Point(self.position)
+
+    def show(self,window,color=None,border_color=None,area_color=None,fill=None):
+        """Show the circle on screen using the window."""
+        if color:
+            if not area_color: area_color=color
+            if not border_color: border_color=color
+        if not border_color: border_color=self.border_color
+        if not area_color: area_color=self.area_color
+        if not fill: fill=self.fill
+        if fill: window.draw.circle(window.screen,area_color,[self.x,self.y],self.radius,True)
+        window.draw.circle(window.screen,border_color,[self.x,self.y],self.radius)
+
+    def showCenter(self,window,color=None,mode=None):
+        """Show the center of the screen."""
+        if not color: color=self.center_color
+        if not mode: mode=self.center_mode
+        self.center.show(window,mode=mode,color=color)
+
+    def showText(self,window,text,color=None,size=None):
+        """Show a text next to the circle."""
+        if not color: color=self.text_color
+        if not size: size=self.text_size
+        self.center.showText(window,text,color=color,size=size)
+
+    def showRadius(self,window,color=None,width=None):
+        """Show the radius of the circle."""
+        if not color: color=self.radius_color
+        if not width: width=self.radius_width
+        vector=Vector.createFromPolarCoordonnates(self.radius,0,color=color)
+        vector.show(window,self.center,width=width)
+        vector.showText(surface,self.center,"radius",size=20)
+
+    def __call__(self):
+        """Return the main components of the circle."""
+        return [self.position,self.radius]
+
+    def isCrossingCircle(self,other):
+        """Determine if two circles are crossing."""
+        vector=Vector.createFromTwoPoints(self.center,other.center)
+        return vector.norm<self.radius+other.radius
+
+    def crossCircle(self,other):
+        """Return the intersections points of two circles maybe crossing."""
+        pass #Math are involved...
+        return points
 
 
 if __name__=="__main__":
@@ -1310,7 +1535,8 @@ if __name__=="__main__":
 
     p1=Point(10,0,radius=0.05,color=mycolors.YELLOW)
     p2=Point(20,20,radius=0.05,color=mycolors.YELLOW)
-    origin=Point(0,0)
+    #origin=Point(0,0)
+    origin=Point.origin()
 
     l1=HalfLine(origin,math.pi/4)
     l2=Line(p1,math.pi/2,correct=False)

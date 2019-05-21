@@ -1,5 +1,5 @@
 from mymaterialform import MaterialForm
-from myabstract import Point,Form
+from myabstract import Point,Form,Segment
 
 import math
 
@@ -7,11 +7,26 @@ class MaterialFormHandler:
     def __init__(self,material_forms):
         """Create material form collider object."""
         self.forms=material_forms
+        self.time=0.1
 
     def update(self,t):
         """Update the forms and deal with its collisions."""
+        self.updateForms(t)
+        self.dealCollisions()
+
+    def updateForms(self,t):
+        """Update the forms."""
         for form in self.forms:
             form.update(t)
+
+    def dealCollisions(self):
+        """Deal with all collisions."""
+        l=len(self.forms)
+        for i in range(l):
+            for j in range(i):
+                f1=self.forms[i]
+                f2=self.forms[j]
+                self.collide(f1,f2)
 
     def rotate(self,angle=math.pi/2,point=[0,0]):
         """Rotate the forms using an angle and a point."""
@@ -24,15 +39,16 @@ class MaterialFormHandler:
         #I've got no clue how to do such a thing
         #I just know that i need the motions of the forms, the coordonnates of its points and their masses.
         ap1=object1.getPoints()
-        bp1=[p1.getNext() for p1 in ap1]
-        ls1=[Segment(a1,b1) for (a1,b1) in zip(ap1,bp1)]
+        bp1=[Point.createFromVector(p1.getNextPosition(self.time)) for p1 in ap1]
+        ls1=[Segment(a1.getPoint(),b1) for (a1,b1) in zip(ap1,bp1)]
+        print(ls1[0])
         ap2=object2.getPoints()
-        bp2=[p2.getNext() for p2 in ap2]
+        bp2=[Point.createFromVector(p2.getNextPosition(self.time)) for p2 in ap2]
         ls2=[Segment(a2,b2) for (a2,b2) in zip(ap2,bp2)]
         points=[]
         for s1 in ls1:
             for s2 in ls2:
-                point=s1|s2
+                points=s1|s2
                 if point:
                     points.append(point)
         return points
@@ -41,6 +57,53 @@ class MaterialFormHandler:
         """Show the material forms on the surface."""
         for form in self.forms:
             form.show(surface)
+
+    def affectFriction(self):
+        f=self.factor
+        for entity in self.entities:
+            entity.velocity=[f*entity.velocity[0],f*entity.velocity[1]]
+
+
+    def affectCollisions(self):
+        l=len(self.entities)
+        for y in range(l):
+            for x in range(y):
+                self.affectCollision(self.entities[y],self.entities[x])
+
+
+    def affectCollision(self,entity1,entity2):
+        x1,y1=entity1.position
+        x2,y2=entity2.position
+        r1=entity1.radius
+        r2=entity2.radius
+        if sqrt((x1-x2)**2+(y1-y2)**2)<r1+r2:
+            self.affectVelocity(entity1,entity2)
+
+
+    def affectVelocity(self,entity1,entity2):
+        x1,y1=entity1.position
+        x2,y2=entity2.position
+        vx1,vy1=entity1.velocity
+        vx2,vy2=entity2.velocity
+        m1=entity1.mass
+        m2=entity2.mass
+        if x2!=x1:
+            angle=-atan((y2-y1)/(x2-x1))
+            ux1,uy1=self.rotate(entity1.velocity,angle)
+            ux2,uy2=self.rotate(entity2.velocity,angle)
+            v1=[self.affectOneVelocity(ux1,ux2,m1,m2),uy1]
+            v2=[self.affectOneVelocity(ux2,ux1,m1,m2),uy2]
+            entity1.velocity=self.rotate(v1,-angle)
+            entity2.velocity=self.rotate(v2,-angle)
+
+    def affectOneVelocity(self,v1,v2,m1,m2):
+        return (m1-m2)/(m1+m2)*v1+(2*m2)/(m1+m2)*v2
+
+    def rotate(self,velocity,angle):
+        vx,vy=velocity
+        nvx=vx*cos(angle)-vy*sin(angle)
+        nvy=vx*sin(angle)+vy*cos(angle)
+        return [nvx,nvy]
 
 if __name__=="__main__":
     from mysurface import Surface

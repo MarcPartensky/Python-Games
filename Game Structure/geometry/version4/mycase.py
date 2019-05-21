@@ -9,11 +9,12 @@ import time
 import mycolors
 
 class Case(Pixel):
-    def __init__(self,position,size=(1,1),color=mycolors.WHITE):
+    def __init__(self,position,size=(1,1),color=mycolors.WHITE,fill=True):
         """Create a pixel."""
         self.position=position
         self.size=size
         self.color=color
+        self.fill=fill
 
     def __eq__(self,other):
         """Determine if two cases are the same by comparing its x and y components."""
@@ -33,17 +34,41 @@ class Case(Pixel):
         else:
             raise StopIteration
 
-    def show(self,surface):
-        """Show the pixel on screen."""
-        x,y=self.position
-        sx,sy=self.size
-        p1=Point(x,y)
-        p2=Point(x+sx,y)
-        p3=Point(x+sx,y+sy)
-        p4=Point(x,y+sy)
+    def getForm(self,fill=None,area_color=None,side_color=None):
+        """Return the abstract form associated with the case."""
+        if not fill: fill=self.fill
+        if not area_color: area_color=self.color
+        if not side_color: side_color=mycolors.WHITE
+        xmin,ymin,xmax,ymax=self.getCorners()
+        p1=Point(xmin,ymin)
+        p2=Point(xmax,ymin)
+        p3=Point(xmax,ymax)
+        p4=Point(xmin,ymax)
         points=[p1,p2,p3,p4]
-        form=Form(points,fill=True,area_color=self.color,point_show=False)
-        form.show(surface)
+        return Form(points,fill=fill,side_color=side_color,area_color=area_color,point_show=False)
+
+    form=getForm
+
+    def center(self):
+        """Return the center of the case."""
+        xmin,ymin,xmax,ymax=self.getCorners()
+        x=(xmin+xmax)/2
+        y=(ymin+ymax)/2
+        return Point(x,y)
+
+    def show(self,surface,**kwargs):
+        """Show the case. By default it only show the associated form."""
+        self.showForm(surface,**kwargs)
+
+    def showText(self,surface,text):
+        """Show the text on the surface."""
+        point=self.center()
+        point.showText(surface,text)
+
+    def showForm(self,surface,fill=None,area_color=None,side_color=None):
+        """Show the pixel on screen."""
+        f=self.getForm(fill,area_color,side_color)
+        f.show(surface)
 
     __getitem__=lambda self,i:self.position[i]
 
@@ -51,6 +76,33 @@ class Case(Pixel):
 
     def __str__(self):
         """Return the string representation of the object."""
-        return "("+str(self.position[0])+","+str(self.position[1])+")"
+        return "case("+str(self.position[0])+","+str(self.position[1])+")"
+
+    def getCorners(self):
+        """Return the corners of the case."""
+        px,py=self.position
+        sx,sy=self.size
+        return (px,py,px+sx,py+sy)
+
+    def __contains__(self,position):
+        """Determine if the point is in the paint."""
+        x,y=position
+        xmin,ymin,xmax,ymax=self.getCorners()
+        return (xmin<=x<=xmax) and (ymin<=y<=ymax)
+
 
     __repr__=__str__
+
+if __name__=="__main__":
+    from mysurface import Surface
+    from myzone import Zone
+    surface=Surface(plane=Zone(size=[20,20]))
+    cases=[Case([x,y],color=mycolors.random(),fill=True) for x in range(-5,5) for y in range(-5,5)]
+    while surface.open:
+        surface.check()
+        surface.control()
+        surface.clear()
+        surface.show()
+        for case in cases:
+            case.show(surface)
+        surface.flip()

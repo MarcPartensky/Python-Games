@@ -56,8 +56,15 @@ class MaterialForm:
 
     def getPosition(self):
         """Return the position of the center of the material form."""
-        form=self.getForm()
-        return form.center()
+        return self.form.center()
+
+    def getPoints(self):
+        """Return the material points of the material form."""
+        return self.points
+
+    def getAbstractPoints(self):
+        """Return all the abstract points of the object."""
+        return self.getForm().points
 
     def getMotion(self):
         """Return the motion of the object."""
@@ -130,10 +137,26 @@ class MaterialForm:
         material_center.setPosition(position)
         material_center.showMotion(surface)
 
+    def getCollisionInstant(self,instant):
+        """Return ."""
+        pass
 
+    def __or__(self,other):
+        """Determine the points of intersections of the material point and another material object."""
+        if isinstance(other,MaterialForm): return self.crossMaterialForm(other)
 
+    def crossMaterialForm(self,other):
+        """Return the material point of intersection between two material forms."""
+        f1=self.getForm()
+        f2=other.getForm()
+        points=f1.crossForm(f2)
+        points=[MaterialPoint.createFromPoint(point) for point in points]
+        return points
 
-
+    def getTrajectory(self,t=1):
+        """Return the segments that are defined by the trajectory of each point."""
+        segments=[Segment(p.getPosition(),p.getNextPosition) for p in self.points]
+        return segments
 
 
 FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5)])
@@ -158,8 +181,10 @@ if __name__=="__main__":
         surface.show()
         f1.update(t=0.1)
         f2.update(t=0.1)
-        f1.rotate(0.1,f1.center().getPoint())
-        f2.rotate(-0.1,f2.center().getPoint())
+        f1.rotate(0.01,f1.center().getPoint())
+        f2.rotate(-0.01,f2.center().getPoint())
+        for p in f1|f2:
+            p.show(surface,color=mycolors.RED)
         surface.draw.window.print("form.motion:"+str(f1.getPosition()),(10,10))
         f1.show(surface)
         f2.show(surface)

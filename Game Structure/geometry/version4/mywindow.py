@@ -186,7 +186,7 @@ class Window:
         if not color: color=self.text_color
         if not font: font=self.text_font
         font=pygame.font.SysFont(font,size)
-        label=font.render(text,1,color)
+        label=font.render(str(text),1,color)
         self.screen.blit(label,position)
 
     def drawRect(self,coordonnates,color):

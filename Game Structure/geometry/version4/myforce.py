@@ -25,6 +25,24 @@ class Force(Vector):
         y=round(self.y,p)
         return "f("+str(x)+","+str(y)+")"
 
+class ForceField:
+    def __init__(self,force,area):
+        """Create a force field object."""
+        self.force=force
+        self.area=area
+
+    def __contains__(self,body):
+        """Determine if a body is contained in the force field."""
+        #This function should be able to determine which proportion of the object is contained in the force
+        #field in order to apply some of the force
+        pass
+
+
+    def exert(self,body):
+        """Exert the force of the force field to the object."""
+        pass
+
+
 
 
 down=Vector([0,-1])

@@ -77,9 +77,6 @@ class Missile(MaterialForm):
         """Create a missile."""
         super().__init__(*args,**kwargs)
 
-    def update(self):
-
-
 
 class Player:
     def __init__(self):

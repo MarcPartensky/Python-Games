@@ -116,9 +116,21 @@ class RayCaster:
 
 if __name__=="__main__":
     from mysurface import Surface
-    surface=Surface(name="RayCasting")
-    forms=[Form.random([-10,-10,10,10],number=5,side_color=mycolors.RED) for i in range(10)]
-    #forms=[Form.random([10*(i-5),-5,10*(i-4),5],number=5,side_color=mycolors.RED) for i in range(10)]
+    from myzone import Zone
+    surface=Surface(name="RayCasting",plane=Zone())
+    #forms=[Form.random([-10,-10,10,10],number=5,side_color=mycolors.RED) for i in range(10)]
+    forms=[Form.random([10*(i-5),-5,10*(i-4),5],number=5,side_color=mycolors.RED) for i in range(10)]
     #forms=[Segment.random([10*(i-5),-5,10*(i-4),5],number=5,side_color=mycolors.RED) for i in range(10)]
     caster=RayCaster(forms,n=20,view=[0,2*math.pi])
-    caster(surface)
+    origin=Point(0,0)
+
+    while surface.open:
+        surface.check()
+        surface.control()
+        surface.clear()
+        surface.show()
+        for form in forms:
+            form.rotate(0.1,origin)
+        caster.update(surface)
+        caster.show(surface)
+        surface.flip()

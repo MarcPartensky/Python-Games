@@ -109,33 +109,24 @@ class Plane:
 
     def showGrid(self,window):
         """Show the grid using the window."""
-        mx,my,Mx,My=self.getPlaneCorners(window) #Get the corners of the plane
+        mx,my,Mx,My=self.getCorners(window) #Get the corners of the plane
         mx,my,Mx,My=int(mx),int(my),int(Mx),int(My) #Truncate the values
         #For each line find the begining and the end in the plane's coordonnates then convert it into screen's coordonnates.
-        for x in range(mx,Mx+1):
+        for x in range(mx,Mx):
             color=self.getUnitsColor(x)
-            start=[x,my-1]
-            end=  [x,My+1]
+            start=[x,my]
+            end=  [x,My]
             start=self.getToScreen(start,window)
             end=  self.getToScreen(end,window)
             window.draw.line(window.screen,color,start,end,1)
         #Repeat the process for the y component
-        for y in range(my,My+1):
+        for y in range(my,My):
             color=self.getUnitsColor(y)
-            start=[mx-1,y]
-            end=  [Mx+1,y]
+            start=[mx,y]
+            end=  [Mx,y]
             start=self.getToScreen(start,window)
             end=  self.getToScreen(end,window)
             window.draw.line(window.screen,color,start,end,1)
-
-    def setPosition(self,position):
-        """Replace the position of the plane by its new position."""
-        x,y=position
-        self.position=[x,y]
-
-    def getPosition(self):
-        """Return the position of the plane."""
-        return self.position
 
     def zoom(self,zoom):
         """Allow the user to zoom into the plane."""
@@ -184,13 +175,17 @@ class Plane:
             planes_positions.append(self.getFromScreen(position,window))
         return plane_positions
 
-    def getPlaneCorners(self,window):
+    def getCorners(self,window):
         """Return the corners of the present view."""
         wsx,wsy=window.size
         mx,my=self.getFromScreen([0,wsy],window)
         Mx,My=self.getFromScreen([wsx,0],window)
         corners=(mx,my,Mx,My)
         return corners
+
+    def setCorners(self,corners,window):
+        """Change the actual corners of the plane by changing its position and units."""
+        pass
 
     #The following functions are class methods
 

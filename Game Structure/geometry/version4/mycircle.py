@@ -3,9 +3,9 @@ from myabstract import Point,Vector
 import mycolors
 
 class Circle:
-    def random(min=-1,max=1,fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+    def random(corners=[-1,-1,1,1],fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
         """Create a random circle."""
-        point=Point.random(min,max)
+        point=Point.random(corners)
         radius=1
         return Circle.createFromPointAndRadius(point,radius,color,fill)
 

@@ -14,10 +14,10 @@ class Trajectory:
         """Return the segments that connect the points."""
         return [Segment(self.points[i],self.points[i+1]) for i in range(len(self.points)-1)]
 
-    def show(self,surface):
+    def show(self,surface,**kwargs):
         """Show the trajectory on the surface."""
-        self.showPoints(surface)
-        self.showSegments(surface)
+        self.showPoints(surface,**kwargs)
+        self.showSegments(surface,**kwargs)
 
     def showPoints(self,surface,color=None):
         """Show the point on the surface."""
@@ -39,6 +39,7 @@ class CurvedForm(Form):
         """Show the curved form on the screen."""
         b=BezierCurve(self.points+[self.points[0]])
         b.show(surface)
+        #Doesn't work the way it should because the form is not closed.
 
 
 

@@ -69,6 +69,7 @@ class Draw:
         #r=int(radius/self.plane.units[0])
         #r,ry=self.plane.getToScreen([radius,radius],self.window)
         radius=int((rx+ry)/2)
+        if radius<1: radius=1
         #r=0.1
         self.window.draw.circle(screen,color,position,radius,not(filled))
 
@@ -86,9 +87,18 @@ class Draw:
         end_position=self.plane.getToScreen(end_position,self.window)
         self.window.draw.line(screen,color,start_position,end_position,width)
 
-    def lines(self,color,positions,connected=True,width=1):
+    def lines(self,screen,color,positions,connected=True,width=1):
         new_positions=self.plane.getAllToScreen(positions,self.window)
         self.window.draw.lines(screen,color,connected,positions,width)
+
+    def arc(self,screen,color,rect,start_angle,stop_angle,width=1):
+        position=rect[:2]
+        size=rect[2:]
+        position=self.plane.getToScreen(position,self.window)
+        size=self.plane.getToScreen(size,self.window)
+        self.window.draw.arcarc(screen,color,rect,start_angle,stop_angle,width)
+
+
 
     def show(self):
         self.plane.showGrid(self.window)

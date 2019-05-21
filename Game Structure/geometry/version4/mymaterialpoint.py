@@ -1,16 +1,20 @@
 from myforce import Force
 from mymotion import Motion
-
 from myabstract import Point,Segment,Vector
+from mycurves import Trajectory
 
 import myforce
 import math
+import copy
+import mycolors
+
+digits=2
 
 class MaterialPoint:
-    def random(min=-1,max=1):
+    def random(corners=[-1,-1,1,1],**kwargs):
         """Create a random material point using optional minimum and maximum."""
-        motion=Motion.random()
-        return MaterialPoint(motion)
+        motion=Motion.random(corners)
+        return MaterialPoint(motion,**kwargs)
 
     def createFromPoint(point,forces=[]):
         """Create a material point from a Point instance."""
@@ -18,16 +22,38 @@ class MaterialPoint:
         motion=Motion(position) #Initializing a motion instance
         return MaterialPoint(motion,forces) #Initializing a material point instance
 
-    def __init__(self,motion=Motion(),forces=[],mass=1):
+    def __init__(self,motion=Motion(),forces=[],mass=1,color=mycolors.WHITE):
         """Create a material point."""
         self.motion=motion
         self.mass=mass
         self.forces=forces
+        self.color=color
 
-    def getPoint(self):
+    def getTrajectory(self,t=1,split=1,**kwargs):
+        """Return the trajectory of the point supposing it is not under any extern forces or restraints."""
+        points=[]
+        for i in range(split):
+            point=self.getNextPoint(t)
+            points.append(point)
+        return Trajectory(points,**kwargs)
+
+
+    def getSegment(self,t=1,**kwargs):
+        """Return the direction made of the actual point and the future one."""
+        p1=self.getPoint()
+        p2=self.getNextPoint(t)
+        return Segment(p1,p2,**kwargs)
+
+    def getVector(self,t=1,**kwargs):
+        """Return the vector made of the actual point and the future one."""
+        p1=self.getPoint()
+        p2=self.getNextPoint(t)
+        return Vector.createFromTwoPoints(p1,p2,**kwargs)
+
+    def getPoint(self,**kwargs):
         """Return the abstract point of the material point."""
         x,y=self.motion.getPosition()
-        return Point(x,y)
+        return Point(x,y,**kwargs)
 
     def getPosition(self):
         """Return the position of the material point."""
@@ -69,6 +95,10 @@ class MaterialPoint:
         """Set the motion of the material point."""
         self.motion=motion
 
+    def getNextPoint(self,t):
+        """Return the future point."""
+        return self.next(t).getPoint()
+
     def getNextPosition(self,t):
         """Return the next position of the object supposing there is no collisions."""
         self.motion.update(t)
@@ -79,10 +109,16 @@ class MaterialPoint:
         self.motion.update(t)
         return self.getVelocity()
 
-    def show(self,window):
+    def next(self,t):
+        """Return the point after a t duration."""
+        p=copy.deepcopy(self)
+        p.update(t)
+        return p
+
+    def show(self,window,**kwargs):
         """Show the material point on the window."""
         point=self.getPoint()
-        point.show(window)
+        point.show(window,**kwargs)
 
     def showMotion(self,window):
         """Show the motion of a material point on the window."""
@@ -91,6 +127,11 @@ class MaterialPoint:
         point=Point(x,y)
         velocity.show(window,point)
         acceleration.show(window,point)
+
+    def showText(self,*args,**kwargs):
+        """Show the text on the screen."""
+        p=self.getPoint()
+        p.showText(*args,**kwargs)
 
     def update(self,t=1):
         """Update the motion of the material point."""
@@ -127,7 +168,9 @@ class MaterialPoint:
 
     def __str__(self):
         """Return the string representation of a point."""
-        return "Point:"+str(self.__dict__)
+        x,y=self.getPosition()
+        x,y=round(x,digits),round(y,digits)
+        return "mp("+str(x)+","+str(y)+")"
 
     __repr__=__str__
 
@@ -146,18 +189,19 @@ class MaterialPoint:
 FallingPoint=lambda :MaterialPoint(Motion.random(),[myforce.gravity])
 
 if __name__=="__main__":
-    #Only used for testing
     from mysurface import Surface
-    surface=Surface()
-    points=[MaterialPoint.random() for i in range(5)]
+    surface=Surface(name="Material Point Test")
+    points=[MaterialPoint.random(color=mycolors.darken(mycolors.YELLOW)) for i in range(5)]
     while surface.open:
         surface.check()
         surface.clear()
         surface.control()
         surface.show()
         for point in points:
-            surface.print(str(point),tuple(point))
-            point.show(surface)
-            point.showMotion(surface)
+            point.showText(surface,point)
             point.update(t=0.1)
+            t=point.getTrajectory(1,3,point_color=mycolors.darken(mycolors.RED))
+            point.show(surface,color=mycolors.RED,mode="cross")
+            point.showMotion(surface)
+            t.show(surface)
         surface.flip()

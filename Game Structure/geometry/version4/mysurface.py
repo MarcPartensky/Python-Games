@@ -1,6 +1,8 @@
 from mydraw import Draw
 from mywindow import Window
 
+import mycolors
+
 class Surface:
     def __init__(self,draw=None,**kwargs):
         """Create a surface."""
@@ -15,8 +17,9 @@ class Surface:
         self.click=self.draw.window.click
         self.__call__=self.draw.window.__call__
         self.wait=self.draw.window.wait
-        #self.show=self.draw.show
         self.control=self.draw.control
+        self.setCorners=self.draw.plane.setCorners
+        self.getCorners=self.draw.plane.getCorners
 
     def point(self):
         """Adapt the position of the cursor in plane's coordonnates."""
@@ -42,15 +45,13 @@ class Surface:
         """Show the plane on screen."""
         self.draw.plane.show(self.draw.window)
 
-    def print(self,text,position,**kwargs):
-        """Print a text the window's screen using text and position and optional arguments."""
+    def print(self,text,position,text_size=1,color=mycolors.WHITE,font=None,conversion=True):
+        """Print a text the window's screen using text and position and optional
+        color, pygame font and conversion."""
         position=self.draw.plane.getToScreen(position,self.draw.window)
-        self.draw.window.print(text,position,**kwargs)
-
-    def getCorners(self):
-        """Return the corners of the plane."""
-        corners=self.draw.plane.getPlaneCorners(self.draw.window)
-        return corners
+        ux,uy=self.draw.plane.units
+        if conversion: text_size=int(text_size*ux/50)
+        self.draw.window.print(text,position,text_size,color,font)
 
     def controlZoom(self):
         """Control the zoom of the surface's plane."""
@@ -64,16 +65,9 @@ class Surface:
         """Behave like the get from screen of the plan without having to put the window in parameter."""
         return self.draw.plane.getFromScreen(position,self.draw.window)
 
-
-
-class Surface2(Window):
-    def __init__(self,*args,**kwargs):
-        Window.__init__(self,*args,**kwargs)
-        self.draw=Draw()
-
+Context=Surface
 
 
 if __name__=="__main__":
-    surface=Surface()
-    #surface()
-    #pass
+    context=Context()
+    context()

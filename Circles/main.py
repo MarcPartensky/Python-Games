@@ -14,7 +14,7 @@ class Room(Lab):
         self.window.text_size=20
         self.window.set()
         wsx,wsy=self.window.size
-        v=5
+        v=3
         self.entities=[Circle(position=[rdt(0,wsx),rdt(0,wsy)],velocity=[rdt(-v,v),rdt(-v,v)],acceleration=[0,0],mass=rdt(1,100),borders=[[0,wsx],[0,wsy]]) for i in range(circles_number)]
 
     def update(self):

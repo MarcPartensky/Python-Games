@@ -11,11 +11,11 @@ class Motion:
             result+=motion
         return result
 
-    def random(min=-1,max=1):
+    def random(corners=[-1,-1,1,1]):
         """Create a random motion using optional minimum and maximum."""
-        position=Vector.random(min,max)
-        velocity=Vector.random(min,max)
-        acceleration=Vector.random(min,max)
+        position=Vector.random(corners)
+        velocity=Vector.random(corners)
+        acceleration=Vector.random(corners)
         return Motion(position,velocity,acceleration)
 
     def __init__(self,position=Vector([0.,0.]),velocity=Vector([0.,0.]),acceleration=Vector([0.,0.])):
