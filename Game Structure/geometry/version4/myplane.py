@@ -1,6 +1,10 @@
 from mywindow import Window
 from pygame.locals import *
 
+import math
+import numpy as np
+import mycolors
+
 class Plane:
     def __init__(self,theme={},view=None):
         """Create a plane using optionals theme and view."""
@@ -9,8 +13,11 @@ class Plane:
 
     def createTheme(self,theme={}):
         """Initializes the position and the colors for the view of the plane using optional theme."""
-        if not "background" in theme: theme["background"]= (0,0,0)
-        if not "grid"       in theme: theme["grid"]=       [(100,100,100),(50,50,50),(10,10,10)]
+        if not "background"  in theme: theme["background"]  = (0,0,0)
+        if not "grid color"  in theme: theme["grid color"]  = (20,20,20)
+        if not "grid nscale" in theme: theme["grid nscale"] = 3
+        if not "show scale"  in theme: theme["show scale"]  = False
+        if not "show origin" in theme: theme["show origin"] = False
         self.theme=theme
 
     def createView(self,view=None):
@@ -25,7 +32,7 @@ class Plane:
             self.default_position= [ 0, 0]   #position of the center of the view in the plane's coordonnates
             self.default_units=    [40,40]   #units of the conversion from window/plane
             self.position=         [ 0, 0]
-            self.units=            [40,40]
+            self.units=            [40,40]   #units can be handled [-10**-14,10**307] before bugging or crashing
 
     def __call__(self,window): #The main loop must be redefined by the client and not the functions called within it.
         """Main loop of the plane."""
@@ -36,6 +43,12 @@ class Plane:
             self.clear(window)
             self.show(window)
             self.flip(window)
+
+    def contains(self,position,window):
+        """Determine if a position is in the visible screen."""
+        x,y=position
+        xmin,ymin,xmax,ymax=self.getCorners(window)
+        return (xmin<=x<=xmax) and (ymin<=y<=ymax)
 
     def flip(self,window):
         """Flip the plane's window."""
@@ -57,7 +70,7 @@ class Plane:
         ux,uy=self.units
         if keys[K_RSHIFT]:
             self.zoom([1.1,1.1])
-        if keys[K_LSHIFT] and (ux>2 and uy>2): #The second condition is useless but prevent the user from watching errors due to too far zooming out.
+        if keys[K_LSHIFT]:# and (ux>2 and uy>2): #The second condition is useless but prevent the user from watching errors due to too far zooming out.
             self.zoom([0.9,0.9])
 
     def controlPosition(self,window):
@@ -80,19 +93,27 @@ class Plane:
             y+=wsy/uy/k
         self.position=[x,y]
 
-    def getUnitsColor(self,x):
+    def getUnitsColor(self,scale,ascale,color=None):
         """Get the color given a x position."""
-        if x%100==0:
-            return self.theme["grid"][0]
-        elif x%10==0:
-            return self.theme["grid"][1]
-        else:
-            return self.theme["grid"][2]
+        if not color: color=self.theme["grid color"]
+        dscale=scale-ascale
+        return [c*(2**dscale) for c in color]
+
 
     def show(self,window):
         """Show the elements on screen using the window."""
-        self.showGrid(window)
+        self.showGrids(window)
+        if self.theme["show scale"]:
+            window.print("scale:"+str(self.getScale(window)),(10,10),size=20)
+        if self.theme["show origin"] and self.contains((0,0),window):
+            self.showOrigin(window)
         #self.showUnits(window) #Does not work for now
+
+    def showOrigin(self,window,color=mycolors.WHITE,radius=3):
+        """Show the origin of the plane."""
+        position=self.getToScreen([0,0],window)
+        print(position)
+        window.draw.circle(window.screen,color,position,radius,0)
 
 
     def showUnits(self,window): #Not working because of error of synchronisation between text base system and normal window base.
@@ -107,26 +128,50 @@ class Plane:
                 X,Y=self.getToScreen([x,y],window)
                 window.print(str([x,y]),[X,Y],size=20)
 
-    def showGrid(self,window):
+    def showGrids(self,window,nscale=None):
+        """Show the grid using the window and optional scales."""
+        ascale=self.getScale(window) #ascale like actual_scale
+        for scale in self.getScales(window,nscale,ascale):
+            self.showGrid(window,scale)
+
+    def getScales(self,window,nscale=None,scale=None):
+        """Return the scales ."""
+        if not nscale: nscale=self.theme["grid nscale"]
+        if not scale: scale=self.getScale(window)
+        l=[scale-i for i in range(nscale)]
+        l.reverse()
+        return l
+
+    def getScale(self,window):
+        """Return the actual scale of the displayed screen."""
+        ux,uy=self.units
+        wsx,wsy=window.size
+        uwx,uwy=wsx/ux,wsy/uy
+        uw=min(uwx,uwy)
+        return int(math.log(uw)/math.log(10))
+
+    def showGrid(self,window,scale=0,ascale=None):
         """Show the grid using the window."""
-        mx,my,Mx,My=self.getCorners(window) #Get the corners of the plane
-        mx,my,Mx,My=int(mx),int(my),int(Mx),int(My) #Truncate the values
+        if not ascale: ascale=self.getScale(window)
+        xmin,ymin,xmax,ymax=self.getCorners(window) #Get the corners of the plane
         #For each line find the begining and the end in the plane's coordonnates then convert it into screen's coordonnates.
-        for x in range(mx,Mx):
-            color=self.getUnitsColor(x)
-            start=[x,my]
-            end=  [x,My]
-            start=self.getToScreen(start,window)
-            end=  self.getToScreen(end,window)
+        for x in self.arange(xmin,xmax,scale):
+            color=self.getUnitsColor(scale,ascale)
+            start=self.getToScreen([x,ymin],window)
+            end=  self.getToScreen([x,ymax],window)
             window.draw.line(window.screen,color,start,end,1)
         #Repeat the process for the y component
-        for y in range(my,My):
-            color=self.getUnitsColor(y)
-            start=[mx,y]
-            end=  [Mx,y]
-            start=self.getToScreen(start,window)
-            end=  self.getToScreen(end,window)
+        for y in self.arange(ymin,ymax,scale):
+            color=self.getUnitsColor(scale,ascale)
+            start=self.getToScreen([xmin,y],window)
+            end=  self.getToScreen([xmax,y],window)
             window.draw.line(window.screen,color,start,end,1)
+
+    def arange(self,min,max,scale):
+        """Return the list of values that are between min and max, separated by unit."""
+        min=np.around(min,-scale)
+        max=np.around(max,-scale)
+        return np.arange(min,max,10**scale)
 
     def zoom(self,zoom):
         """Allow the user to zoom into the plane."""
@@ -143,7 +188,7 @@ class Plane:
 
     def getToScreen(self,position,window):
         """Return a screen position using a position in the plane."""
-        x,y=position[0],position[1]
+        x,y=position
         px,py=self.position
         ux,uy=self.units
         wsx,wsy=window.size
@@ -160,7 +205,7 @@ class Plane:
 
     def getFromScreen(self,position,window):
         """Return a plane position using a position in the screen."""
-        x,y=position[0],position[1]
+        x,y=position
         px,py=self.position
         ux,uy=self.units
         wsx,wsy=window.size
@@ -180,12 +225,17 @@ class Plane:
         wsx,wsy=window.size
         mx,my=self.getFromScreen([0,wsy],window)
         Mx,My=self.getFromScreen([wsx,0],window)
-        corners=(mx,my,Mx,My)
-        return corners
+        return (mx,my,Mx,My)
 
     def setCorners(self,corners,window):
         """Change the actual corners of the plane by changing its position and units."""
-        pass
+        wsx,wsy=window.size
+        xmin,ymin,xmax,ymax=corners
+        xmin,ymin=self.getToScreen([xmin,ymin],window)
+        xmax,ymax=self.getToScreen([xmax,ymax],window)
+        x,y,sx,sy=self.getCoordonnatesFromCorners([xmin,ymin,xmax,ymax])
+        self.position=[x,y]
+        self.units=[wsx//sx,wsy//sy]
 
     #The following functions are class methods
 
@@ -241,7 +291,8 @@ class Plane:
 
 
 if __name__=="__main__":
-    window=Window(fullscreen=True)
-    theme={"background":(0,0,0)}
+    window=Window(fullscreen=False)
+    theme={"background":(0,0,0),"show scale":True,"show origin":True}
     plane=Plane(theme)
+    #plane.units=[1/10**300,1/10**300]
     plane(window)

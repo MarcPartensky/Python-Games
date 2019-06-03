@@ -1,9 +1,10 @@
-
+from mycase import Case
 
 class Panel(Case):
     def random(corners=[-1,-1,1,1],n=5):
         """Create a random pannel within the optional corners given and the number of buttons."""
         return Panel(position,size,buttons)
+
     def __init__(self,position,size,buttons=[],color=None):
         """Create a pannel using the buttons."""
         super().__init__(position,size,color)
@@ -33,7 +34,7 @@ class Button(Case):
     def random(corners=[-1,-1,1,1]):
         """Create a random button."""
         case=Case.random(corners)
-        
+
     def __init__(self,*args,**kwargs):
         """Create a button object using its position and size."""
         super().__init__(*args,**kwargs)
@@ -59,8 +60,7 @@ class Button(Case):
 
     def isFocused(self,keys):
         """Determine if the button is being focused."""
-        return self.focus=(self.clicked and not self.focus) or (self.focus and not self.clicked)
-
+        self.focus=(self.clicked and not self.focus) or (self.focus and not self.clicked)
 
     def onClick(self):
         """Allow the user to overload the button to trigger an action when the button is clicked."""
@@ -73,3 +73,17 @@ class Button(Case):
     def onHovering(self):
         """Allow the user to overload the button to trigger an action when the button is hovered."""
         pass
+
+if __name__=="__main__":
+    from mysurface import Context
+    context=Context()
+    buttons=[Button([0,0],[1,1])]
+    panel=Panel([0,0],[10,10],buttons)
+    while context.open:
+        context.check()
+        context.control()
+        context.clear()
+        context.show()
+        panel.update(context)
+        panel.show(context)
+        context.flip()

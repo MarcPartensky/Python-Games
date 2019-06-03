@@ -1,3 +1,6 @@
+import sys
+print(sys.version)
+
 from mycolors import *
 import pygame
 

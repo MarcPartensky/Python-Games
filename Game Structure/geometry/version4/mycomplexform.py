@@ -3,6 +3,7 @@ from myabstract import Form,Point,Segment
 import numpy as np
 
 import random
+import mycolors
 
 class ComplexForm(Form):
     """The fact that complex from inherits from Form involves overloading all
@@ -19,7 +20,6 @@ class ComplexForm(Form):
     def __init__(self,*args,**kwargs):
         """Create a complex form."""
         super().__init__(*args,**kwargs)
-        #self.points=points #The points are in relative coordonnates to the position
         l=len(self.points)
         self.network=np.zeros((l,l))
         self.network.fill(1)
@@ -27,9 +27,8 @@ class ComplexForm(Form):
         self.network[0][0]=0
         self.network[0][3]=0
         self.network[3][3]=0
-        print(self.network)
 
-    def segments(self):
+    def getSegments(self):
         """Return the segments determined by the points and the network established."""
         segments=[]
         l=len(self.points)
@@ -40,12 +39,27 @@ class ComplexForm(Form):
                     segments.append(segment)
         return segments
 
+    def setSegments(self,segments):
+        """Set the segments of the complex form."""
+        self.points=list(set([s.p1 for s in segments]+[s.p2 for s in segments]))
+        l=len(self.points)
+        self.network=np.zeros((l,l))
+        for s in segments:
+            i=self.points.index(s.p1)
+            j=self.points.index(s.p2)
+            if i>j: i,j=j,i
+            self.network[i][j]=1
+
+    def delSegments(self):
+        """Delete the segments of the complex form."""
+        self.points=[]
+        self.network=np.array([])
+
     def show(self,surface):
         """Show the complex form on the surface."""
-        for point in self.points:
-            point.show(surface)
-        for segment in self.segments():
-            segment.show(surface)
+        self.showPoints(surface)
+        self.showSegments(surface)
+        self.showCrossPoints(surface)
 
     def getRegions(self):
         """Decompose the complex forms in multiple normal forms which cannot be cut by a segment."""
@@ -62,6 +76,16 @@ class ComplexForm(Form):
 
         return segments
 
+    def crossSelf(self,e=10e-10):
+        """Return the list of the points of intersections between the form and itself."""
+        results=[]
+        for i in range(len(self.segments)):
+            for j in range(i):
+                point=self.segments[i].crossSegment(self.segments[j])
+                if point: results.append(point)
+        return results
+
+
     def split(self):
         """Return all the system of forms that compose the complex forms."""
         links=[(p,0) for p in self.points]
@@ -71,14 +95,16 @@ class ComplexForm(Form):
         is a given point connected to."""
         return [np.sum(self.network[:][j]) for j in range(len(self.points))]
 
+    segments=property(getSegments,setSegments,delSegments,"Allow the user to manipulate the segments of the form.")
+
 
 if __name__=="__main__":
     from mysurface import Surface
-    surface=Surface(name="Complex Form")
-    f=ComplexForm.random(number=5)
-    print(f.countContacts())
-    print(f.points)
-    print(f.crossSelf())
+    from myplane import Plane
+    p=Plane(theme={"grid nscale":2})
+    surface=Surface(name="Complex Form",plane=p)
+    arguments={"number":5,"cross_point_color":mycolors.GREEN,"cross_point_mode":1,"cross_point_size":(0.01,0.01),"cross_point_width":2}
+    f=ComplexForm.random(**arguments)
     while surface.open:
         surface.check()
         surface.control()

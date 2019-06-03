@@ -18,8 +18,58 @@ class Surface:
         self.__call__=self.draw.window.__call__
         self.wait=self.draw.window.wait
         self.control=self.draw.control
-        self.setCorners=self.draw.plane.setCorners
-        self.getCorners=self.draw.plane.getCorners
+
+    def getKeys(self):
+        """Return the keys of the window."""
+        return self.press()
+
+    def getCorners(self):
+        """Return the corners of the surface shown."""
+        return self.draw.plane.getCorners(self.draw.window)
+
+    def setCorners(self,corners):
+        """Set the corners of the plane using the new corners."""
+        self.draw.plane.setCorners(corners,self.draw.window)
+
+    def getRect(self):
+        """Return the rect of the surface shown."""
+        return Plane.getRectFromCorners(self.getCorners())
+
+    def setRect(self,rect):
+        """Set the rect of the surface shown."""
+        self.draw.plane.setCorners(Plane.getCornersFromRect(rect))
+
+    def getCoordonnates(self):
+        """Return the coordonnates of the surface shown."""
+        return Plane.getCoordonnatesFromCorners(self.getCorners())
+
+    def setCoordonnates(self,coordonnates):
+        """Set the coordonnates of the surface shown."""
+        self.draw.plane.setCorners(Plane.getCornersFromCoordonnates(coordonnates))
+
+    def getPosition(self):
+        """Return the position of the surface shown."""
+        return self.draw.plane.position
+
+    def setPosition(self,position):
+        """Set the position of the surface shown."""
+        self.draw.plane.position=position
+
+    def getSize(self):
+        """Return the size of the surface shown."""
+        return self.draw.plane.getSize()
+
+    def setSize(self,size):
+        """Set the size of the surface shown."""
+        self.draw.plane.setSize(size)
+
+    def getUnits(self):
+        """Return the units of the surface shown."""
+        return self.draw.plane.units
+
+    def setUnits(self,units):
+        """Set the units of the surface shown."""
+        self.draw.plane.units=units
 
     def point(self):
         """Adapt the position of the cursor in plane's coordonnates."""
@@ -64,6 +114,15 @@ class Surface:
     def getFromScreen(self,position):
         """Behave like the get from screen of the plan without having to put the window in parameter."""
         return self.draw.plane.getFromScreen(position,self.draw.window)
+
+    corners=property(getCorners,setCorners,"Allow the user to manipulate the corners of the surface easily.")
+    rect=property(getRect,setRect,"Allow the user to manipulate the rect of the surface easily.")
+    coordonnates=property(getCoordonnates,setCoordonnates,"Allow the user to manipulate the coordonnates of the surface easily.")
+    position=property(getPosition,setPosition,"Allow the user to manipulate the position of the surface easily.")
+    size=property(getSize,setSize,"Allow the user to manipulate the size of the surface easily.")
+    units=property(getUnits,setUnits,"Allow the user to manipulate the units of the surface easily.")
+    keys=property(getKeys,"Allow the user to manipulate the keys of the surface easily.")
+
 
 Context=Surface
 

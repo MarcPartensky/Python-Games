@@ -4,6 +4,10 @@ from myabstract import Vector
 import mycolors
 
 class Motion:
+    def neutral():
+        """Return the neutral motion."""
+        return Motion()
+
     def sum(motions):
         """Sum motions together."""
         result=Motion()
@@ -23,6 +27,7 @@ class Motion:
         position.color=mycolors.GREEN
         velocity.color=mycolors.BLUE
         acceleration.color=mycolors.RED
+        self.vectors=[position,velocity,acceleration]
         self.position=position
         self.velocity=velocity
         self.acceleration=acceleration
@@ -36,8 +41,6 @@ class Motion:
         """Return the str representation of the motion."""
         text="Motion: position: "+str(self.position)+", velocity: "+str(self.velocity)+" and acceleration: "+str(self.acceleration)
         return text
-
-    __repr__=__str__
 
     def previous(self,t=1):
         """Return the previous motion using its actual one using optional time t."""
@@ -63,7 +66,6 @@ class Motion:
         else:
             raise StopIteration
 
-
     def next(self,t=1):
         """Return the next motion using its actual one using optional time t."""
         next_acceleration=Vector([a for a in self.acceleration])
@@ -86,27 +88,39 @@ class Motion:
 
     def getPosition(self):
         """Return the position of the motion."""
-        return self.position
-
-    def getVelocity(self):
-        """Return the velocity of the motion."""
-        return self.velocity
-
-    def getAcceleration(self):
-        """Return the acceleration of the motion."""
-        return self.acceleration
+        return self.vectors[0]
 
     def setPosition(self,position):
         """Set the position of the motion using position."""
-        self.position=position
+        self.vectors[0]=position
+
+    def delPosition(self):
+        """Set the position to zero."""
+        self.vectors[0]=Vector([0 for i in range(len(self.vectors[0].position))])
+
+    def getVelocity(self):
+        """Return the velocity of the motion."""
+        return self.vectors[1]
 
     def setVelocity(self,velocity):
         """Set the velocity of the motion using velocity."""
-        self.velocity=velocity
+        self.vectors[1]=velocity
+
+    def delVelocity(self):
+        """Set the velocity to zero."""
+        self.vectors[1]=Vector([0 for i in range(len(self.vectors[1].position))])
+
+    def getAcceleration(self):
+        """Return the acceleration of the motion."""
+        return self.vectors[2]
 
     def setAcceleration(self,acceleration):
         """Set the acceleration of the motion."""
-        self.acceleration=acceleration
+        self.vectors[2]=acceleration
+
+    def delAcceleration(self):
+        """Set the acceleration to zero."""
+        self.vectors[2]=Vector([0 for i in range(len(self.vectors[2].position))])
 
     def __add__(self,other):
         """Add two motions together by adding its vector components."""
@@ -118,11 +132,13 @@ class Motion:
         self=self+other
         return self
 
-
+    position=property(getPosition,setPosition,delPosition,"Allow the user to manipulate the position.")
+    velocity=property(getVelocity,setVelocity,delVelocity,"Allow the user to manipulate the velocity.")
+    acceleration=property(getAcceleration,setAcceleration,delAcceleration,"Allow the user to manipulate the acceleration.")
 
 if __name__=="__main__":
     #motion1=Motion.random()
     #motion2=Motion.random()
     #motion=motion1+motion2
-    motion=Motion.sum([Motion.random() for i in range(10)]) #Summing 10 motions together
+    #motion=Motion.sum([Motion.random() for i in range(10)]) #Summing 10 motions together
     print(motion)

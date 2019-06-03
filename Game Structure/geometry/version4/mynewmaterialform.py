@@ -8,7 +8,8 @@ import myforce
 import mycolors
 import math
 
-class MaterialForm:
+
+class MaterialForm(Form):
     def random(corners=[-1,-1,1,1],number=5):
         """Create a random material form."""
         points=[MaterialPoint.random(min,max) for n in range(number)]
@@ -18,7 +19,6 @@ class MaterialForm:
         """Create a material form using a Form instance."""
         material_points=[MaterialPoint.createFromPoint(point,forces) for point in form.getPoints()]
         return MaterialForm(material_points)
-
 
     def __init__(self,points,fill=False,point_mode=0,point_radius=0.01,point_width=2,side_width=1,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE):
         """Create a material form."""
@@ -38,28 +38,14 @@ class MaterialForm:
         x,y=position
         return Point(x,y)
 
-
-    def getForm(self,point_mode=None,point_radius=None,point_width=None,side_width=None,fill=None,area_color=None,point_color=None,side_color=None):
-        """Return the object under a Form type by conversion."""
-        if not point_mode: point_mode=self.point_mode
-        if not point_radius: point_radius=self.point_radius
-        if not point_width: point_width=self.point_width
-        if not side_width: side_width=self.side_width
-        if not fill: fill=self.fill
-        if not area_color: area_color=self.area_color
-        if not point_color: point_color=self.point_color
-        if not side_color: side_color=self.side_color
-        points=[self.getPointFromMaterialPoint(point) for point in self.points]
-        form=Form(points,fill,point_mode,point_radius,point_width,side_width,point_color,side_color,area_color)
-        return form
-
     def getPosition(self):
         """Return the position of the center of the material form."""
-        return self.form.center()
+        return self.form.center
 
-    def getAbstractPoints(self):
-        """Return all the abstract points of the object."""
-        return self.getForm().points
+    def getPoints(self):
+        """Return the material points of the material form."""
+        return self.points
+
 
     def getMotion(self):
         """Return the motion of the object."""
@@ -94,7 +80,7 @@ class MaterialForm:
         """Calculate the mass of the form using its area and the mass of the material_points that define it."""
         """The way used to calculate it is arbitrary and should be improved."""
         form=self.getForm()
-        mass=sum([point.getMass() for point in self.points])
+        mass=sum([point.mass for point in self.points])
         mass*=form.area()
         return mass
 
@@ -106,10 +92,9 @@ class MaterialForm:
         """Return the material point of number 'index'."""
         self.points[index]=point
 
-    def center(self):
+    def getCenter(self):
         """Return the center of the material form."""
-        form=self.getForm()
-        center=form.center
+        center=MaterialPoint.createFromform.center
         x,y=center
         position=Vector(x,y,color=mycolors.GREEN)
         point_motion=Motion()
@@ -122,14 +107,14 @@ class MaterialForm:
     def showMotion(self,surface):
         """Show the motion on a surface."""
         form=self.getForm()
-        center=form.center
+        center=form.center()
         x,y=center
         position=Vector(x,y,color=mycolors.GREEN)
         point_motion=Motion()
         for point in self.points:
-            point_motion+=point.motion
+            point_motion+=point.getMotion()
         material_center=MaterialPoint(point_motion)
-        material_center.position=position
+        material_center.setPosition(position)
         material_center.showMotion(surface)
 
     def getCollisionInstant(self,other):
@@ -150,13 +135,19 @@ class MaterialForm:
 
     def getTrajectory(self,t=1):
         """Return the segments that are defined by the trajectory of each point."""
-        segments=[Segment(p.getPoint(),p.getNextPoint()) for p in self.points]
+        segments=[Segment(p.getPosition(),p.getNextPosition) for p in self.points]
         return segments
 
+    def affectFriction(self,frixion=None):
+        """Reduce th velocity of the object according to its frixion."""
+        f=self.factor
+        for entity in self.entities:
+            entity.velocity=[f*entity.velocity[0],f*entity.velocity[1]]
 
-FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5)])
+
 
 if __name__=="__main__":
+    from mysurface import Surface
     surface=Surface()
     c1=[-10,-10,10,10]
     f1=Form.random(c1)

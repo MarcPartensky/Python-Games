@@ -31,7 +31,7 @@ class Ray(HalfLine):
 
 class Emiter:
     """The emiter send light."""
-    def __init__(self,position,n=50,view=[0,2*math.pi]):
+    def __init__(self,position=[0,0],n=50,view=[0,2*math.pi]):
         """Create an emiter object."""
         x,y=position
         self.point=Point(x,y)
@@ -54,9 +54,9 @@ class Emiter:
 
 
 class RayCaster:
-    def __init__(self,forms=[],n=20,view=[0,2*math.pi]):
+    def __init__(self,emiter=Emiter([0,0]),forms=[]):
         """Create a ray casting object idea from the coding train on youtube."""
-        self.emiter=Emiter([0,0],n=n,view=view)
+        self.emiter=emiter
         self.forms=forms #Forms tp be displayed by the caster
 
     def __call__(self,surface):
@@ -121,7 +121,8 @@ if __name__=="__main__":
     #forms=[Form.random([-10,-10,10,10],number=5,side_color=mycolors.RED) for i in range(10)]
     forms=[Form.random([10*(i-5),-5,10*(i-4),5],number=5,side_color=mycolors.RED) for i in range(10)]
     #forms=[Segment.random([10*(i-5),-5,10*(i-4),5],number=5,side_color=mycolors.RED) for i in range(10)]
-    caster=RayCaster(forms,n=20,view=[0,2*math.pi])
+    emiter=Emiter()
+    caster=RayCaster(emiter,forms)
     origin=Point(0,0)
 
     while surface.open:
