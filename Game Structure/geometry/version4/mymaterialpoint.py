@@ -2,6 +2,7 @@ from myforce import Force
 from mymotion import Motion
 from myabstract import Point,Segment,Vector
 from mycurves import Trajectory
+from mymaterial import Point
 
 import myforce
 import math
@@ -10,7 +11,20 @@ import mycolors
 
 digits=2
 
-class MaterialPoint:
+class MaterialPoint(Material,Point):
+    def sum(points):
+        """Return the sum of the material points."""
+        result=points[0]
+        for point in points[1:]:
+            result+=point
+        return result
+
+    def average(points):
+        """Return the average of the material points."""
+        return MaterialPoint.sum(points)/len(points)
+
+    mean=average
+
     def neutral():
         """Return the neutral material point."""
         return MaterialPoint(Point.neutral(),Motion.neutral())
@@ -272,6 +286,7 @@ class MaterialPoint:
 
     def delAbstract(self):
         """Set the point the zero."""
+        self.points=[]
 
     position=property(getPosition,setPosition,delPosition,"Representation of the position of the point.")
     velocity=property(getVelocity,setVelocity,delVelocity,"Representation of the velocity of the point.")

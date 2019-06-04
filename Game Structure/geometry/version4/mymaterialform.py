@@ -19,18 +19,21 @@ class MaterialForm:
         material_points=[MaterialPoint.createFromPoint(point,forces) for point in form.getPoints()]
         return MaterialForm(material_points)
 
-
     def __init__(self,points,fill=False,point_mode=0,point_radius=0.01,point_width=2,side_width=1,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE):
         """Create a material form."""
         self.points=points
+        self.fill=fill
+
         self.point_mode=point_mode
         self.point_radius=point_radius
         self.point_width=point_width
-        self.side_width=side_width
-        self.fill=fill
+
         self.area_color=area_color
         self.point_color=point_color
+
+        self.side_width=side_width
         self.side_color=side_color
+
 
     def getPointFromMaterialPoint(self,material_point):
         """Change the type of an instance of MaterialPoint into a Point type using material_point."""
@@ -38,8 +41,12 @@ class MaterialForm:
         x,y=position
         return Point(x,y)
 
+    def getForm(self):
+        """Return the object under a Form by conversion."""
+        return Form([p.getAbstract() for p in self.points])
 
-    def getForm(self,point_mode=None,point_radius=None,point_width=None,side_width=None,fill=None,area_color=None,point_color=None,side_color=None):
+
+    def getCompleteForm(self,point_mode=None,point_radius=None,point_width=None,side_width=None,fill=None,area_color=None,point_color=None,side_color=None):
         """Return the object under a Form type by conversion."""
         if not point_mode: point_mode=self.point_mode
         if not point_radius: point_radius=self.point_radius
@@ -55,7 +62,7 @@ class MaterialForm:
 
     def getPosition(self):
         """Return the position of the center of the material form."""
-        return self.form.center()
+        return self.form.center.position
 
     def getAbstractPoints(self):
         """Return all the abstract points of the object."""
@@ -152,6 +159,40 @@ class MaterialForm:
         """Return the segments that are defined by the trajectory of each point."""
         segments=[Segment(p.getPoint(),p.getNextPoint()) for p in self.points]
         return segments
+
+    def getCenter(self):
+        """Return the material center of the form."""
+        return MaterialPoint.average(self.points)
+
+    def setCenter(self,nc):
+        """Set the center of the material form."""
+        ac=self.getCenter()
+        v=Vector.createFromTwoPoints(nc,ac)
+        for point in self.points:
+            point+=v
+
+
+    def getPosition(self):
+        """Return the position of the center of the material form."""
+        return self.center.position
+
+    def getVelocity(self):
+        """Return the velocity of the center of the material form."""
+        return self.center.velocity
+
+    def setVelocity(self,velocity):
+        """Set the velocity of the center of the material form."""
+        self.center.velocity=velocity
+
+    center=property(getCenter,setCenter,delCenter,"Representation of the material center of the form.")
+    abstract=property(getAbstract,setAbstract,delAbstract,"Representation of the form in the abstract.")
+    motion=property(getMotion,setMotion,delMotion,"Representation of the motion of the form.")
+    position=property(getPosition,setPosition,delPosition,"Representation of the position of the form.")
+    velocity=property(getVelocity,setVelocity,delVelocity,"Representation of the velocity of the form.")
+    acceleration=property(getAcceleration,setAcceleration,delAcceleration,"Representation of the acceleration of the form.")
+    abstract_center=property(getAbstractCenter,setAbstractCenter,delAbstractCenter,"Representation of the abstract center of the material form.")
+    abstract_points=property(getAbstractPoints,setAbstractPoints,delAbstractPoints,"Representation of the abstract points of the material form.")
+
 
 
 FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5)])

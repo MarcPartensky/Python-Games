@@ -570,7 +570,7 @@ class Segment(Direction):
 
     def __contains__(self,point,e=10e-10):
         """Determine if a point is in a segment."""
-        if point==self.p1: return True
+        if point==self.getP1(): return True
         v1=Vector.createFromTwoPoints(point,self.p1)
         v2=self.getVector()
         a1=v1.angle
@@ -681,8 +681,9 @@ class Segment(Direction):
         sl=self.getLine()
         ol=other.getLine()
         point=sl.crossLine(ol)
-        if point in self and point in other:
-            return point
+        if point:
+            if point in self and point in other:
+                return point
 
     def crossLine(self,other):
         """Return the intersection point of the segment with a line."""
