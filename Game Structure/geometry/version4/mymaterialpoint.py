@@ -11,7 +11,7 @@ import mycolors
 
 digits=2
 
-class MaterialPoint:#(Material,Point):
+class MaterialPoint(Material):#(Material,Point):
     def sum(points):
         """Return the sum of the material points."""
         result=points[0]

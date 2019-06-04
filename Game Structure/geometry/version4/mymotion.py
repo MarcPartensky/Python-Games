@@ -162,7 +162,7 @@ if __name__=="__main__":
     motion1=Motion.random()
     motion2=Motion.random()
     motion=motion1+motion2
-    motion=Motion.sum([Motion.random() for i in range(10)]+[motion]) #Summing 10 motions together
+    motion=Motion.sum([Motion.random() for i in range(9)]+[motion]) #Summing 10 motions together
     print(motion)
     while context.open:
         context.check()

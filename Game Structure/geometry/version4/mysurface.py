@@ -4,6 +4,8 @@ from mywindow import Window
 import mycolors
 
 class Surface:
+    """Might inherit from Rect soon..."""
+    
     def __init__(self,draw=None,**kwargs):
         """Create a surface."""
         if not draw: self.draw=Draw(**kwargs)
