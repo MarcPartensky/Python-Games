@@ -115,6 +115,22 @@ class Surface:
         """Behave like the get from screen of the plan without having to put the window in parameter."""
         return self.draw.plane.getFromScreen(position,self.draw.window)
 
+    def __enter__(self):
+        """Opening the context."""
+        self.check()
+        self.control()
+        self.clear()
+        self.show()
+        print("went in")
+        return self
+
+    def __exit__(self):
+        """Ending the context."""
+        print("going out")
+        self.flip()
+        if self.open:
+            self.__enter__()
+
     corners=property(getCorners,setCorners,"Allow the user to manipulate the corners of the surface easily.")
     rect=property(getRect,setRect,"Allow the user to manipulate the rect of the surface easily.")
     coordonnates=property(getCoordonnates,setCoordonnates,"Allow the user to manipulate the coordonnates of the surface easily.")

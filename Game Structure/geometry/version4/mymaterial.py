@@ -2,8 +2,20 @@ from copy import deepcopy
 
 class Material:
     """Class containing physics function that can be used for all sorts of material classes."""
+
+    #Class functions
+    #Mathematical operations
     def sum(objects):
-        """Sum the objects."""
+        """Return the sum of the objects."""
+        result=copy.deepcopy(objects[0])
+        result.motion=Motion.sum([object.motion for object in objects])
+        return result
+
+    def average(objects):
+        """Return the average of the objects."""
+        return Material.sum(objects)/len(objects)
+
+    #Object functions
     #Vectors
     #Position
     def getPosition(self):
@@ -129,7 +141,7 @@ class Material:
     #Operations
     #Addition
     def __add__(self,other):
-        """Add two material objects together."""
+        """Return the addition of two material objects together."""
         object=copy.deepcopy(self)
         object.motion+=other.motion
         return object
@@ -137,3 +149,76 @@ class Material:
     def __iadd__(self,other):
         """Add a material object to another."""
         self.motion+=other.motion
+
+    __radd__=__add__
+
+    #Substraction
+    def __sub__(self,other):
+        """Return the subtraction of two material objects together."""
+        object=copy.deepcopy(self)
+        object.motion-=other.motion
+        return object
+
+    def __isub__(self,other):
+        """Substract a material object to another."""
+        self.motion-=other.motion
+
+    __rsub__=__sub__
+
+    #Multiplication
+    def __mul__(self,other):
+        """Return the product of a material object with a scalar."""
+        object=copy.deepcopy(self)
+        object.motion*=other
+        return object
+
+    def __imul__(self,other):
+        """Multiply the material object with a scalar."""
+        self.motion*=other
+
+    #Division
+    #True division
+    def __truediv__(self,other):
+        """Return the division of the material object by a scalar."""
+        object=copy.deepcopy(self)
+        object.motion/=other
+        return motion
+
+    def __itruediv__(self,other):
+        """Divide the material object by a scalar."""
+        self.motion/=other
+
+    __rtruediv__=__itruediv__
+
+    #Floor division
+    def __floordiv__(self,other):
+        """Return the quotient in the Euclidian division of the material object by a scalar."""
+        object=copy.deepcopy(self)
+        object.motion//=other
+        return object
+
+    def __ifloordiv__(self,other):
+        """Apply the quotient in the Euclidan division of the material object by a scalar."""
+        self.motion//=other
+
+    __rfloordiv__=__ifloordiv__
+
+    #Items
+    def __getitem__(self,index):
+        """Return the components of the position."""
+        return self.motion.position[index]
+
+    def __setitem__(self,index,value):
+        """Set the components of the position."""
+        self.motion.position[index]=value
+
+    #Iterations
+    def __iter__(self):
+        pass
+    def rotate(self,angle,position):
+        """Rotate the motion."""
+        self.motion.rotate(angle,position)
+
+    def rotatePosition(self,angle,position):
+        """Rotate the position vector of the motion."""
+        #self.motion.position.rotate(angle,position)

@@ -310,7 +310,6 @@ class Vector:
         """Delete the y component."""
         del self.position[1]
 
-
     def getAngle(self):
         """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
         return Vector.polar(self.position)[1]
@@ -334,7 +333,7 @@ class Vector:
     norm=property(getNorm,setNorm,"Allow the user to manipulate the norm of the vector easily.")
     angle=property(getAngle,setAngle,"Allow the user to manipulate the angle of the vector easily.")
 
-    def show(self,context,p,color=None,width=None):
+    def show(self,context,p=Point.neutral(),color=None,width=None):
         """Show the vector."""
         if not color: color=self.color
         if not width: width=self.width

@@ -2,7 +2,7 @@ from myforce import Force
 from mymotion import Motion
 from myabstract import Point,Segment,Vector
 from mycurves import Trajectory
-from mymaterial import Point
+from mymaterial import Material
 
 import myforce
 import math
@@ -11,7 +11,7 @@ import mycolors
 
 digits=2
 
-class MaterialPoint(Material,Point):
+class MaterialPoint:#(Material,Point):
     def sum(points):
         """Return the sum of the material points."""
         result=points[0]
