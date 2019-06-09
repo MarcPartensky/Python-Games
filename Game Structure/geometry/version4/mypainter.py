@@ -214,7 +214,9 @@ class Paint:
         f=self.getForm()
         for case in self.cases:
             case.show(surface)
-        f.show(surface,side_color=mycolors.BLUE,side_width=3)
+        f.side_color=mycolors.BLUE
+        f.side_width=3
+        f.show(surface)
 
     def save(self):
         """Save the paint."""
@@ -242,7 +244,9 @@ class Board(Paint):
         f=self.getForm()
         for case in self.cases:
             case.show(surface)
-        f.show(surface,side_color=mycolors.BLUE,side_width=3)
+        f.side_color=mycolors.BLUE
+        f.side_width=3
+        f.show(surface)
         f[0].showText(surface,"Board")
 
 

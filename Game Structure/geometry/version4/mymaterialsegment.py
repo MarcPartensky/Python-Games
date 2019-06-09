@@ -4,9 +4,9 @@ from mymaterialpoint import MaterialPoint
 
 class MaterialSegment(Material,Segment):
     """Material match of the abtract segment."""
-    def null():
+    def null(d=2):
         """Return the neutral element of the material segment."""
-        return MaterialSegment([MaterialPoint.null() for i in range(2)])
+        return MaterialSegment([MaterialPoint.null(d) for i in range(2)])
 
     def random(corners=[-1,-1,1,1]):
         """Return a random material segment within the given corners."""

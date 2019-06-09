@@ -7,15 +7,17 @@ import copy
 class Motion:
     #Class functions
     #Operations
-    def neutral(n=3,d=2):
+    def null(n=3,d=2):
         """Return the neutral motion."""
         #The dimension d still needs to be implemented for the vectors.
-        return Motion([Vector.neutral() for i in range(n)])
+        return Motion([Vector.null(d=d) for i in range(n)])
+
+    neutral=zero=null
 
     def sum(motions):
         """Return the sum of the motions together."""
-        result=motions[0]
-        for motion in motions[1:]:
+        result=Motion.null()
+        for motion in motions:
             result+=motion
         return result
 
@@ -30,11 +32,13 @@ class Motion:
 
     #Object functions
     #Initializing
-    def __init__(self,*vectors,n=3):
+    def __init__(self,*vectors,n=3,d=2):
         """Create a motion using vectors."""
-        if len(vectors)==1: vectors=vectors[0]
-        if len(vectors)==0: vectors=[Vector.neutral() for i in range(3)]
-        self.vectors=vectors
+        if vectors!=():
+            if type(vectors[0])==list:
+                vectors=vectors[0]
+        self.vectors=list(vectors)
+        self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
         if len(self.vectors)>=1: self.position.color     = mycolors.GREEN
         if len(self.vectors)>=2: self.velocity.color     = mycolors.BLUE
         if len(self.vectors)>=3: self.acceleration.color = mycolors.RED
@@ -141,11 +145,37 @@ class Motion:
         self.vectors[2]=Vector([0 for i in range(len(self.vectors[2].position))])
 
     #Operations
-    __radd__=__iadd__=__add__=lambda self,other:Motion(*[v1+v2 for (v1,v2) in zip(self,other)]) #Addition
-    __rsub__=__isub__=__sub__=lambda self,other:Motion(*[v1-v2 for (v1,v2) in zip(self,other)]) #Substraction
-    __rmul__=__imul__=__mul__=lambda self,other:Motion(*[v*other for v in self])                #Multiplication
-    __rtruediv__=__itruediv__=__truediv__=lambda self,other:Motion(*[v/other for v in self])    #Division
-    __rfloordiv__=__ifloordiv__=__floordiv__=lambda self,other:Motion(*[v//other for v in self])    #Division
+    __radd__=__add__=lambda self,other:Motion(*[v1+v2 for (v1,v2) in zip(self.vectors,other.vectors)]) #Addition
+    __rsub__=__sub__=lambda self,other:Motion(*[v1-v2 for (v1,v2) in zip(self.vectors,other.vectors)]) #Substraction
+    __rmul__=__mul__=lambda self,other:Motion(*[v*other for v in self.vectors])                        #Multiplication
+    __rtruediv__=__truediv__=lambda self,other:Motion(*[v/other for v in self.vectors])                #Division
+    __rfloordiv__=__floordiv__=lambda self,other:Motion(*[v//other for v in self.vectors])             #Floor Division
+
+    def __iadd__(self,other):
+        """Add the other motion to the motion."""
+        self.vectors=[v1+v2 for (v1,v2) in zip(self.vectors,other.vectors)]
+        return self
+
+    def __isub__(self,other):
+        """Substract the other motion to the motion."""
+        self.vectors=[v1-v2 for (v1,v2) in zip(self.vectors,other.vectors)]
+        return self
+
+    def __imul__(self,other):
+        """Multiply a motion by a scalar."""
+        self.vectors=[v*other for v in self.vectors]
+        return self
+
+    def __itruediv__(self,other):
+        """Divide a motion by a scalar."""
+        self.vectors=[v/other for v in self.vectors]
+        return self
+
+    def __ifloordiv__(self,other):
+        """Divide motion by a scalar according to euclidian division."""
+        self.vectors=[v//other for v in self.vectors]
+        return self
+
 
     #Properties
     position=property(getPosition,setPosition,delPosition,"Allow the user to manipulate the position.")

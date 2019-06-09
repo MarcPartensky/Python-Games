@@ -331,7 +331,7 @@ if __name__=="__main__":
     from mysurface import Context
     s=20
     zone=Zone([2*s,2*s])
-    context=Context(name="Maze")
+    context=Context(name="Maze",fullscreen=True)
     maze=Maze([0,0],[s,s],fill=True)
     entity=BasicEntity(1,1,color=mycolors.RED,vector_color=mycolors.GREEN,vector_width=3)
     solver=Solver(maze,entity)

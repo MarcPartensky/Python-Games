@@ -11,11 +11,15 @@ import mycolors
 
 digits=2
 
-class MaterialPoint(Material):#(Material,Point):
-    def sum(points):
+class MaterialPoint(Material,Point):
+    def null(n=3,d=2):
+        """Return the neutral material point."""
+        return MaterialPoint(Motion.neutral(n=n,d=d))
+
+    def sum(points,d=2):
         """Return the sum of the material points."""
-        result=points[0]
-        for point in points[1:]:
+        result=MaterialPoint.null(d=d)
+        for point in points:
             result+=point
         return result
 
@@ -24,20 +28,16 @@ class MaterialPoint(Material):#(Material,Point):
         return MaterialPoint.sum(points)/len(points)
 
     mean=average
-
-    def neutral():
-        """Return the neutral material point."""
-        return MaterialPoint(Point.neutral(),Motion.neutral())
+    neutral=zero=null
 
     def random(corners=[-1,-1,1,1],**kwargs):
         """Create a random material point using optional minimum and maximum."""
         motion=Motion.random(corners)
         return MaterialPoint(motion,**kwargs)
 
-    def createFromPoint(point,forces=[]):
+    def createFromPoint(point,forces=[],n=3,d=2):
         """Create a material point from a Point instance."""
-        position=Vector.createFromPoint(point)
-        motion=Motion(position) #Initializing a motion instance
+        motion=Motion(Vector(point),n=n,d=d) #Initializing a motion instance
         return MaterialPoint(motion,forces) #Initializing a material point instance
 
     def __init__(self,motion=Motion(),forces=[],mass=1,color=mycolors.WHITE):
@@ -82,9 +82,9 @@ class MaterialPoint(Material):#(Material,Point):
 
     def delPosition(self):
         """Set the position of the material point to (0,0)."""
-        l=len(self.motion.position.position)
+        l=len(self.motion.position.components)
         for i in range(l):
-            self.motion.position.position[i]=0
+            self.motion.position.components[i]=0
 
     def getVelocity(self):
         """Return the velocity of the material point."""
@@ -96,9 +96,9 @@ class MaterialPoint(Material):#(Material,Point):
 
     def delVelocity(self):
         """Set the position of the material point to (0,0)."""
-        l=len(self.motion.velocity.position)
+        l=len(self.motion.velocity.components)
         for i in range(l):
-            self.motion.velocity.position[i]=0
+            self.motion.velocity.components[i]=0
 
     def getAcceleration(self):
         """Return the acceleration of the material point."""
@@ -110,9 +110,9 @@ class MaterialPoint(Material):#(Material,Point):
 
     def delAcceleration(self):
         """Set the position of the material point to (0,0)."""
-        l=len(self.motion.acceleration.position)
+        l=len(self.motion.acceleration.components)
         for i in range(l):
-            self.motion.acceleration.position[i]=0
+            self.motion.acceleration.components[i]=0
 
     def getNextPoint(self,t):
         """Return the future point."""
@@ -155,17 +155,13 @@ class MaterialPoint(Material):#(Material,Point):
     def update(self,t=1):
         """Update the motion of the material point."""
         force=Force.sum(self.forces)
-        x,y=force
-        acceleration=Vector(x,y)/self.mass
-        self.motion.setAcceleration(acceleration)
+        acceleration=force/self.mass
+        self.motion.acceleration.components=acceleration.components
         self.motion.update(t)
 
-    def rotate(self,angle=math.pi,center=Point(0,0)):
+    def rotate(self,angle=math.pi,center=Point.origin()):
         """Rotate the point using an angle and the point of rotation."""
-        #for vector in self.motion:
-            #vector.rotate(angle)
-        #self.motion.position.rotate(angle)
-        point=self.getPoint()
+        point=self.getAbstract()
         point.rotate(angle,center)
         vector=Vector.createFromPoint(point)
         self.motion.setPosition(vector)
@@ -276,6 +272,7 @@ class MaterialPoint(Material):#(Material,Point):
         """Set the y component of the acceleration of the point to 0."""
         self.motion.position.position[1]=0
 
+    #Abstract
     def getAbstract(self):
         """Return the abstract point that correspond to the point."""
         return Point(self.motion.position.position)
@@ -288,6 +285,19 @@ class MaterialPoint(Material):#(Material,Point):
         """Set the point the zero."""
         self.points=[]
 
+    #Components
+    def getComponents(self):
+        """Return the components of the material point."""
+        return self.abstract.components
+
+    def setComponents(self,components):
+        """Set the components of the material point to the given components."""
+        self.abstract.components=components
+
+    def delComponents(self):
+        """Set the components of the material point to null."""
+        self.abstract.components=[0 for i in range(len(self.abstract.components))]
+
     position=property(getPosition,setPosition,delPosition,"Representation of the position of the point.")
     velocity=property(getVelocity,setVelocity,delVelocity,"Representation of the velocity of the point.")
     acceleration=property(getAcceleration,setAcceleration,delAcceleration,"Representation of the acceleration of the point.")
@@ -298,6 +308,7 @@ class MaterialPoint(Material):#(Material,Point):
     ax=property(getAx,setAx,delAx,"Representation of the x component of the acceleration of the point.")
     ay=property(getAy,setAy,delAy,"Representation of the y component of the acceleration of the point.")
     abstract=property(getAbstract,setAbstract,delAbstract,"Representation of the point as an abstract point.")
+    components=property(getComponents,setComponents,delComponents,"Representation of the components of the material point.")
 
 
 FallingPoint=lambda :MaterialPoint(Motion.random(),[myforce.gravity])

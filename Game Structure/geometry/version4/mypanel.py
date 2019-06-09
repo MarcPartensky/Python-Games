@@ -11,7 +11,7 @@ class Panel(Case):
         self.buttons=buttons
 
     def splitButtons(self):
-        """Place the buttons so they are the most sparsed as possible in the pannel."""
+        """Place the buttons so they are the most sparsed as possible in the panel."""
         pass
 
     def update(self,keys):
@@ -34,6 +34,9 @@ class Button(Case):
     def random(corners=[-1,-1,1,1]):
         """Create a random button."""
         case=Case.random(corners)
+        super().__init__(*args,**kwargs)
+        self.position=case.position
+        return self
 
     def __init__(self,*args,**kwargs):
         """Create a button object using its position and size."""

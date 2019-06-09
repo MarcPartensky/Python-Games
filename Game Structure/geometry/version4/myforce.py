@@ -5,6 +5,19 @@ p=2 #Number of digits of precision of the objects when displayed
 
 
 class Force(Vector):
+    def null(d=2):
+        """Return the null force."""
+        return Force([0 for i in range(d)])
+    neutral=zero=null
+
+    def sum(forces,d=2):
+        """Return the sum of the forces."""
+        result=Force.null(d)
+        for force in forces:
+            result+=force
+        return result
+
+
     def __init__(self,*args,**kwargs):
         """Create a force."""
         super().__init__(*args,**kwargs)

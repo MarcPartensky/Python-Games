@@ -17,10 +17,7 @@ class Body:
 
     def getMass(self):
         """Return the mass of the object using the area."""
-        area=self.form.area()
-        k=1
-        mass=k*area
-        return mass
+        return self.form.area
 
     def spawn(self,position=(0,0)):
         """Make the body spawn."""
@@ -62,7 +59,6 @@ class Body:
         self.applyFrixion()
         self.move(t)
 
-
     def control(self,window):
         """Control the view of the plane."""
         keys=window.press()
@@ -93,5 +89,5 @@ if __name__=="__main__":
         body.update(t=0.1)
         body.show(surface)
         position=body.motion.getPosition()
-        surface.draw.plane.setPosition(position)
+        surface.draw.plane.position=position
         surface.flip()

@@ -1,7 +1,6 @@
 from mywindow import Window
 from myplane import Plane
-from myform import Form
-from mypoint import Point
+from myabstract import Form,Point
 
 from mycolors import WHITE,RED,GREEN
 
@@ -50,7 +49,7 @@ class Maker(Plane):
     def rotateForms(self):
         """Allow the forms to rotate, this function is only made in order to draw cool stuff on screen."""
         for i in range(len(self.forms)):
-            self.forms[i].rotate(0.1,self.forms[i].center())
+            self.forms[i].rotate(0.1,self.forms[i].center)
 
     def detectCollisions(self):
         """Detect collisions between shapes and change the colliding forms in red."""
@@ -63,21 +62,21 @@ class Maker(Plane):
                     self.forms[i].side_color=RED
                     self.forms[j].side_color=RED
 
-
-
     def show(self,window):
         """Show all the form using window."""
         self.showGrid(window)
         for form in self.forms:
             self.showForm(form,window)
-            center=form.center(color=GREEN,radius=1)
+            center=form.center
+            center.color=GREEN
+            center.radius=1
             center.truncate()
             center.show(window)
 
     def showForm(self,plane_form,window):
         """Show a form using window."""
         screen_form=self.getFormToScreen(plane_form,window)
-        screen_form.show(window,point_radius=1)
+        screen_form.show(window)
 
     def getFormToScreen(self,plane_form,window):
         """Create a new form according screen coordonnates using a form and the window."""

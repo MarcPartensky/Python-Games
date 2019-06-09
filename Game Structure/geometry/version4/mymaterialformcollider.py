@@ -112,9 +112,7 @@ if __name__=="__main__":
     ps1=[Point(0,0),Point(0,1),Point(1,1),Point(1,0)]
     f1=Form(ps1)
     f1=MaterialForm.createFromForm(f1)
-    print(f1.velocity)
     f1.velocity=Vector(1,1)
-    print(f1.velocity)
     ps2=[Point(0,0),Point(0,2),Point(2,2),Point(2,0)]
     f2=Form(ps2)
     f2=MaterialForm.createFromForm(f2)
@@ -126,7 +124,7 @@ if __name__=="__main__":
         surface.control()
         surface.clear()
         surface.show()
-        handler.update(0.1)
-        handler.rotate(0.1)
+        handler.update(1)
+        #handler.rotate(0.1)
         handler.show(surface)
         surface.flip()

@@ -25,9 +25,6 @@ class Ray(HalfLine):
         """Return the string representation of a ray."""
         return "ray("+str(self.point)+","+str(self.angle)+")"
 
-    __repr__=__str__
-
-
 
 class Emiter:
     """The emiter send light."""
@@ -93,10 +90,10 @@ class RayCaster:
         """Return the list of points for each ray if there are crossing with one of the forms of the ray caster."""
         points=[]
         for ray in self.emiter.rays:
-            rp=ray.point()
+            rp=ray.point
             p=None
             for form in self.forms:
-                cross=form|ray
+                cross=form.crossHalfLine(ray)
                 if cross:
                     np=cross[0]
                     if p:

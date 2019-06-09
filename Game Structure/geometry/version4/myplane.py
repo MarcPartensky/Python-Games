@@ -292,7 +292,7 @@ class Plane:
 
 if __name__=="__main__":
     window=Window(fullscreen=False)
-    theme={"background":(0,0,0),"show scale":True,"show origin":True}
+    theme={"background":(0,0,0),"show scale":True,"show origin":True,"grid color":(200,200,200)}
     plane=Plane(theme)
     #plane.units=[1/10**300,1/10**300]
     plane(window)

@@ -1,5 +1,6 @@
 from mymaterialpoint import MaterialPoint
 from myabstract import Form,Point,Vector
+from mymaterial import Material
 from mymotion import Motion
 from myforce import Force
 
@@ -8,16 +9,18 @@ import myforce
 import mycolors
 import math
 
-class MaterialForm:
+class MaterialForm(Material,Form):
+    def null():
+        """Return the null material form."""
+        return MaterialForm([],[])
+
     def random(corners=[-1,-1,1,1],number=5):
         """Create a random material form."""
-        points=[MaterialPoint.random(min,max) for n in range(number)]
-        return MaterialForm(points)
+        return MaterialForm([MaterialPoint.random(corners) for n in range(number)])
 
     def createFromForm(form,forces=[]):
         """Create a material form using a Form instance."""
-        material_points=[MaterialPoint.createFromPoint(point,forces) for point in form.getPoints()]
-        return MaterialForm(material_points)
+        return MaterialForm([MaterialPoint.createFromPoint(point,forces) for point in form.points])
 
     def __init__(self,points,fill=False,point_mode=0,point_radius=0.01,point_width=2,side_width=1,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE):
         """Create a material form."""
@@ -34,16 +37,22 @@ class MaterialForm:
         self.side_width=side_width
         self.side_color=side_color
 
+    def __str__(self):
+        """Return the string representation of the material form."""
+        return "mf("+",".join([str(p) for p in self.points])+")"
 
-    def getPointFromMaterialPoint(self,material_point):
-        """Change the type of an instance of MaterialPoint into a Point type using material_point."""
-        position=material_point.getPosition()
-        x,y=position
-        return Point(x,y)
-
-    def getForm(self):
+    #Abstract
+    def getAbstract(self):
         """Return the object under a Form by conversion."""
         return Form([p.getAbstract() for p in self.points])
+
+    def setAbstract(self,form):
+        """Set the abstract representation of the material form to a form."""
+        self.__dict__=MaterialForm.createFromForm(form).__dict__
+
+    def delAbstract(self,form):
+        """Set the abstract representation of the material form to null."""
+        self.__dict__=MaterialFrom.null().__dict__
 
 
     def getCompleteForm(self,point_mode=None,point_radius=None,point_width=None,side_width=None,fill=None,area_color=None,point_color=None,side_color=None):
@@ -57,8 +66,7 @@ class MaterialForm:
         if not point_color: point_color=self.point_color
         if not side_color: side_color=self.side_color
         points=[self.getPointFromMaterialPoint(point) for point in self.points]
-        form=Form(points,fill,point_mode,point_radius,point_width,side_width,point_color,side_color,area_color)
-        return form
+        return Form(points,fill,point_mode,point_radius,point_width,side_width,point_color,side_color,area_color)
 
     def getPosition(self):
         """Return the position of the center of the material form."""
@@ -66,43 +74,43 @@ class MaterialForm:
 
     def getAbstractPoints(self):
         """Return all the abstract points of the object."""
-        return self.getForm().points
+        return self.abstract.points
 
+    #Motion
     def getMotion(self):
         """Return the motion of the object."""
-        return Motion.sum([motion for motion in self.points.getMotion()])
+        return Motion.average([point.motion for point in self.points])
 
-    def getMaterialPoints(self):
-        """Return the material points of the form."""
-        return self.points
+    def setMotion(self,nm):
+        """Set the motion of the object."""
+        m=self.getMotion()
+        delta=nm-m
+        for point in self.points:
+            point.motion+=delta
 
-    def setMaterialPoints(self,points):
-        """Set the material points of the form."""
-        self.points=points
-
+    def delMotion(self):
+        """Set the motion to null."""
+        self.motion=Motion.null()
 
     def show(self,window):
         """Show the form on the window."""
-        form=self.getForm()
-        form.show(window)
+        self.abstract.show(window)
 
     def update(self,t=1):
         """Update the form by updating all its points."""
         for point in self.points:
             point.update(t)
 
-    def rotate(self,angle=math.pi,center=Point(0,0)):
+    def rotate(self,angle=math.pi,center=Point.origin()):
         """Rotate the form by rotating its points."""
         for point in self.points:
             point.rotate(angle,center)
 
-
     def getMass(self):
         """Calculate the mass of the form using its area and the mass of the material_points that define it."""
         """The way used to calculate it is arbitrary and should be improved."""
-        form=self.getForm()
         mass=sum([point.getMass() for point in self.points])
-        mass*=form.area()
+        mass*=self.abstract.area
         return mass
 
     def __getitem__(self,index):
@@ -113,35 +121,23 @@ class MaterialForm:
         """Return the material point of number 'index'."""
         self.points[index]=point
 
-    def center(self):
+    #Center
+    def getCenter(self):
         """Return the center of the material form."""
-        form=self.getForm()
-        center=form.center
-        x,y=center
-        position=Vector(x,y,color=mycolors.GREEN)
-        point_motion=Motion()
-        for point in self.points:
-            point_motion+=point.getMotion()
-        material_center=MaterialPoint(point_motion)
-        material_center.setPosition(position)
-        return material_center
+        return MaterialPoint.average(self.points)
+
+    def setCenter(self,center):
+        """Set the center of the material form."""
+        pass #Good luck
 
     def showMotion(self,surface):
         """Show the motion on a surface."""
-        form=self.getForm()
-        center=form.center
-        x,y=center
-        position=Vector(x,y,color=mycolors.GREEN)
-        point_motion=Motion()
-        for point in self.points:
-            point_motion+=point.motion
-        material_center=MaterialPoint(point_motion)
-        material_center.position=position
-        material_center.showMotion(surface)
+        self.motion.velocity.show(surface,self.position)
+        self.motion.acceleration.show(surface,self.position)
 
     def getCollisionInstant(self,other):
         """Return the instant of the collision the material form with the other object."""
-        pass
+
 
     def __or__(self,other):
         """Determine the points of intersections of the material point and another material object."""
@@ -149,17 +145,16 @@ class MaterialForm:
 
     def crossMaterialForm(self,other):
         """Return the material point of intersection between two material forms."""
-        f1=self.getForm()
-        f2=other.getForm()
+        f1=self.abstract
+        f2=other.abstract
         points=f1.crossForm(f2)
-        points=[MaterialPoint.createFromPoint(point) for point in points]
-        return points
+        return [MaterialPoint.createFromPoint(point) for point in points]
 
     def getTrajectory(self,t=1):
         """Return the segments that are defined by the trajectory of each point."""
-        segments=[Segment(p.getPoint(),p.getNextPoint()) for p in self.points]
-        return segments
+        return [Segment(p.getPoint(),p.getNextPoint()) for p in self.points]
 
+    #Center
     def getCenter(self):
         """Return the material center of the form."""
         return MaterialPoint.average(self.points)
@@ -171,37 +166,69 @@ class MaterialForm:
         for point in self.points:
             point+=v
 
+    def delCenter(self):
+        """Set the center to the origin."""
+        self.setCenter(Point.origin())
 
+    #Position
     def getPosition(self):
         """Return the position of the center of the material form."""
-        return self.center.position
+        return Vector.average([point.position for point in self.points])
 
+    def setPosition(self,position):
+        """Set the position of the material form to the given position."""
+        self.setCenter(position)
+
+    def delPosition(self):
+        """Set the position of the material form to the origin."""
+        self.setCenter(Point.origin())
+
+    #Velocity
     def getVelocity(self):
         """Return the velocity of the center of the material form."""
-        return self.center.velocity
+        return Vector.average([point.velocity for point in self.points])
 
     def setVelocity(self,velocity):
         """Set the velocity of the center of the material form."""
         self.center.velocity=velocity
 
-    center=property(getCenter,setCenter,delCenter,"Representation of the material center of the form.")
+    def delVelocity(self):
+        """Set the velocity to the null vector."""
+        self.setVelocity(Vector.null())
+
+    #Acceleration
+    def getAcceleration(self):
+        """Return the acceleration of the material form."""
+        return Vector.average([point.acceleration for point in self.points])
+
+    def setAcceleration(self,acceleration):
+        """Set the acceleration of the material form to the given acceleration."""
+        self.center.acceleration=acceleration
+
+    def delAcceleration(self):
+        """Set the acceleration to the null vector."""
+        self.setAcceleration(Vector.null())
+
+    center=property(getCenter,setCenter,"Representation of the material center of the form.")
     abstract=property(getAbstract,setAbstract,delAbstract,"Representation of the form in the abstract.")
     motion=property(getMotion,setMotion,delMotion,"Representation of the motion of the form.")
     position=property(getPosition,setPosition,delPosition,"Representation of the position of the form.")
     velocity=property(getVelocity,setVelocity,delVelocity,"Representation of the velocity of the form.")
     acceleration=property(getAcceleration,setAcceleration,delAcceleration,"Representation of the acceleration of the form.")
-    abstract_center=property(getAbstractCenter,setAbstractCenter,delAbstractCenter,"Representation of the abstract center of the material form.")
-    abstract_points=property(getAbstractPoints,setAbstractPoints,delAbstractPoints,"Representation of the abstract points of the material form.")
+    #abstract_center=property(getAbstractCenter,setAbstractCenter,delAbstractCenter,"Representation of the abstract center of the material form.")
+    #abstract_points=property(getAbstractPoints,setAbstractPoints,delAbstractPoints,"Representation of the abstract points of the material form.")
 
 
 
 FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5)])
 
 if __name__=="__main__":
+    from mysurface import Surface
     surface=Surface()
     c1=[-10,-10,10,10]
     f1=Form.random(c1)
     f1=MaterialForm.createFromForm(f1,[Force(0.001,0),Force(0,0.001)])
+    print(f1)
 
     c2=[-10,-10,10,10]
     f2=Form.random(c2)
@@ -209,7 +236,7 @@ if __name__=="__main__":
 
     #print(form[0].forces)
     #print(form.getMass())
-    origin=Point(0,0)
+    origin=Point.origin()
     while surface.open:
         surface.check()
         surface.clear()
@@ -217,11 +244,12 @@ if __name__=="__main__":
         surface.show()
         f1.update(t=0.1)
         f2.update(t=0.1)
-        f1.rotate(0.01,f1.center().getPoint())
-        f2.rotate(-0.01,f2.center().getPoint())
+        f1.rotate(0.01,f1.center.abstract)
+        f2.rotate(-0.01,f2.center.abstract)
         for p in f1|f2:
-            p.show(surface,color=mycolors.RED)
-        surface.draw.window.print("form.motion:"+str(f1.getPosition()),(10,10))
+            p.show(surface)
+        surface.draw.window.print("f1: "+str(f1.motion),(10,10))
+        surface.draw.window.print("f2: "+str(f2.motion),(10,40))
         f1.show(surface)
         f2.show(surface)
         f1.showMotion(surface)

@@ -50,13 +50,6 @@ class BezierCurve:
         self.segment_color=segment_color
         self.point_color=point_color
 
-    def getPoints(self):
-        """Return the points of the bezier curve."""
-        return self.points
-
-    def setPoints(self):
-        """Set the points of the bezier curve."""
-
     def __call__(self,t):
         """Return the point."""
         points=self.getPoints()
@@ -90,7 +83,6 @@ class BezierCurve:
         self.showPoints(surface,points)
         self.showSegments(surface,segments)
 
-
     def getConstruction(self,t):
         """Return the construction segments of the form."""
         points=self.getPoints()
@@ -101,11 +93,9 @@ class BezierCurve:
             construction.append(segments)
         return construction
 
-
     def showConstruction(self,surface,t):
         """Show the construction of the form at the t position."""
         construction=self.getConstruction(t)
-        print(construction)
         l=len(construction)
         for i in range(l):
             k=255*(i+1)/l

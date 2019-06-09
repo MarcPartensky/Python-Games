@@ -6,13 +6,10 @@ class Polygon:
         self.width=1
         self.color=color
         self.showpoints=showpoints
-    def show(self,window):
-        """Show the polygon using window."""
+    def show(self,context):
+        """Show the polygon using the context."""
         positions=[[p.x,p.y] for p in self.points]
-        window.draw.polygon(window.screen,self.color,positions,self.width)
+        window.draw.polygon(context.screen,self.color,positions,self.width)
         if self.showpoints:
             for point in self.points:
                 point.show(window)
-        return False
-    def update(self):
-        pass
