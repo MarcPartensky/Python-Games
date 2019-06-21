@@ -44,7 +44,7 @@ class Draw:
         sx,sy=size
         position=self.plane.getToScreen(position,self.window)
         ux,uy=self.plane.units
-        size=[sx*ux,sy*uy]
+        size=[sx*ux+1,sy*uy+1]
         rect=position+size
         self.window.draw.rect(screen,color,rect,not(filled))
 

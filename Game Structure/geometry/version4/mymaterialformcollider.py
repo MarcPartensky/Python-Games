@@ -40,17 +40,17 @@ class MaterialFormHandler:
         #I just know that i need the motions of the forms, the coordonnates of its points and their masses.
         ap1=object1.points
         bp1=[Point.createFromVector(p1.getNextPosition(self.time)) for p1 in ap1]
-        ls1=[Segment(a1.getAbstract(),b1) for (a1,b1) in zip(ap1,bp1)]
+        ls1=[Segment(a1.abstract,b1) for (a1,b1) in zip(ap1,bp1)]
         ap2=object2.points
         bp2=[Point.createFromVector(p2.getNextPosition(self.time)) for p2 in ap2]
-        ls2=[Segment(a2.getAbstract(),b2) for (a2,b2) in zip(ap2,bp2)]
+        ls2=[Segment(a2.abstract,b2) for (a2,b2) in zip(ap2,bp2)]
         points=[]
         for s1 in ls1:
             for s2 in ls2:
                 print(s1,s2)
                 point=s1.crossSegment(s2)
-                print(point==None)
                 if point:
+                    print(point)
                     points.append(point)
         return points
 
@@ -125,6 +125,6 @@ if __name__=="__main__":
         surface.clear()
         surface.show()
         handler.update(1)
-        #handler.rotate(0.1)
+        handler.rotate(0.1)
         handler.show(surface)
         surface.flip()

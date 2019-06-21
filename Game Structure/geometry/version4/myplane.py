@@ -112,7 +112,7 @@ class Plane:
     def showOrigin(self,window,color=mycolors.WHITE,radius=3):
         """Show the origin of the plane."""
         position=self.getToScreen([0,0],window)
-        print(position)
+        #print(position)
         window.draw.circle(window.screen,color,position,radius,0)
 
 

@@ -76,7 +76,7 @@ class Plateau:
         self.gagne=False
         self.taille_x,self.taille_y=self.taille
         self.nombre_de_joueurs=2
-        self.demonstration=True
+        self.demonstration=False
         if theme: self.couleur_grille,self.pieces_couleur,self.mouvements_couleur=theme
 
     def creerGrille(self):

@@ -1,6 +1,6 @@
 from mysurface import Surface
 
-class GameEngine:
+class Game:
     """Main class to use in future games."""
     def __init__(self,context,levels):
         """Create a game engine."""
@@ -8,10 +8,9 @@ class GameEngine:
         self.levels=levels
         self.stage=None
 
-    def __call__(self):
+    def play(self):
         """Main loop of the game engine."""
         while self.on:
-            self.check()
             self.events()
             self.update()
             self.show()
@@ -29,17 +28,21 @@ class GameEngine:
         """Show the entities on screen."""
         self.system.show(self.context)
 
-
-    def check(self):
-        """Determine if the game is on."""
-        self.context.check()
-        self.on=self.context.open
-
-
 class Level:
     def __init__(self,system):
         """Create a level using a system of entities."""
         self.system=system
+
+    def play(self):
+        """Main loop of the game engine."""
+        while self.on:
+            self.events()
+            self.update()
+            self.show()
+
+    def events(self):
+        """Update and keep all the keys."""
+        self.keys=self.context.press()
 
     def set(self,keys):
         """Save the actual keys to update later on."""
@@ -48,6 +51,8 @@ class Level:
     def update(self):
         """Update the level. This method should be overloaded by the clients."""
         self.system.update()
+
+
 
 
 class System:

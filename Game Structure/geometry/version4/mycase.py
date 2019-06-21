@@ -119,6 +119,7 @@ class Case(Pixel):
         """Create a pixel."""
         if len(position)==1: position=position[0]
         self.position=position
+        print(position)
         self.size=size
         self.color=color
         self.fill=fill
@@ -154,8 +155,6 @@ class Case(Pixel):
         points=[p1,p2,p3,p4]
         return Form(points,fill=fill,side_color=side_color,area_color=area_color,point_show=False)
 
-    form=getForm
-
     def getCenter(self):
         """Return the center of the case."""
         xmin,ymin,xmax,ymax=self.getCorners()
@@ -180,7 +179,7 @@ class Case(Pixel):
 
     def showForm(self,surface,fill=None,area_color=None,side_color=None):
         """Show the pixel on screen."""
-        f=self.getForm(fill,area_color,side_color)
+        f=self.getForm(fill=fill,area_color=area_color,side_color=side_color)
         f.show(surface)
 
     __getitem__=lambda self,i:self.position[i]
@@ -210,7 +209,20 @@ if __name__=="__main__":
     from myzone import Zone
     #surface=Surface(plane=Zone(size=[20,20]))
     surface=Surface()
-    cases=[Case([x,y],color=mycolors.random(),fill=True) for x in range(-5,5) for y in range(-5,5)]
+    cases=[Case([x,y],color=mycolors.random(),fill=True) for x in range(-20,20) for y in range(0,20)]
+    cases=[Case([x,y],color=mycolors.GREEN,fill=True) for x in range(8) for y in range(8)]
+    #cases=[]
+    matrix=[[None for i in range(8)] for y in range(8)]
+    for x in range(8):
+        for y in range(8):
+            matrix[x][y]=Case([x,y],color=mycolors.GREEN,fill=True)
+            #case=Case([x,y],color=mycolors.GREEN,fill=True)
+            #if x%8==0 or y%8==0:
+            #    case.color=mycolors.BLUE
+            #cases.append(case)
+    #matrix[1][1].color=mycolors.BLUE
+    #matrix[1][0].color=mycolors.BLUE
+
     while surface.open:
         surface.check()
         surface.control()

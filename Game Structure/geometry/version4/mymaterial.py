@@ -1,7 +1,10 @@
 import copy
+from myabstract import Vector
 
 class Material:
     """Class containing physics function that can be used for all sorts of material classes."""
+    def __init__(self):
+        pass
 
     #Class functions
     #Mathematical operations
@@ -228,3 +231,14 @@ class Material:
     def rotatePosition(self,angle,position):
         """Rotate the position vector of the motion."""
         #self.motion.position.rotate(angle,position)
+
+
+    position=property(getPosition,setPosition,delPosition,"Representation of the position of the material object.")
+    velocity=property(getVelocity,setVelocity,delVelocity,"Representation of the velocity of the material object.")
+    acceleration=property(getAcceleration,setAcceleration,delAcceleration,"Representation of the acceleration of the material object.")
+    x=property(getX,setX,delX,"Representation of the x component of the position of the material object.")
+    y=property(getY,setY,delY,"Representation of the y component of the position of the material object.")
+    vx=property(getVx,setVx,delVx,"Representation of the x component of the velocity of the material object.")
+    vy=property(getVy,setVy,delVy,"Representation of the y component of the velocity of the material object.")
+    ax=property(getAx,setAx,delAx,"Representation of the x component of the acceleration of the material object.")
+    ay=property(getAy,setAy,delAy,"Representation of the y component of the acceleration of the material object.")

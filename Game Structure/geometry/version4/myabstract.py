@@ -173,9 +173,9 @@ class Point:
         if mode==1 or mode=="cross":
             self.showCross(window,color=color,size=size,width=width)
 
-    def showText(self,window,text,text_size=20,color=mycolors.WHITE):
+    def showText(self,context,text,text_size=20,color=mycolors.WHITE):
         """Show the text next to the point on the window."""
-        window.print(text,self,text_size,color=color)
+        context.print(text,self.components,text_size,color=color)
 
     def __add__(self,other):
         """Add the components of 2 objects."""
@@ -318,6 +318,10 @@ class Vector:
         self.width=width
         self.arrow=arrow
 
+    def setNull(self):
+        """Set the components of the vector to zero."""
+        self.components=[0 for i in range(len(self.components))]
+
     #X component
     def setX(self,value):
         """Set the x component."""
@@ -458,7 +462,7 @@ class Vector:
         else:
             raise Exception("Type "+str(type(factor))+" is not valid. Expected float or int types.")
 
-    __rmul__=__mul__ #Allow front extern multiplication using back extern multiplication with scalars
+    __imul__=__rmul__=__mul__ #Allow front extern multiplication using back extern multiplication with scalars
 
     def __truediv__(self,factor):
         """Multiply a vector by a given factor."""
@@ -470,6 +474,7 @@ class Vector:
             return Vector(x,y,width=self.width,color=self.color)
 
     __iadd__=__radd__=__add__=lambda self,other:Vector([c1+c2 for (c1,c2) in zip(self.components,other.components)])
+    __isub__=__rsub__=__sub__=lambda self,other:Vector([c1-c2 for (c1,c2) in zip(self.components,other.components)])
 
     def rotate(self,angle):
         """Rotate a vector using the angle of rotation."""
@@ -665,7 +670,7 @@ class Segment(Direction):
 
     def getVector(self):
         """Return the vector that goes from p1 to p2."""
-        return Vector.createFromTwoPoints(self.p2,self.p1)
+        return Vector.createFromTwoPoints(self.p1,self.p2)
 
     def setVector(self,vector):
         """Set the vector that goes from p1 to p2."""
@@ -770,7 +775,6 @@ class Segment(Direction):
     vector=property(getVector,setVector,"Representation of the vector of the segment.")
     angle=property(getAngle,setAngle,"Representation of the angle of the segment.")
     length=property(getLength,setLength,"Representation of the length of the segment.")
-
 
 class Line(Direction):
     def random(min=-1,max=1,width=1,color=mycolors.WHITE):
@@ -1177,9 +1181,9 @@ class HalfLine(Line):
 
 
 class Form:
-    def random(corners=[-1,-1,1,1],number=random.randint(1,10),**kwargs):
+    def random(corners=[-1,-1,1,1],n=random.randint(1,10),**kwargs):
         """Create a random form using the point_number, the minimum and maximum position for x and y components and optional arguments."""
-        points=[Point.random(corners) for i in range(number)]
+        points=[Point.random(corners) for i in range(n)]
         form=Form(points,**kwargs)
         form.makeSparse()
         return form
@@ -1370,9 +1374,10 @@ class Form:
 
     def show(self,surface):
         """Show the form using the surface and optional objects to show."""
-        if self.point_show:   self.showPoints(surface)
-        if self.side_show:    self.showSegments(surface)
         if self.area_show:    self.showArea(surface)
+        if self.side_show:    self.showSegments(surface)
+        if self.point_show:   self.showPoints(surface)
+
 
     def showFastArea(self,surface,color=None):
         """Show the area of the form using optional parameters such as the area
@@ -1665,6 +1670,7 @@ class Form:
         points+=[point for point in other.points if point in self]
         if points: return Form(points)
 
+    #Color
     def setColor(self,color):
         """Color the whole form with a new color."""
         self.point_color=color

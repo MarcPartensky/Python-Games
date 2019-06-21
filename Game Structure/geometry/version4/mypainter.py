@@ -28,7 +28,7 @@ class Painter:
     def control(self,surface):
         """Control the painter."""
         cursor=surface.point()
-        cursor=[round(c-1/2) for c in cursor]
+        cursor=[round(c+1/2) for c in cursor]
         self.print(surface)
         self.paint(surface)
 
@@ -42,7 +42,7 @@ class Painter:
         keys=surface.press()
         click=surface.click()
         cursor=surface.point()
-        cursor=[round(c-1/2) for c in cursor]
+        cursor=[round(c+1/2) for c in cursor]
 
         self.paint_brush.setPosition(cursor)
 
@@ -154,7 +154,7 @@ class PaintBrush:
 
     def show(self,surface):
         """Show the paint brush on the surface."""
-        case=Case(self.position,self.size,self.color)
+        case=Case(self.position,size=self.size,color=self.color)
         case.show(surface,fill=False,side_color=mycolors.RED)
 
 
@@ -213,8 +213,8 @@ class Paint:
         """Show the paint by showing all its cases."""
         f=self.getForm()
         for case in self.cases:
-            case.show(surface)
-        f.side_color=mycolors.BLUE
+            case.show(surface,side_color=mycolors.WHITE)
+        f.side_color=mycolors.WHITE
         f.side_width=3
         f.show(surface)
 
@@ -243,8 +243,8 @@ class Board(Paint):
         """Show the paint by showing all its cases."""
         f=self.getForm()
         for case in self.cases:
-            case.show(surface)
-        f.side_color=mycolors.BLUE
+            case.show(surface,side_color=mycolors.BLACK)
+        f.side_color=mycolors.BLACK
         f.side_width=3
         f.show(surface)
         f[0].showText(surface,"Board")
@@ -254,6 +254,6 @@ if __name__=="__main__":
     from mysurface import Surface
     from myzone import Zone
     surface=Surface(name="Painter")
-    painter=Painter([-10,-10],[20,20])
+    painter=Painter([0,0],[8,8])
     #print([0,0] in painter.paints[0])
     painter(surface)

@@ -17,16 +17,14 @@ class Force(Vector):
             result+=force
         return result
 
-
     def __init__(self,*args,**kwargs):
         """Create a force."""
         super().__init__(*args,**kwargs)
 
-    def __call__(self,motion):
+    def __call__(self,material_object):
         """Apply a force on a motion."""
-        new_motion=copy.deepcopy(motion)
-        new_motion.acceleration=self.vector
-        return new_motion
+        material_object.acceleration.components=self.abstract.components
+        #Keep the other parameters such as the color
 
     def show(self,surface):
         """New dope show method especially for the forces."""
@@ -37,6 +35,20 @@ class Force(Vector):
         x=round(self.x,p)
         y=round(self.y,p)
         return "f("+str(x)+","+str(y)+")"
+
+    def getAbstract(self):
+        """Return the object into its simple vector form."""
+        return Vector(self.components)
+
+    def setAbstract(self,vector):
+        """Set the abstract vector to a new vector."""
+        self.components=vector.components
+
+    def delAbstract(self):
+        """Set the abstract vector to null."""
+        self.setNull()
+
+    abstract=property(getAbstract,setAbstract,delAbstract,"Reperesentaion of the abstract vector of the force.")
 
 class ForceField:
     def __init__(self,force,area):

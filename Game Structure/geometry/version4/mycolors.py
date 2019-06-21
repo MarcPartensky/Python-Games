@@ -12,11 +12,12 @@ WHITE      = (255,255,255)
 GREY       = (100,100,100)
 PURPLE     = (100,  0,100)
 ORANGE     = (255,165,  0)
+BROWN      = (160, 82, 45)
 HALFGREY   = ( 50, 50, 50)
 DARKGREY   = ( 20, 20, 20)
 DARKRED    = ( 10, 10, 10)
-DARKGREEN  = ( 10, 10, 10)
-DARKBLUE   = ( 10, 10, 10)
+DARKGREEN  = (  0,100,  0)
+DARKBLUE   = (  0,  0,100)
 LIGHTRED   = (255,200,200)
 LIGHTGREEN = (200,255,200)
 LIGHTBLUE  = (200,200,255)
@@ -28,7 +29,7 @@ sigmoid = s = lambda x:1/(1+math.exp(-x))
 reverse_sigmoid = lambda x:log(x/(1-x))
 #r=reverse_sigmoid()
 
-linear  = lambda x,e,s:(x-e[0])/(e[1]-e[0])*(s[1]-s[0])+s[0]
+bijection = lambda x,e,s:(x-e[0])/(e[1]-e[0])*(s[1]-s[0])+s[0]
 
 
 random    = lambda :            tuple([rd.randint(0,255)              for i in range(3)])
@@ -60,14 +61,14 @@ def setFromWavelength(wavelength):
     r,g,b=adjust(r,factor),adjust(g,factor),adjust(b,factor)
     return (r,g,b)
 
-if __name__=="__main__":
-    print(darken(RED,10))
-    print(mix(YELLOW,RED))
-    print(reverse(LIGHTBROWN))
-    print(substract(LIGHTBROWN,ORANGE))
-    print(increase(LIGHTBROWN))
+#if __name__=="__main__":
+    #print(darken(RED,10))
+    #print(mix(YELLOW,RED))
+    #print(reverse(LIGHTBROWN))
+    #print(substract(LIGHTBROWN,ORANGE))
+    #print(increase(LIGHTBROWN))
 
-    for i in range(380,780,10):
-        print(setFromWavelength(i))
+    #for i in range(380,780,10):
+    #    print(setFromWavelength(i))
 
     #print("mycolors imported")
