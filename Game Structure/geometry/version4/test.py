@@ -20,8 +20,8 @@ while surface.open:
     surface.clear()
     surface.show()
     vector.rotate(0.1)
-    a=vector.angle()
-    wl=mycolors.linear(a,[-math.pi,math.pi],[380,780])
+    a=vector.angle
+    wl=mycolors.bijection(a,[-math.pi,math.pi],[380,780])
     c=mycolors.setFromWavelength(wl)
     vector.show(surface,point,color=c)
     surface.flip()

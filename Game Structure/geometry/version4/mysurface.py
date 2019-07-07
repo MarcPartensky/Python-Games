@@ -1,11 +1,12 @@
 from mydraw import Draw
+from myrect import Rect
 from mywindow import Window
 
 import mycolors
 
 class Surface:
     """Might inherit from Rect soon..."""
-    
+
     def __init__(self,draw=None,**kwargs):
         """Create a surface."""
         if not draw: self.draw=Draw(**kwargs)
@@ -97,13 +98,13 @@ class Surface:
         """Show the plane on screen."""
         self.draw.plane.show(self.draw.window)
 
-    def print(self,text,position,text_size=1,color=mycolors.WHITE,font=None,conversion=True):
+    def print(self,text,position,size=1,color=mycolors.WHITE,font=None,conversion=True):
         """Print a text the window's screen using text and position and optional
         color, pygame font and conversion."""
         position=self.draw.plane.getToScreen(position,self.draw.window)
         ux,uy=self.draw.plane.units
-        if conversion: text_size=int(text_size*ux/50)
-        self.draw.window.print(text,position,text_size,color,font)
+        if conversion: text_size=int(size*ux/50)
+        self.draw.window.print(text,position,size,color,font)
 
     def controlZoom(self):
         """Control the zoom of the surface's plane."""

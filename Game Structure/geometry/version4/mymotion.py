@@ -186,6 +186,46 @@ class Motion:
     #snap=jounce=property(getSnap,setSnap,delSnap,"Representation of the snap.")
     #pop=property(getPop,setPop,delPop,"Representation of the pop.")
 
+class Moment(Motion):
+    #Class functions
+    #Operations
+    def null(n=3,d=2):
+        """Return the neutral motion."""
+        #The dimension d still needs to be implemented for the vectors.
+        return Moment([Vector.null(d=d) for i in range(n)])
+
+    neutral=zero=null
+
+    def sum(motions):
+        """Return the sum of the motions together."""
+        result=Moment.null()
+        for motion in motions:
+            result+=motion
+        return result
+
+    def average(motions):
+        """Return the average of the motions."""
+        return Moment.sum(motions)/len(motions)
+
+    #Random
+    def random(corners=[-1,-1,1,1],n=3,d=2):
+        """Create a random motion using optional minimum and maximum."""
+        return Moment([Vector.random(corners) for i in range(n)])
+
+    #Object functions
+    #Initializing
+    def __init__(self,*vectors,n=3,d=2):
+        """Create a motion using vectors."""
+        if vectors!=():
+            if type(vectors[0])==list:
+                vectors=vectors[0]
+        self.vectors=list(vectors)
+        self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
+        if len(self.vectors)>=1: self.position.color     = mycolors.GREEN
+        if len(self.vectors)>=2: self.velocity.color     = mycolors.BLUE
+        if len(self.vectors)>=3: self.acceleration.color = mycolors.RED
+
+
 if __name__=="__main__":
     from mysurface import Context
     context=Context(name="Motion")

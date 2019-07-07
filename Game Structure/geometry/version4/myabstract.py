@@ -45,7 +45,7 @@ class Point:
         """Create a point from a vector."""
         return Point(vector.x,vector.y)
 
-    def __init__(self,*components,mode=0,size=[0.1,0.1],width=1,radius=0.05,fill=False,color=mycolors.WHITE):
+    def __init__(self,*components,mode=0,size=[0.1,0.1],width=1,radius=0.02,fill=False,color=mycolors.WHITE):
         """Create a point using its components and optional radius, fill and color."""
         if components!=():
             if type(components[0])==list:
@@ -144,6 +144,10 @@ class Point:
         self.x+=step[0]
         self.y+=step[1]
 
+    def around(self,point,distance):
+        """Determine if a given point is in a radius 'distance' of the point."""
+        return self.distance(point)<=distance
+
     def showCross(self,window,color=None,size=None,width=None):
         """Show the point under the form of a cross using the window."""
         if not color: color=self.color
@@ -178,8 +182,25 @@ class Point:
         context.print(text,self.components,text_size,color=color)
 
     def __add__(self,other):
-        """Add the components of 2 objects."""
-        return Point(self.x+other[0],self.y+other[1])
+        """Add two points."""
+        return Point([c1+c2 for (c1,c2) in zip(self.components,other.components)])
+
+    def __iadd__(self,other):
+        """Add a point to the actual point."""
+        self.components=[c1+c2 for (c1,c2) in zip(self.components,other.components)]
+
+    __radd__=__add__
+
+
+    def __sub__(self,other):
+        """Add a point to the actual point."""
+        return Point([c1-c2 for (c1,c2) in zip(self.components,other.components)])
+
+    def __isub__(self,other):
+        """Add a point to the actual point."""
+        self.components=[c1-c2 for (c1,c2) in zip(self.components,other.components)]
+
+    __rsub__=__sub__
 
     def __sub__(self,other):
         """Substract the components of 2 objects."""
@@ -278,6 +299,39 @@ class Vector:
         return Vector.sum(vectors)/len(vectors)
 
     mean=average
+
+    def collinear(*vectors,e=10e-10):
+        """Determine if all the vectors are colinear."""
+        l=len(vectors)
+        if l==2:
+            v1=vectors[0]
+            v2=vectors[1]
+            return abs(v1.x*v2.y-v1.y-v2.x)<e
+        else:
+            for i in range(l):
+                for j in range(i+1,l):
+                    if not Vector.collinear(vectors[i],vectors[j]):
+                        return False
+            return True
+
+
+
+
+    def sameDirection(*vectors,e=10e-10):
+        """Determine if all the vectors are in the same direction."""
+        l=len(vectors)
+        if l==2:
+            v1=vectors[0]
+            v2=vectors[1]
+            return (abs(v1.angle-v2.angle)%(2*math.pi))<e
+        else:
+            for i in range(l):
+                for j in range(i+1,l):
+                    if not Vector.sameDirection(vectors[i],vectors[j]):
+                        return False
+            return True
+
+
 
     def createFromPolarCoordonnates(norm,angle,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector using norm and angle from polar coordonnates."""
@@ -396,7 +450,7 @@ class Vector:
         if not color: color=self.color
         if not width: width=self.width
         q=self(p)
-        v=-self.arrow[0]*self #wtf
+        v=-self*self.arrow[0] #wtf
         v1=v%self.arrow[1]
         v2=v%-self.arrow[1]
         a=v1(q)
@@ -431,7 +485,7 @@ class Vector:
 
     def __neg__(self):
         """Return the negative vector."""
-        return Vector([-c for c in self.components],width=self.width,color=self.color)
+        return Vector([-c for c in self.components])
 
     def colinear(self,other,e=10e-10):
         """Return if two vectors are colinear."""
@@ -447,19 +501,12 @@ class Vector:
         """Determine if a vector crosses another using dot product."""
         return self.scalar(other)==0
 
-    def __imul__(self,factor):
-        """Multiply a vector by a given factor."""
-        if type(factor)==int or type(factor)==float:
-            self.x*=factor
-            self.y*=factor
-        else:
-            raise Exception("Type "+str(type(factor))+" is not valid. Expected float or int types.")
-
     def __mul__(self,factor):
         """Multiply a vector by a given factor."""
         if type(factor)==int or type(factor)==float:
-            return Vector(self.x*factor,self.y*factor,color=self.color,width=self.width,arrow=self.arrow)
+            return Vector([c*factor for c in self.components])
         else:
+            raise NotImplementedError
             raise Exception("Type "+str(type(factor))+" is not valid. Expected float or int types.")
 
     __imul__=__rmul__=__mul__ #Allow front extern multiplication using back extern multiplication with scalars
@@ -467,14 +514,20 @@ class Vector:
     def __truediv__(self,factor):
         """Multiply a vector by a given factor."""
         if type(factor)==Vector:
-            pass
+            raise NotImplementedError
         else:
-            x=self.x/factor
-            y=self.y/factor
-            return Vector(x,y,width=self.width,color=self.color)
+            return Vector([c/factor for c in self.components])
 
-    __iadd__=__radd__=__add__=lambda self,other:Vector([c1+c2 for (c1,c2) in zip(self.components,other.components)])
-    __isub__=__rsub__=__sub__=lambda self,other:Vector([c1-c2 for (c1,c2) in zip(self.components,other.components)])
+    def __add__(self,other):
+        """Add two vector together."""
+        return Vector([c1+c2 for (c1,c2) in zip(self.components,other.components)])
+
+    def __sub__(self,other):
+        """Sub two vector together."""
+        return Vector([c1-c2 for (c1,c2) in zip(self.components,other.components)])
+
+    __iadd__=__radd__=__add__
+    __isub__=__rsub__=__sub__
 
     def rotate(self,angle):
         """Rotate a vector using the angle of rotation."""
@@ -550,7 +603,7 @@ class Segment(Direction):
         """Create a random segment."""
         p1=Point.random(corners)
         p2=Point.random(corners)
-        return Segment(p1,p2,width,color)
+        return Segment([p1,p2],width=width,color=color)
 
     def __init__(self,*points,width=1,color=mycolors.WHITE):
         """Create the segment using 2 points, width and color."""
@@ -575,12 +628,13 @@ class Segment(Direction):
 
     def getCenter(self):
         """Return the center of the segment in the general case."""
-        return Point([(self.p1[i]+self.p2[i])/2 for i in range(min(len(self.p1),len(self.p2)))])
+        return Point(*[(self.p1[i]+self.p2[i])/2 for i in range(min(len(self.p1.components),len(self.p2.components)))])
 
     def setCenter(self,np):
         """Set the center of the segment."""
         p=self.getCenter()
-        v=Vector.createFromTwoPoints(np,p)
+        v=Vector.createFromTwoPoints(p,np)
+        print("v",v)
         for i in range(len(self.points)):
             self.points[i]=v(self.points[i])
 
@@ -633,9 +687,9 @@ class Segment(Direction):
     def __contains__(self,point,e=10e-10):
         """Determine if a point is in a segment."""
         if point==self.getP1(): return True
-        v1=Vector.createFromTwoPoints(point,self.p1)
+        v1=Vector.createFromTwoPoints(self.p1,point)
         v2=self.getVector()
-        return (abs(v1.angle-v2.angle)<e) and (v1.norm<=v2.norm)
+        return (abs(v1.angle-v2.angle)%(2*math.pi)<e) and (v1.norm<=v2.norm)
 
     def __len__(self):
         """Return the number of points."""
@@ -790,7 +844,7 @@ class Line(Direction):
     def createFromTwoPoints(point1,point2,width=1,color=mycolors.WHITE):
         """Create a line using two points with optional features."""
         vector=Vector.createFromTwoPoints(point1,point2)
-        return Line(point,vector.angle,width=1,color=color)
+        return Line(point1,vector.angle,width=1,color=color)
 
     def __init__(self,point,angle,width=1,color=mycolors.WHITE,correct=True):
         """Create the line using a point and a vector with optional width and color.
@@ -958,7 +1012,7 @@ class Line(Direction):
         c,d=other.point
         m,n=self.vector
         o,p=other.vector
-        if n*o-m*p==0: return None #The lines are parallels
+        if n*o==m*p: return None #The lines are parallels
         x=(a*n*o-b*m*o-c*m*p+d*m*o)/(n*o-m*p)
         y=(x-a)*n/m+b
         return Point(x,y)
@@ -1317,6 +1371,20 @@ class Form:
         self.points.remove(point)
         return self
 
+    def __mul__(self,n):
+        """Return a bigger form."""
+        vectors=[n*Vector(*(p-self.center)) for p in self.points]
+        return Form([vectors[i](self.points[i]) for i in range(len(self.points))])
+
+    def __imul__(self,n):
+        """Return a bigger form."""
+        vectors=[n*Vector(*(p-self.center)) for p in self.points]
+        self.points=[vectors[i](self.points[i]) for i in range(len(self.points))]
+        return self
+
+    __rmul__=__mul__
+
+
     def __iter__(self):
         """Iterate the points of the form."""
         self.iterator=0
@@ -1479,7 +1547,7 @@ class Form:
     def __or__(self,other):
         """Return the points of intersections with the form and another object."""
         if isinstance(other,HalfLine):  return self.crossHalfLine(other)
-        if isinstance(other,Line):       return self.crossLine(other)
+        if isinstance(other,Line):      return self.crossLine(other)
         if isinstance(other,Segment):   return self.crossSegment(other)
         if isinstance(other,Form):      return self.crossForm(other)
 
@@ -1488,9 +1556,8 @@ class Form:
         points=[]
         for myside in self.sides:
             for otherside in other.sides:
-                point=myside|otherside
-                if point:
-                    points.append(point)
+                point=myside.crossSegment(otherside)
+                if point: points.append(point)
         return points
 
     def crossDirection(self,other):
@@ -1524,9 +1591,9 @@ class Form:
         """Return the list of the points of intersection between the form and a segment."""
         points=[]
         for side in self.sides:
-            cross=side.crossSegment(other)
-            if cross:
-                points.append(cross)
+            point=side.crossSegment(other)
+            if point:
+                points.append(point)
         return points
 
     def crossSelf(self,e=10e-10):
@@ -1574,13 +1641,9 @@ class Form:
 
     def __contains__(self,point):
         """Return the boolean: (the point is in the form)."""
-        p1=Point(*point) #Making sure the user gave a point
-        p2=self.center
-        line=Line.createFromTwoPoints(p1,p2)
-        for segment in self.segments:
-            if segment.crossLine(line):
-                return True
-        return False
+        h=HalfLine(point,0)
+        ps=self.crossHalfLine(h)
+        return len(ps)%2==1
 
     def rotate(self,angle,point=None):
         """Rotate the form by rotating its points from the center of rotation.

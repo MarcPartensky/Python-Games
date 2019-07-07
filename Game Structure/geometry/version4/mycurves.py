@@ -52,7 +52,7 @@ class BezierCurve:
 
     def __call__(self,t):
         """Return the point."""
-        points=self.getPoints()
+        points=self.points
         if len(points)==0:
             return None
         elif len(points)==1:
@@ -85,7 +85,7 @@ class BezierCurve:
 
     def getConstruction(self,t):
         """Return the construction segments of the form."""
-        points=self.getPoints()
+        points=self.points
         construction=[]
         while len(points)>=2:
             segments=[Segment(points[i],points[i+1]) for i in range(len(points)-1)]
@@ -145,7 +145,7 @@ if __name__=="__main__":
     from mysurface import Surface
     surface=Surface()
     l=10
-    points=[Point(2*x,random.randint(-5,5)) for x in range(l)]
+    points=[Point(2*x,random.randint(-5,5)) for x in range(l)][:3]
     t=Trajectory(points,segment_color=mycolors.GREY)
     b=BezierCurve(points,segment_color=mycolors.RED)
     #b=CurvedForm(points)

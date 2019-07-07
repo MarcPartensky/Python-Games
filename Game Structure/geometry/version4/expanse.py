@@ -72,6 +72,8 @@ class Player(Case):
     def update(self,events):
         """Update the player be giving him a copy of the map."""
 
+
+
 class Map:
     """Create a map."""
     def __init__(self,size):

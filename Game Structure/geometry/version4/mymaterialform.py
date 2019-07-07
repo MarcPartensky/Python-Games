@@ -128,6 +128,7 @@ class MaterialForm(Material,Form):
 
     def showAll(self,context):
         """Show all the components of the points of the material form."""
+        self.getCompleteForm().show(context)
         self.center.showAll(context)
         for point in self.points:
             point.showAll(context)
@@ -199,7 +200,9 @@ class MaterialForm(Material,Form):
     #Position
     def getPosition(self):
         """Return the position of the center of the material form."""
-        return Vector.average([point.position for point in self.points])
+        v=Vector.average([point.position for point in self.points])
+        v.color=mycolors.GREEN
+        return v
 
     def setPosition(self,position):
         """Set the position of the material form to the given position."""
@@ -212,7 +215,9 @@ class MaterialForm(Material,Form):
     #Velocity
     def getVelocity(self):
         """Return the velocity of the center of the material form."""
-        return Vector.average([point.velocity for point in self.points])
+        v=Vector.average([point.velocity for point in self.points])
+        v.color=mycolors.BLUE
+        return v
 
     def setVelocity(self,velocity):
         """Set the velocity of the center of the material form."""
@@ -226,7 +231,9 @@ class MaterialForm(Material,Form):
     #Acceleration
     def getAcceleration(self):
         """Return the acceleration of the material form."""
-        return Vector.average([point.acceleration for point in self.points])
+        v=Vector.average([point.acceleration for point in self.points])
+        v.color=mycolors.RED
+        return v
 
     def setAcceleration(self,acceleration):
         """Set the acceleration of the material form to the given acceleration."""
@@ -288,8 +295,8 @@ if __name__=="__main__":
         surface.clear()
         surface.control()
         surface.show()
-        f1.update(t=0.1)
-        f2.update(t=0.1)
+        f1.update(t=1)
+        f2.update(t=1)
         f1.rotate(0.01,f1.center.abstract)
         f2.rotate(-0.01,f2.center.abstract)
         for p in f1|f2:

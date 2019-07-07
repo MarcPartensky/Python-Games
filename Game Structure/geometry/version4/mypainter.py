@@ -154,7 +154,8 @@ class PaintBrush:
 
     def show(self,surface):
         """Show the paint brush on the surface."""
-        case=Case(self.position,size=self.size,color=self.color)
+        x,y=self.position
+        case=Case((x-1,y-1),size=self.size,color=self.color)
         case.show(surface,fill=False,side_color=mycolors.RED)
 
 

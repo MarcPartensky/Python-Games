@@ -8,7 +8,7 @@ from math import sin,cos,sqrt
 import pygame
 
 class Graph:
-    def __init__(self,window,precision=20,speed=0.01,factor=10):
+    def __init__(self,window,precision=10,speed=0.01,factor=10):
         self.window=window
         #self.window.background_color=WHITE
         self.speed=speed

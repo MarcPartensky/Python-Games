@@ -1,9 +1,10 @@
 from mymaterialform import MaterialForm
 from mymaterialpoint import MaterialPoint
-from myabstract import Vector,Segment
+from myabstract import Vector,Segment,Line
 from mymotion import Motion
 import itertools
 import mycolors
+import math
 
 class MaterialCollider:
     """Class made especially to deal with one to one collisions."""
@@ -18,7 +19,7 @@ class MaterialCollider:
 
     def collide(self):
         """Deal with the collisions of two objects."""
-        pass
+
 
     def getCollisionInstant(self):
         """Return the instant of the collision of two objects."""
@@ -60,9 +61,9 @@ class MaterialCollider:
         pass
         return [object1,object2]
 
-    def isInContact(self):
+    def contact(self,object1,object2):
         """Determine if the two objects are actually in contact or not."""
-        return self.object1.abstract|self.object2.abstract != []
+        return object1.abstract|object2.abstract != []
 
 class MaterialGroup:
     """Class used to manipulate groups of material objects together."""
@@ -74,21 +75,43 @@ class MaterialGroup:
     def show(self,context):
         """Show all the objects on screen."""
         for object in self.objects:
+            object.center.showMotion(context)
             object.show(context)
 
         l=len(self.objects)
         for i in range(l):
-            for j in range(1,l):
-                self.collider.set(self.objects[i],self.objects[j])
-                if self.collider.isInContact():
-                    for s1 in self.objects[i].segments:
-                        for s2 in self.objects[j].segments:
-                            points=self.objects[i]|self.objects[j]
+            for j in range(i+1,l):
+                points=self.objects[i].abstract|self.objects[j].abstract
+                if points!=[]:
+                    self.objects[i].velocity*=0
+                    print(points)
+                    l1=Segment(*points[:2])
+                    l1.color=mycolors.GREEN
+                    l1.show(context)
+                    p=l1.center
+                    p.show(context,mode="cross",color=mycolors.RED)
+                    c1=self.objects[i].center.abstract
+                    v=Vector.createFromTwoPoints(c1,p)
+                    v.color=mycolors.GREEN
+                    v.show(context,c1)
+                    v.norm=1
+                    v.color=mycolors.BLUE
+                    v.show(context,p)
+                    v.showText(context,p,'up')
+                    v.rotate(math.pi/2)
+                    v.show(context,p)
+                    v.showText(context,p,'uo')
 
-                            for point in points:
-                                point.show(context,mode="cross",color=mycolors.YELLOW,width=3)
-                            self.objects[i].side_color=mycolors.RED
-                            self.objects[j].side_color=mycolors.RED
+
+
+
+    def showAll(self,context):
+        """Show all the components of all the objects."""
+        for object in self.objects:
+            object.showAll(context)
+        points=self.objects[0].abstract.crossForm(self.objects[1].abstract)
+        for point in points:
+            point.show(context,mode="cross",width=2,size=[0.02,0.02],color=mycolors.RED)
 
 
     def update(self,dt=1):
@@ -119,10 +142,11 @@ class MaterialGroup:
 
 if __name__=="__main__":
     from mysurface import Context
-    context=Context(name="Material Group Test")
-    f1=MaterialForm.random()
-    f1.motion=Motion(Vector(0,2),Vector(0,-0.5),Vector(0,-0.1))
-    f2=MaterialForm.random()
+    context=Context(name="Material Group Test",fullscreen=True)
+    f1=MaterialForm.random(corners=[-10,-10,10,10])
+    f1.motion=Motion(Vector(0,20),Vector(0,-5,0),Vector(0,-1))
+    f2=MaterialForm.random(corners=[-10,-10,10,10])
+    #f2.fill=True
     f2.motion=Motion.null()
     g=MaterialGroup(f1,f2)
     t=g.getCollisionInstant(1)

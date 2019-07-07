@@ -119,8 +119,8 @@ def convert(number,interval1,interval2):
 if __name__=="__main__":
     window=Window()
     print(window.inWindow([2,4]))
-    #fx=lambda x,y,t:-x**2+x*t+y
-    fx=lambda x,y,t:x+y**2+t*2-x-y*2-x**2
+    fx=lambda x,y,t:-x**2+x*t+y
+    #fx=lambda x,y,t:x+y**2+t*2-x-y*2-x**2
     fy=lambda x,y,t:x**2-y**2-t**2-x*y+y*t-x+y
     equations=[fx,fy]
     chaos=Chaos(window,equations)
