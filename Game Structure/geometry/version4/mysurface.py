@@ -118,6 +118,18 @@ class Surface:
         """Behave like the get from screen of the plan without having to put the window in parameter."""
         return self.draw.plane.getFromScreen(position,self.draw.window)
 
+    def blit(self,image,position):
+        """Blit a given image to a given position."""
+        sx,sy=self.image.size()
+        
+
+    def transform(self,image,size):
+        """Change the size of an image."""
+        pass
+
+
+
+
     def __enter__(self):
         """Opening the context."""
         self.check()

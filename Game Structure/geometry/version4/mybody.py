@@ -3,9 +3,28 @@ from mymotion import Motion
 from mymaterial import Material
 
 from pygame.locals import *
+import pygame
 import logging
 import copy
 import mycolors
+
+# Interface Anatomy
+# - show(context)   //an anatomy must be responsible for drawing itself
+# - str()           //an anatomy must be able to give a string representation
+# - contains(point) //an anatomy must be able to tell if a point is in it
+# - cross(anatomy)  //an anatomy must be able to determine if it is crossing another anatomy
+# . center          //an anatomy must have a center
+
+#image, segment and form implement anatomy
+
+class Image(Rect):
+    def __init__(self,filename):
+        """Create an image."""
+        self.surface=pygame.load.image(filename)
+    def show(self,context):
+        """"Show the image on the window."""
+        self.context.draw.blit(self.surface)
+
 
 class Body(Material):
     def createFromAbsolute(form,motion=Motion(),moment=Motion(d=1)):
@@ -34,40 +53,6 @@ class Body(Material):
         self.motion.update(dt)
         self.moment.update(dt)
 
-    def control(self,context,v=1):
-        """Raw control the view of the plane."""
-        #logging.warning("This function should not be used in big project because events must be treated it the main loop and only once.")
-        """keys=context.press()
-        if keys[K_DOWN]:
-            self.motion.velocity[1]=-v
-        if keys[K_UP]:
-            self.motion.velocity[1]=v
-        if keys[K_LEFT]:
-            self.motion.velocity[0]=-v
-        if keys[K_RIGHT]:
-            self.motion.velocity[0]=v"""
-        self.follow(context.point(),1/10)
-
-
-
-    def shoot(self,context):
-        """Return a missile."""
-        #logging.warning("This function is only a test and should not be included in the body class but in a child class instead.""")
-        keys=context.press()
-        p=Point(*context.point())
-        if keys[K_SPACE]:
-            k=0.1
-            c=Point(*self.position)
-            v=Vector.createFromTwoPoints(c,p)
-            v.norm=1
-            m=Motion(copy.deepcopy(self.position),v+copy.deepcopy(self.velocity),Vector.null())
-            o=Point.origin()
-            s=Segment(o,v(o))
-            b=Body(s,m)
-            return b
-        else:
-            return None
-
     def getAbsolute(self):
         """Return a copy of the form in absolute coordonnates."""
         p=Point(*tuple(copy.deepcopy(self.position)))
@@ -94,10 +79,6 @@ class Body(Material):
         self.velocity=(v-self.position)/10
         if self.velocity.norm>1:
             self.velocity.norm=1
-
-
-
-
 
     absolute=property(getAbsolute,setAbsolute)
 
