@@ -27,26 +27,26 @@ class Button(Rect):
 
                 action=None):
         """Create a button."""
-        self.text=text
+        self.text = text
 
-        self.police=police
-        self.text_size=text_size
-        self.bold=bold
-        self.italic=italic
+        self.police = police
+        self.text_size = text_size
+        self.bold = bold
+        self.italic = italic
 
-        self.default_background= default_background
-        self.hovered_background= hovered_background
-        self.focused_background= focused_background
-        self.clicked_background= clicked_background
+        self.default_background = default_background
+        self.hovered_background = hovered_background
+        self.focused_background = focused_background
+        self.clicked_background = clicked_background
 
-        self.default_color=      default_color
-        self.hovered_color=      hovered_color
-        self.focused_color=      focused_color
-        self.clicked_color=      clicked_color
+        self.default_color = default_color
+        self.hovered_color = hovered_color
+        self.focused_color = focused_color
+        self.clicked_color = clicked_color
 
-        self.hovered=False
-        self.focused=False
-        self.clicked=False
+        self.hovered = False
+        self.focused = False
+        self.clicked = False
 
         super().__init__(position,size)
 
@@ -169,10 +169,10 @@ class Page(Rect):
 
     def isColor(self,object):
         """Determine if an object is a color."""
-        if type(object)==tuple:
-            if len(object)==3:
-                for i in range(3):
-                    if not (0<=object[i]<256):
+        if type(object) == tuple:
+            if len(object) == 3 or len(object) == 4:
+                for i in range(len(object)):
+                    if not (0 <= object[i] < 256):
                         return False
                 return True
             else:
@@ -199,7 +199,6 @@ class Page(Rect):
             self.buttons[i].center=(ux*(i+1/2),my)
 
 
-
     def showButtons(self):
         """Show the buttons on the surface."""
         for button in self.buttons:
@@ -219,36 +218,38 @@ class Page(Rect):
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
-                window.open=False
+                window.open = False
+                return
 
             if event.type == KEYDOWN:
 
                 if event.key == K_ESCAPE:
-                    window.open=False
+                    window.open = False
+                    return
 
                 if event.key == K_DOWN or event.key == K_RIGHT:
                     if self.focus is not None:
-                        self.focus=(self.focus+1)%len(self.buttons)
+                        self.focus = (self.focus+1) % len(self.buttons)
                     else:
                         self.focus=0
                 if event.key == K_UP or event.key == K_LEFT:
                     if self.focus is not None:
-                        self.focus=(self.focus-1)%len(self.buttons)
+                        self.focus = (self.focus-1) % len(self.buttons)
                     else:
                         self.focus=0
 
             if event.type == MOUSEMOTION:
-                self.motion=True
+                self.motion = True
             else:
-                self.motion=False
+                self.motion = False
 
 
     def update(self,window):
         """Update the page."""
-        self.cursor=window.point()
-        self.click=window.click()
-        keys=window.press()
-        self.select=bool(keys[K_RETURN]) or bool(keys[K_SPACE])
+        self.cursor = window.point()
+        self.click = window.click()
+        keys = window.press()
+        self.select = bool(keys[K_RETURN]) or bool(keys[K_SPACE])
         self.setFocus()
         self.resetButtons()
         self.updateButtons()
@@ -258,7 +259,7 @@ class Page(Rect):
         if self.motion or self.click:
             for i in range(len(self.buttons)):
                 if self.cursor in self.buttons[i]:
-                    self.focus=i
+                    self.focus = i
 
     def resetButtons(self):
         """Reset all the buttons."""
@@ -268,7 +269,7 @@ class Page(Rect):
     def updateButtons(self):
         """Update a button."""
         for i in range(len(self.buttons)):
-            focus=bool(self.focus==i)
+            focus = bool(self.focus == i)
             self.buttons[i].update(self.cursor,self.click,focus,self.select)
 
     def show(self,window):
@@ -288,12 +289,12 @@ class Page(Rect):
 
     def getSurface(self):
         """Return the surface of the page."""
-        surface=pygame.Surface(self.size)
+        surface = pygame.Surface(self.size)
         if self.background is not None:
             if self.isColor(self.background):
                 surface.fill(self.background)
             else:
-                background=pygame.transform.scale(self.background,self.size)
+                background = pygame.transform.scale(self.background,self.size)
                 surface.blit(background)
         return surface
 
@@ -303,13 +304,13 @@ class Page(Rect):
 
     def setPosition(self,position):
         """Set the position of the button."""
-        x,y=position
-        sx,sy=self.size
-        self.center=x+sx//2
-        self.center=y+sy//2
+        x, y = position
+        sx, sy = self.size
+        self.center = x + sx//2
+        self.center = y + sy//2
 
-    surface=property(getSurface)
-    position=property(getPosition)
+    surface  = property(getSurface)
+    position = property(getPosition)
 
 
 
@@ -334,14 +335,59 @@ actions={
 
 tree={
     "key_page1":{
-        "key1" : "key_action1",
-        "key2" : "key_action2",
-        "key3" : "set(key_page2)"
+        "key1" : "action1",
+        "key2" : "action2",
+        "key3" : ""
     }
     "key_page2":{
         "key1": "key_action3",
         "key2": ""
+    }
+}
 
+
+def action1():
+    othello.plateau.grille=[]
+
+buttons =  {   1 : "Start",
+                11 : "Lancer",
+                12 : "Joueur blanc",
+                    121 : "Humain",
+                    122 : "Cyrano",
+                    123 : "Retour vers joueur blanc",
+                13 : "Joueur noir",
+                    131 : "Humain",
+                    132 : "Cyrano",
+                    133 : "Retour vers joueur noir",
+                14 : "Retour vers start",
+            2 : "Option",
+                21 : "Activer l'aide au mouvement", # cliquer sur ce bouton fait alterner un bouléen
+                22 : "Retour vers option",
+            3 : "Quitter" # cliquer ferme la fenetre
+        }
+}
+
+
+interactions_buttons={
+    "Humain" : choisirJoueurBlancHumain,
+    "Cyrano" :
+}
+
+
+
+
+pages={
+    "page1":Page
+    "page2":Page()
+}
+
+interactions = {
+    "page1":{
+        "Start" : clé page 2;
+        "Option" : clé page ;
+        "Quitter" : fermer la fenetre };
+
+    "page2":{
 
     }
 
@@ -350,12 +396,21 @@ tree={
 
 
 
+
+
+
 """
 
 class Menu:
+
+    def createFromButtonsHierarchy(buttons):
+        """Create a page from a buttons dictionary."""
+
+        return Menu(pages,interactions)
+
     def __init__(self,pages,tree,actions):
         """Create a menu."""
-        self.pages=pages
+        self.pages=pages #Dictionary
         self.tree=tree
         self.key=key
 
@@ -385,8 +440,6 @@ class Menu:
             if self.page.buttons[i].clicked:
                 return i
 
-
-
         key_action=self.tree[self.key]
         action=self.actions[key_action]
         action()
@@ -402,5 +455,6 @@ class Menu:
 if __name__=="__main__":
     from mywindow import Window
     window=Window("Page")
-    page=Page(window.size,[Button(t) for t in ["oui","non","peut etre","pourquoi pas"]])
+    buttons=[Button(t) for t in ["oui","non","peut etre","pourquoi pas"]]
+    page=Page(window.size,buttons)
     page(window)

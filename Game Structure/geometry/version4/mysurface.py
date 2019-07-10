@@ -4,6 +4,8 @@ from mywindow import Window
 
 import mycolors
 
+
+
 class Surface:
     """Might inherit from Rect soon..."""
 
@@ -121,7 +123,7 @@ class Surface:
     def blit(self,image,position):
         """Blit a given image to a given position."""
         sx,sy=self.image.size()
-        
+
 
     def transform(self,image,size):
         """Change the size of an image."""
