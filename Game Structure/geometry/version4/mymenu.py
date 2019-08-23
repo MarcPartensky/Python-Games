@@ -155,7 +155,6 @@ class Button(Rect):
     color=property(getColor)
     background=property(getBackground)
 
-
 class Page(Rect):
     """Page using pygame, mycolors and window."""
     def __init__(self,size,buttons=[],position=(0,0),background=None):

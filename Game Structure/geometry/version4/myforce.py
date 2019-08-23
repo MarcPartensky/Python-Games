@@ -1,5 +1,7 @@
-from myabstract import Vector
+from myabstract import Vector,Point
 from mymotion import Motion
+
+import mycolors
 
 p=2 #Number of digits of precision of the objects when displayed
 
@@ -20,15 +22,29 @@ class Force(Vector):
     def __init__(self,*args,**kwargs):
         """Create a force."""
         super().__init__(*args,**kwargs)
+        self.d=0
 
     def __call__(self,material_object):
         """Apply a force on a motion."""
         material_object.acceleration.components=self.abstract.components
         #Keep the other parameters such as the color
 
-    def show(self,surface):
+    def show(self,context,position,m=8,n=2):
         """New dope show method especially for the forces."""
-        raise Exception("Not operational")
+        v=self.abstract
+        x,y=position
+        nx,ny=v(position)
+        v.show(context,position,color=self.color)
+        w=v/m
+        #color=mycolors.lighten(self.color)
+        color=mycolors.WHITE
+        for i in range(n):
+            if (self.d+2*i)%m<(self.d+1+2*i)%m:
+                w1=(self.d+2*i)%m*w
+                w2=(self.d+2*i+1)%m*w
+                context.draw.line(context.screen,color,w1(position),w2(position),1)
+        self.d=(self.d+1)%m
+
 
     def __str__(self):
         """Return the string representation of the object."""
@@ -71,19 +87,37 @@ class ForceField:
 
 
 down=Vector([0,-1])
-gravity=Force(0,-9.81)
+gravity=Force(0,-9.81,color=mycolors.RED)
 
 if __name__=="__main__":
     zero=Vector([0,0])
     propulsion=Force(0,0)
+    o=Point.origin()
 
     random_force=Force.random()
-    print(random_force)
+    #print(random_force)
     random_force+=gravity
-    print(random_force)
+    #print(random_force)
 
     result=Force.sum([gravity,propulsion,random_force])
-    print("Force.sum:",result)
+    #print("Force.sum:",result)
 
     x,y=result
-    print(x,y) #Unpacking is compatible for vectors
+    #print(x,y) #Unpacking is compatible for vectors
+
+    f=gravity
+    print(result)
+
+    from mysurface import Context
+    context=Context()
+    position=(0,0)
+    while context.open:
+        context.check()
+        context.control()
+        context.clear()
+        context.show()
+        position=context.point()
+        f.components=list(position)
+        f.show(context,o)
+        context.flip()
+        #context.wait(0.1)

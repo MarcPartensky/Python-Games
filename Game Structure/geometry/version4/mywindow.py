@@ -47,6 +47,7 @@ class Window:
         """Creates apparent window."""
         pygame.init()
         pygame.mixer.init()
+        self.events=pygame.event.get
         self.clock=pygame.time.Clock()
         self.info=pygame.display.Info()
         self.font=pygame.font.SysFont(self.text_font, self.text_size)
@@ -123,6 +124,14 @@ class Window:
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self.open=False
+
+    def checking(self,event):
+        """Determines if the window must be closed."""
+        if event.type == pygame.QUIT:
+            self.open=False
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                self.open=False
 
     def press(self):
         """Return all keys."""
