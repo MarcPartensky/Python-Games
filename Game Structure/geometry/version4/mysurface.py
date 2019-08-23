@@ -14,7 +14,7 @@ class Surface:
         if not draw: self.draw=Draw(**kwargs)
         else: self.draw=draw
         self.screen=self.draw.window.screen
-        self.open=self.draw.window.open
+        #self.open=self.draw.window.open
         self.clear=self.draw.clear
         self.flip=self.draw.window.flip
         self.press=self.draw.window.press
@@ -23,6 +23,8 @@ class Surface:
         self.__call__=self.draw.window.__call__
         self.wait=self.draw.window.wait
         self.control=self.draw.control
+        self.events=self.draw.window.events
+        self.checking=self.draw.window.checking
 
     def getKeys(self):
         """Return the keys of the window."""
@@ -129,8 +131,11 @@ class Surface:
         """Change the size of an image."""
         pass
 
+    def getOpen(self):
+        return self.draw.window.open
 
-
+    def setOpen(self,open):
+        self.draw.window.open=open
 
     def __enter__(self):
         """Opening the context."""
@@ -155,6 +160,7 @@ class Surface:
     size=property(getSize,setSize,"Allow the user to manipulate the size of the surface easily.")
     units=property(getUnits,setUnits,"Allow the user to manipulate the units of the surface easily.")
     keys=property(getKeys,"Allow the user to manipulate the keys of the surface easily.")
+    open=property(getOpen,setOpen)
 
 
 Context=Surface

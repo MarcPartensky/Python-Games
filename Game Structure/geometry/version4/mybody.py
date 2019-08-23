@@ -27,10 +27,17 @@ class Image(Rect):
 
 
 class Body(Material):
+    def random(corners=[-1,-1,1,1],n=5):
+        """Create a random body."""
+        form=Form.random(corners,n)
+        motion=Motion.random(n=2,d=3)
+        moment=Motion.random(n=2,d=3)
+        print(motion.acceleration)
+        return Body(form,motion,moment)
+
     def createFromAbsolute(form,motion=Motion(),moment=Motion(d=1)):
         """Create a body from an absolute form."""
         motion.position=Vector(*form.center)
-        print(motion.position)
         form.points=(-motion.position).applyToPoints(form.points)
         return Body(form,motion,moment)
 
@@ -47,6 +54,15 @@ class Body(Material):
     def show(self,context):
         """Show the form on the window."""
         self.absolute.show(context)
+
+    def showMotion(self,context):
+        """show the motion of the body."""
+        self.velocity.show(context,self.position)
+        self.acceleration.show(context,self.position)
+
+    def showMoment(self,context):
+        """Show the moment of the body."""
+        self.moment.show(context,self.position)
 
     def update(self,dt=1):
         """Move entity according to its acceleration, velocity and position."""
@@ -68,10 +84,15 @@ class Body(Material):
         form.center=p
         self.form=form
 
+    absolute=property(getAbsolute,setAbsolute)
 
     def __contains__(self,point):
         """Determine if a point is in the body."""
         return point in self.absolute
+
+    def react(self,event):
+        """React to a given event by making an action."""
+        pass
 
     def follow(self,point,speed=1/100):
         """Update the motion in order for a body to follow a given point."""
@@ -80,79 +101,21 @@ class Body(Material):
         if self.velocity.norm>1:
             self.velocity.norm=1
 
-    absolute=property(getAbsolute,setAbsolute)
+
+class PhysicalBody(Body):
+    def __init__(self,form,motion=Motion(d=2),moment=Motion(d=1),mass=1):
+        """Create body using form and optional name."""
+        self.form=form
+        self.motion=motion
+        self.moment=moment
+        self.mass=mass
+
+
+
+
 
 
 
 if __name__=="__main__":
     from mysurface import Surface
     surface=Surface(fullscreen=True)
-
-    dt=1
-
-    form=Form([Point(0,1),Point(0,0),Point(1,0),Point(1,1)],area_color=mycolors.BLUE,fill=True)
-    #form=Circle(copy.deepcopy(Point.origin()),radius=1,fill=True,color=mycolors.BLUE)
-    body=Body(form)
-    missile=None
-
-    def createRandomBody():
-        form=5*Form.random(n=5)
-        form.side_color=mycolors.RED
-        form.area_color=mycolors.BLACK
-        form.fill=True
-        motion=Motion(10*Vector.random(),Vector.random(),Vector.null())
-        moment=Motion(Vector([1]),Vector([0.1]))
-        return Body(form,motion,moment)
-
-    n=10
-    bodies=[createRandomBody() for i in range(n)]
-
-
-
-    while surface.open:
-        #Surface
-        surface.check()
-        #surface.control()
-        surface.clear()
-        surface.show()
-        surface.controlZoom()
-
-        #Control
-        body.control(surface,v=0.1)
-        new_missile=body.shoot(surface)
-        if new_missile is not None:
-            missile=new_missile
-
-        #Update
-        for i in range(len(bodies)):
-            #bodies[i].motion.velocity=copy.deepcopy(-bodies[i].motion.position/1000)
-            bodies[i].follow(body.position)
-            bodies[i].update(dt)
-        body.update(dt)
-        if missile is not None:
-            missile.update(dt)
-
-
-        if missile:
-            for i in range(len(bodies)):
-                p=bodies[i].absolute.crossSegment(missile.absolute)
-                print(p)
-                if len(p)>0:
-                    bodies[i]=createRandomBody()
-
-
-
-        #Show
-        for body_ in bodies:
-            body_.absolute.showAll(surface)
-        body.show(surface)
-        if missile is not None:
-            missile.show(surface)
-            missile.absolute.p2.show(surface,color=mycolors.ORANGE)
-
-
-        surface.draw.plane.position=copy.deepcopy(body.position)
-        if missile is not None:
-            surface.draw.window.print(str(missile.velocity),(10,10),20)
-
-        surface.flip()
