@@ -38,14 +38,15 @@ class Draw:
         self.window.text_size=30
 
 
-    def rect(self,screen,color,rect,filled=False):
-        position=rect[:2]
-        size=rect[2:]
-        sx,sy=size
-        position=self.plane.getToScreen(position,self.window)
-        ux,uy=self.plane.units
-        size=[sx*ux+1,sy*uy+1]
-        rect=position+size
+    def rect(self,screen,color,rect,filled=False,conversion=True):
+        if conversion:
+            position=rect[:2]
+            size=rect[2:]
+            sx,sy=size
+            position=self.plane.getToScreen(position,self.window)
+            ux,uy=self.plane.units
+            size=[sx*ux+1,sy*uy+1]
+            rect=position+size
         self.window.draw.rect(screen,color,rect,not(filled))
 
     def ellipse(self,screen,color,rect,filled=False):
@@ -57,18 +58,20 @@ class Draw:
         rect=[pmx,pmy,pMx,pMy]
         self.window.draw.ellipse(screen,color,rect,filled)
 
-    def circle(self,screen,color,position,radius,filled=False):
+    def circle(self,screen,color,position,radius,filled=False,conversion=True):
         #self.ellipse(screen,color,position+[radius,radius],filled)
-        position=self.plane.getToScreen(position,self.window)
-        x,y=position
-        rx,ry=[radius*self.plane.units[i] for i in range(2)]
+
         #rx,ry=self.plane.getToScreen([radius,radius],self.window)
         #rect=self.plane.getRectFromScreen(position+[radius,radius])
         #self.window.draw.ellipse(screen,color,rect,width)
         #Need to implement ellipses
         #r=int(radius/self.plane.units[0])
         #r,ry=self.plane.getToScreen([radius,radius],self.window)
-        radius=int((rx+ry)/2)
+        position=self.plane.getToScreen(position,self.window)
+        x,y=position
+        if conversion:
+            rx,ry=[radius*self.plane.units[i] for i in range(2)]
+            radius=int((rx+ry)/2)
         if radius<1: radius=1
         #r=0.1
         self.window.draw.circle(screen,color,position,radius,not(filled))
@@ -82,13 +85,14 @@ class Draw:
         screen_positions=self.plane.getAllToScreen(positions,self.window)
         self.window.draw.polygon(screen,color,screen_positions,filled)
 
-    def line(self,screen,color,start_position,end_position,width=1):
-        start_position=self.plane.getToScreen(start_position,self.window)
-        end_position=self.plane.getToScreen(end_position,self.window)
+    def line(self,screen,color,start_position,end_position,width=1,conversion=True):
+        if conversion:
+            start_position=self.plane.getToScreen(start_position,self.window)
+            end_position=self.plane.getToScreen(end_position,self.window)
         self.window.draw.line(screen,color,start_position,end_position,width)
 
-    def lines(self,screen,color,positions,connected=True,width=1):
-        new_positions=self.plane.getAllToScreen(positions,self.window)
+    def lines(self,screen,color,positions,connected=True,width=1,conversion=True):
+        if conversion: positions=self.plane.getAllToScreen(positions,self.window)
         self.window.draw.lines(screen,color,connected,positions,width)
 
     def arc(self,screen,color,rect,start_angle,stop_angle,width=1):

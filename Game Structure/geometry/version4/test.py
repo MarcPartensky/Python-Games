@@ -24,4 +24,6 @@ while surface.open:
     wl=mycolors.bijection(a,[-math.pi,math.pi],[380,780])
     c=mycolors.setFromWavelength(wl)
     vector.show(surface,point,color=c)
+    surface.console("angle: ",str(a),nmax=20)
+    #surface.print('something',(10,10),size=100,conversion=False)
     surface.flip()

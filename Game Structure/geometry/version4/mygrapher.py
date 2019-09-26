@@ -8,6 +8,7 @@ import random
 
 sigmoid=lambda x:1/(1+exp(-x))
 alea=   lambda x:random.random()
+interpolator=lambda x,s,n:[s[j]*prod([(n*x-i)/(j-i) for i in range(n) if i!=j]) for j in range(n)]
 
 class Grapher(Plane):
     """The grapher is a tool using the Plane class made in order to show functions taking one input.
@@ -20,7 +21,7 @@ class Grapher(Plane):
 
     def show(self,window):
         """Show the elements on screen using the window."""
-        self.showGrid(window)
+        self.showGrids(window)
         self.showFunctions(window)
 
 

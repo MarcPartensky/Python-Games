@@ -108,7 +108,7 @@ if __name__=="__main__":
     f=gravity
     print(result)
 
-    from mysurface import Context
+    from mycontext import Context
     context=Context()
     position=(0,0)
     while context.open:

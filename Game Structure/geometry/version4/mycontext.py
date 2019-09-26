@@ -5,12 +5,10 @@ from mywindow import Window
 import mycolors
 
 
-
-class Surface:
-    """Might inherit from Rect soon..."""
+class Context(Rect):
 
     def __init__(self,draw=None,**kwargs):
-        """Create a surface."""
+        """Create a context."""
         if not draw: self.draw=Draw(**kwargs)
         else: self.draw=draw
         self.screen=self.draw.window.screen
@@ -25,6 +23,8 @@ class Surface:
         self.control=self.draw.control
         self.events=self.draw.window.events
         self.checking=self.draw.window.checking
+
+        self.text=[]
 
     def getKeys(self):
         """Return the keys of the window."""
@@ -102,12 +102,18 @@ class Surface:
         """Show the plane on screen."""
         self.draw.plane.show(self.draw.window)
 
+    def refresh(self):
+        """Refresh the context by clearing the screen and showing the plane."""
+        self.draw.window.clear()
+        self.draw.plane.show(self.draw.window)
+
     def print(self,text,position,size=1,color=mycolors.WHITE,font=None,conversion=True):
         """Print a text the window's screen using text and position and optional
         color, pygame font and conversion."""
-        position=self.draw.plane.getToScreen(position,self.draw.window)
-        ux,uy=self.draw.plane.units
-        if conversion: text_size=int(size*ux/50)
+        if conversion:
+            position=self.draw.plane.getToScreen(position,self.draw.window)
+            ux,uy=self.draw.plane.units
+            size=int(size*ux/50)
         self.draw.window.print(text,position,size,color,font)
 
     def controlZoom(self):
@@ -125,6 +131,26 @@ class Surface:
     def blit(self,image,position):
         """Blit a given image to a given position."""
         sx,sy=self.image.size()
+
+    def console(self,*text,text_size=20,color1=mycolors.WHITE,color2=mycolors.BLACK,interline=15,left_padding=10,down_padding=20,font=None,conversion=False,show=True,nmax=10):
+        """Display a message on the context as a console would do."""
+        text=" ".join(text)
+        self.text.append(text)
+        if show:
+            self.showConsole(text_size,color1,color2,interline,left_padding,down_padding,font,conversion,nmax)
+
+
+    def showConsole(self,text_size=20,color1=mycolors.WHITE,color2=mycolors.BLACK,interline=15,left_padding=10,down_padding=20,font=None,conversion=False,nmax=10):
+        """Show the console without adding a text."""
+        sx,sy=self.draw.window.size
+        n=len(self.text)
+        for i in range(min(n,nmax)):
+            size=(left_padding,sy-interline*i-down_padding)
+            self.print(self.text[-i-1],size,text_size,self.nuance(color1,color2,i/nmax),font,conversion)
+
+    def nuance(self,color1,color2,degree,p=1/2):
+        """Return a color between the two depending on the degree."""
+        return [c1*(1-degree**p)+c2*(degree**p) for (c1,c2) in zip(color1,color2)]
 
 
     def transform(self,image,size):
@@ -153,6 +179,22 @@ class Surface:
         if self.open:
             self.__enter__()
 
+    def getXmin(self):
+        """Return xmin."""
+        return self.corners[0]
+
+    def setXmin(self,x):
+        """Set xmin."""
+        self.corners[0]=x
+
+    def getXmax(self,x):
+        """Get xmax."""
+        return self.corners[2]
+
+    def setXmax(self,x):
+        """Set xmax."""
+        self.corners[2]=x
+
     corners=property(getCorners,setCorners,"Allow the user to manipulate the corners of the surface easily.")
     rect=property(getRect,setRect,"Allow the user to manipulate the rect of the surface easily.")
     coordonnates=property(getCoordonnates,setCoordonnates,"Allow the user to manipulate the coordonnates of the surface easily.")
@@ -161,9 +203,12 @@ class Surface:
     units=property(getUnits,setUnits,"Allow the user to manipulate the units of the surface easily.")
     keys=property(getKeys,"Allow the user to manipulate the keys of the surface easily.")
     open=property(getOpen,setOpen)
+    xmin=property(getXmin,setXmin)
+    xmax=property(getXmax,setXmax)
 
 
-Context=Surface
+
+Surface=Context
 
 
 if __name__=="__main__":

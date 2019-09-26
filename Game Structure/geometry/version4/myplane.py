@@ -237,7 +237,7 @@ class Plane:
         self.position=[x,y]
         self.units=[wsx//sx,wsy//sy]
 
-    #The following functions are class methods
+    #The following functions are static methods
 
     def getCornersFromCoordonnates(coordonnates):
         """Return the corners (top_left_corner,bottom_right_corner) using the coordonnates (position+size)."""
@@ -288,6 +288,7 @@ class Plane:
         Mx,My=mx+sx,my+sy
         corners=[mx,my,Mx,My]
         return corners
+
 
 
 if __name__=="__main__":

@@ -82,7 +82,7 @@ class Window:
         self.screen.fill(color)
 
     def flip(self):
-        """Refresh screen."""
+        """Display on the screen the image considered."""
         pygame.display.flip()
 
     def update(self):

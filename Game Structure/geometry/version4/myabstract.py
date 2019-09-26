@@ -45,8 +45,8 @@ class Point:
         """Create a point from a vector."""
         return Point(vector.x,vector.y)
 
-    def __init__(self,*components,mode=0,size=[0.1,0.1],width=1,radius=0.02,fill=False,color=mycolors.WHITE):
-        """Create a point using its components and optional radius, fill and color."""
+    def __init__(self,*components,mode=0,size=[0.1,0.1],width=1,radius=0.02,fill=False,color=mycolors.WHITE,conversion=True):
+        """Create a point using its components and optional radius, fill, color and conversion."""
         if components!=():
             if type(components[0])==list:
                 components=components[0]
@@ -57,6 +57,7 @@ class Point:
         self.radius=radius
         self.fill=fill
         self.color=color
+        self.conversion=conversion
 
     def __len__(self):
         """Return the number of components of the point."""
@@ -148,34 +149,36 @@ class Point:
         """Determine if a given point is in a radius 'distance' of the point."""
         return self.distance(point)<=distance
 
-    def showCross(self,window,color=None,size=None,width=None):
+    def showCross(self,window,color=None,size=None,width=None,conversion=None):
         """Show the point under the form of a cross using the window."""
         if not color: color=self.color
         if not size: size=self.size
         if not width: width=self.width
+        if not conversion: conversion=self.conversion
         x,y=self
         sx,sy=size
         xmin=x-sx/2
         ymin=y-sy/2
         xmax=x+sx/2
         ymax=y+sy/2
-        window.draw.line(window.screen,color,[xmin,ymin],[xmax,ymax],width)
-        window.draw.line(window.screen,color,[xmin,ymax],[xmax,ymin],width)
+        window.draw.line(window.screen,color,[xmin,ymin],[xmax,ymax],width,conversion)
+        window.draw.line(window.screen,color,[xmin,ymax],[xmax,ymin],width,conversion)
 
-    def showCircle(self,window,color=None,radius=None,fill=None):
+    def showCircle(self,window,color=None,radius=None,fill=None,conversion=None):
         """Show a point under the form of a circle using the window."""
         if not color: color=self.color
         if not radius: radius=self.radius
         if not fill: fill=self.fill
-        window.draw.circle(window.screen,color,[self.x,self.y],radius,fill)
+        if not conversion: conversion=self.conversion
+        window.draw.circle(window.screen,color,[self.x,self.y],radius,fill,conversion)
 
-    def show(self,window,color=None,mode=None,fill=None,radius=None,size=None,width=None):
+    def show(self,window,color=None,mode=None,fill=None,radius=None,size=None,width=None,conversion=None):
         """Show the point on the window."""
         if not mode: mode=self.mode
         if mode==0 or mode=="circle":
-            self.showCircle(window,color=color,radius=radius,fill=fill)
+            self.showCircle(window,color,radius,fill,conversion)
         if mode==1 or mode=="cross":
-            self.showCross(window,color=color,size=size,width=width)
+            self.showCross(window,color,size,width,conversion)
 
     def showText(self,context,text,text_size=20,color=mycolors.WHITE):
         """Show the text next to the point on the window."""
@@ -345,6 +348,10 @@ class Vector:
     def createFromTwoPoints(point1,point2,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector from 2 points."""
         return Vector([c2-c1 for (c1,c2) in zip(point1.components,point2.components)],color=color,width=width,arrow=arrow)
+
+    def createFromTwoTuples(tuple1,tuple2,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+        """Create a vector from 2 tuples."""
+        return Vector([c2-c1 for (c1,c2) in zip(tuple1,tuple2)],color=color,width=width,arrow=arrow)
 
     def createFromPoint(point,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector from a single point."""
@@ -857,6 +864,10 @@ class Line(Direction):
         self.width=width
         self.color=color
         if correct: self.correct()
+
+    def __eq__(self,l):
+        """Determine if two lines are the same."""
+        return l.point==self.point and l.angle==self.angle
 
     def correctAngle(self):
         """Correct angle which is between [-pi/2,pi/2[."""
@@ -1905,7 +1916,7 @@ class Circle:
 
 
 if __name__=="__main__":
-    from mysurface import Surface
+    from mycontext import Surface
     surface=Surface(name="Abstract Demonstration",fullscreen=True)
 
     p1=Point(10,0,radius=0.05,color=mycolors.YELLOW)

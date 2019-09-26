@@ -1,4 +1,3 @@
-from mysurface import Surface
 from myabstract import Vector
 
 import mycolors
@@ -227,7 +226,7 @@ class Moment(Motion):
 
 
 if __name__=="__main__":
-    from mysurface import Context
+    from mycontext import Context
     context=Context(name="Motion")
     motion1=Motion.random()
     motion2=Motion.random()

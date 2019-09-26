@@ -3,7 +3,7 @@ class Rect:
     def createFromCorners(corners):
         """Create a rectangle."""
         coordonnates=Rect.getCoordonnatesFromCorners(corners)
-        print("c:",coordonnates)
+        #print("c:",coordonnates)
         return Rect(coordonnates[:2],coordonnates[2:])
 
     def createFromRect(rect):
@@ -196,7 +196,7 @@ class Rect:
         ymin=max(self.ymin,other.ymin)
         xmax=min(self.xmax,other.xmax)
         ymax=min(self.ymax,other.ymax)
-        print([xmin,ymin,xmax,ymax])
+        #print([xmin,ymin,xmax,ymax])
         return Rect.createFromCorners([xmin,ymin,xmax,ymax])
 
     def resize(self,n=1):

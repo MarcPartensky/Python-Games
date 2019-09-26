@@ -98,7 +98,7 @@ class GameOfLife:
 
 
 if __name__=="__main__":
-    from mysurface import Surface
+    from mycontext import Surface
     surface=Surface(name="Game of Life",fullscreen=True)
     game=GameOfLife()
     game(surface)
