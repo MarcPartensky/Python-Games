@@ -67,14 +67,16 @@ class Grapher(SimpleManager):
 
     def sampleFunctions(self,functions):
         """Sample all the functions one by one."""
-        return [self.sampleFunction(function) for function in functions]
+        ymin=self.context.ymin
+        ymax=self.context.ymax
+        return [self.sampleFunction(function,ymin,ymax) for function in functions]
 
-    def sampleFunction(self,function):
+    def sampleFunction(self,function,ymin,ymax):
         """Return n points of the graph."""
         xmin,xmax=self.getInterval()
         n=self.sample_number
         xl=np.linspace(xmin,xmax,n)
-        return [(x,function(x)) for x in xl]
+        return [(x,function(x)) for x in xl if ymin<function(x)<ymax]
 
     def cleverlySampleFunction(self,function):
         """Sample a function in an optimized way to get the nicest visualisation possible with the less points as possible."""
@@ -90,7 +92,7 @@ class Grapher(SimpleManager):
         self.context.clear()
         self.context.control()
         self.context.show()
-        self.showGraphs(self.graphs)
+        self.showGraphs(self.functions)
         #Its just for a demo, it will be removed later
         if "points" in self.__dict__:
             self.showPoints()

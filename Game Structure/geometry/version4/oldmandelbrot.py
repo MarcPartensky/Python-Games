@@ -1,4 +1,4 @@
-from mysurface import Surface
+from mycontext import Surface
 
 import math
 import cmath
@@ -50,7 +50,7 @@ class Mandelbrot:
     def show(self,surface,precision=[10,10]):
         """Show the mandelbrot set on the surface."""
         wsx,wsy=surface.draw.window.size
-        corners=surface.draw.plane.getPlaneCorners(surface.draw.window)
+        corners=surface.draw.plane.getCorners(surface.draw.window)
         mx,my,Mx,My=corners
         px,py=precision
         ux,uy=surface.draw.plane.units

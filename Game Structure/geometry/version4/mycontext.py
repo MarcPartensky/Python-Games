@@ -7,6 +7,11 @@ import mycolors
 
 class Context(Rect):
 
+    def createFromSizeAndCorners(size,corners,**kwargs):
+        c=Context(size=size,**kwargs)
+        c.corners=corners
+        return c
+
     def __init__(self,draw=None,**kwargs):
         """Create a context."""
         if not draw: self.draw=Draw(**kwargs)
@@ -64,11 +69,11 @@ class Context(Rect):
 
     def getSize(self):
         """Return the size of the surface shown."""
-        return self.draw.plane.getSize()
+        return self.draw.window.size
 
     def setSize(self,size):
         """Set the size of the surface shown."""
-        self.draw.plane.setSize(size)
+        self.draw.window.size=size
 
     def getUnits(self):
         """Return the units of the surface shown."""
@@ -97,6 +102,10 @@ class Context(Rect):
             self.draw.window.clear()
             self.draw.plane.show(self.draw.window)
             self.flip()
+
+    def __contains__(self,position):
+        """Determine if a position is in the context."""
+        return self.draw.plane.contains(position,self.draw.window)
 
     def show(self):
         """Show the plane on screen."""
@@ -155,7 +164,7 @@ class Context(Rect):
 
     def transform(self,image,size):
         """Change the size of an image."""
-        pass
+        return self.draw.window.transform(image,size)
 
     def getOpen(self):
         return self.draw.window.open
@@ -179,21 +188,21 @@ class Context(Rect):
         if self.open:
             self.__enter__()
 
-    def getXmin(self):
-        """Return xmin."""
-        return self.corners[0]
+    def getWidth(self):
+        """Return the width of the window."""
+        return self.size[0]
 
-    def setXmin(self,x):
-        """Set xmin."""
-        self.corners[0]=x
+    def setWidth(self,width):
+        """Set the width of the window."""
+        self.size[0]=width
 
-    def getXmax(self,x):
-        """Get xmax."""
-        return self.corners[2]
+    def getHeight(self):
+        """Return the height of the window."""
+        return self.size[1]
 
-    def setXmax(self,x):
-        """Set xmax."""
-        self.corners[2]=x
+    def setHeight(self,height):
+        """Set the height of the window."""
+        self.size[1]=height
 
     corners=property(getCorners,setCorners,"Allow the user to manipulate the corners of the surface easily.")
     rect=property(getRect,setRect,"Allow the user to manipulate the rect of the surface easily.")
@@ -203,8 +212,8 @@ class Context(Rect):
     units=property(getUnits,setUnits,"Allow the user to manipulate the units of the surface easily.")
     keys=property(getKeys,"Allow the user to manipulate the keys of the surface easily.")
     open=property(getOpen,setOpen)
-    xmin=property(getXmin,setXmin)
-    xmax=property(getXmax,setXmax)
+    width=property(getWidth,setWidth)
+    height=property(getHeight,setHeight)
 
 
 
@@ -213,4 +222,6 @@ Surface=Context
 
 if __name__=="__main__":
     context=Context()
+    context.corners=[0,0,1,1]
+    print(context.corners)
     context()

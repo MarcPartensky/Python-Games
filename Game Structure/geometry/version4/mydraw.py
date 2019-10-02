@@ -100,9 +100,11 @@ class Draw:
         size=rect[2:]
         position=self.plane.getToScreen(position,self.window)
         size=self.plane.getToScreen(size,self.window)
-        self.window.draw.arcarc(screen,color,rect,start_angle,stop_angle,width)
+        self.window.draw.arc(screen,color,rect,start_angle,stop_angle,width)
 
 
+    def complex(self,screen,color,z,radius,**kwargs):
+        self.circle(screen,color,(z.real,z.imag),radius,**kwargs)
 
     def show(self):
         self.plane.showGrid(self.window)

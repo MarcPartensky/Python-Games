@@ -24,18 +24,13 @@ class Fourier:
         self.graph_drawing=[]
         self.graph_construction=[]
         self.graph_display=[]
-        self.sample_precision=100
-        self.coefficients_number=100
-        self.display_number=100
-        self.period=100
+
         self.mode=0
         self.messages=['drawing', 'construction', 'display']
         self.coefficients=[]
         self.context.text.append("mode: "+self.messages[self.mode])
-        self.duration=None
-        self.time=0
+        self.max_step=100
         self.step=0
-        self.speed=1/100
         self.vectors=[]
 
     def __call__(self):
@@ -72,12 +67,11 @@ class Fourier:
             #    self.graph_interpolation=self.sample(self.function_interpolation,len(self.graph_drawing))
         elif self.mode==1: #construction
             self.step+=1
-            self.time=self.speed*self.step
-            #print(self.time/self.duration)
-            if self.duration is not None:
-                if self.time>self.duration:
-                    self.mode=2
-            self.graph_construction=self.discreteComplexComposeGraph(self.coefficients,self.time) #complex now
+            self.time=self.step/self.max_step
+            if self.step>self.max_step:
+                self.mode=2
+            #self.graph_construction=self.discreteComplexComposeGraph(self.coefficients,self.time) #complex now
+            self.graph_construction=self.numpyComposeConstructionGraph(self.coefficients,t=self.time)
             self.vectors=self.getVectors([(0,0)]+self.graph_construction)
             self.graph_display.append(self.graph_construction[-1])
 
@@ -99,7 +93,7 @@ class Fourier:
             self.showGraph(self.graph_display,mycolors.BLUE)
             self.showVectors([(0,0)]+self.graph_construction,self.vectors,mycolors.RED)
             self.context.text.append("time: "+str(self.time))
-            #self.context.print("coefficients:"+str(self.coefficients),(1000,850),size=20,conversion=False,color=mycolors.GREEN)
+
         elif self.mode==2:
             self.showGraph(self.graph_display,mycolors.BLUE)
         self.context.showConsole(nmax=10)
@@ -143,8 +137,13 @@ class Fourier:
         self.graph_drawing=self.cleanGraph(self.graph_drawing)
         #self.graph_drawing=self.takeGraphSamples(self.graph_drawing)[:]
         print(self.graph_drawing)
-        self.coefficients=self.discreteComplexDecomposeGraph(self.graph_drawing)
-        self.graph_construction=self.discreteComplexComposeGraph(self.coefficients,0)
+        #self.coefficients=self.discreteComplexDecomposeGraph(self.graph_drawing)
+        self.graph_drawing=self.graph_drawing[:len(self.graph_drawing)-1+len(self.graph_drawing)%2]
+        self.coefficients=self.numpyFourierTransform(self.graph_drawing)
+        self.graph_drawing=self.numpyInverseFourierTransform(self.coefficients)
+        #print(len(self.coefficients))
+        #self.graph_construction=self.discreteComplexComposeGraph(self.coefficients,0)
+        self.graph_construction=self.graph_drawing
         self.time=0
         self.step=0
         print(self.coefficients)
@@ -210,6 +209,20 @@ class Fourier:
         """Place a point."""
         p=self.context.point()
         self.graph_drawing.append(p)
+
+    def threeBlueOneBrownFormula(self,graph):
+        c=[]
+        for n in range(len(graph)):
+            cn=sum([graph[n]])
+
+    def numpyFourierTransform(self,graph):
+        """Return the fourier coefficients by doing a fourier transform for a given graph with the fft."""
+        z=[complex(*graph[i]) for i in range(len(graph))]
+        return np.fft.fft(z)
+
+    def numpyFourierTransform2D(self,graph,**kwargs):
+        """Return the fourier coefficients by doing a fourier transform for a given graph with the fft2."""
+        return np.fft.fft2(graph,**kwargs)
 
     def decompose(self,graph):
         """Decompose the points into 2 signals the coefficients corresponding to the drawing."""
@@ -279,6 +292,14 @@ class Fourier:
             d+=sum([s[n]*cmath.exp(2j*cmath.pi*k*n/N) for n in range(N)])/N
             c.append(d)
         return c
+
+    def numpyInverseFourierTransform(self,coefficients,**kwargs):
+        """Return the fourier coefficients by doing a fourier transform for a given graph with the fft."""
+        return [(z.real,z.imag) for z in np.fft.ifft(coefficients,**kwargs)]
+
+    def numpyInverseFourierTransform2D(self,coefficients,**kwargs):
+        """Create a graph using the coefficients under the form of a list of duos."""
+        return np.fft.ifft2(coefficients,**kwargs)
 
     def scipyTranform(self,s):
         """Find the fourier transform using the scipy module."""
@@ -373,14 +394,68 @@ class Fourier:
             g.append((d.real,d.imag))
         return g
 
+    def numpyComposeConstructionGraph2D(self,coefficients,t=0):
+        """Uses the fourier coefficients of the fourier transform. to make the construciton graph."""
+        l=len(coefficients)
+        xs,ys=0,0
+        wo=2*math.pi
+        #wo=1
+        #wo=1/100
+        graph=[]
+        for i,c in enumerate(coefficients):
+            n=i
+            a,b=c
+            print("a:",a.real,a.imag)
+            #x=a.real*math.cos(n*wo*t)+a.imag*math.sin(n*wo*t)
+            #y=b.real*math.cos(n*wo*t)+b.imag*math.sin(n*wo*t)
+            x=a.real*math.cos(n*wo*t)
+            y=a.imag*math.sin(n*wo*t)
+            xs+=x; ys+=y
+            graph.append((xs,ys))
+            print("x,y:",x,y)
+            print("xs,ys:",xs,ys)
+        print(coefficients)
+        print(graph)
 
+        return graph
 
+    def numpyComposeConstructionGraph(self,coefficients,t=0):
+        """Uses the fourier coefficients of the fourier transform. to make the construciton graph."""
+        l=len(coefficients)
+        xs,ys=0,0
+        wo=2*math.pi
+        #wo=1
+        #wo=1/10
+        graph=[]
+        #print("coefficients:")
+        #print(coefficients)
+        l=len(coefficients)
+        print(l)
+        h=l//2
+        for i in range(l):
+            n=int(((i+1)//2)*(-1)**(i+1))
+            print("n:",n)
+            z=coefficients[n+h]*cmath.exp(n*wo*t*1j)
+            print(z)
+            #print("z:",z.real,z.imag)
+            x=z.real
+            y=z.imag
+            xs+=x; ys+=y
+            graph.append((xs,ys))
+            #print("x,y:",x,y)
+            #print("xs,ys:",xs,ys)
+        print(graph)
 
+        return graph
 if __name__=="__main__":
     from mycontext  import Context
     context=Context(name="Application of the Fourier Transform.",fullscreen=False)
     fourier=Fourier(context)
-    fourier.coefficients=[[0,1,2,0.5],[0,1,5,2],[0,-2,1,6],[0,-4,3,1]]
-    #fourier.coefficients=[(3+5j),(2+1j),(0-0.5j),(1+3.5j),(2-1j)]
-    #fourier.mode=1
+    #fourier.coefficients=[[0,1,2,0.5],[0,1,5,2],[0,-2,1,6],[0,-4,3,1]]
+    fourier.coefficients=np.array([(3+5j),(2+1j),(0-0.5j),(1+3.5j),dtype=complex])
+    #cx=[0+50j,0+18j,12+0j,-14+0j]
+    #cy=[-60-30j,0+8j,0-10j]
+
+    #fourier.coefficients=np.array(list(zip(cx,cy)))
+    fourier.mode=1
     fourier()

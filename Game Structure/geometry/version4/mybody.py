@@ -7,6 +7,7 @@ import pygame
 import logging
 import copy
 import mycolors
+import random
 
 # Interface Anatomy
 # - show(context)   //an anatomy must be responsible for drawing itself
@@ -36,16 +37,21 @@ class Body(Material):
         return Body(form,motion,moment)
 
     def createFromAbsolute(form,motion=Motion(),moment=Motion(d=1)):
-        """Create a body from an absolute form."""
+        """Create a body from an absolute form using its motion and its angular moment."""
         motion.position=Vector(*form.center)
         form.points=(-motion.position).applyToPoints(form.points)
         return Body(form,motion,moment)
 
     def __init__(self,form,motion=Motion(d=2),moment=Motion(d=1)):
-        """Create body using form and optional name."""
+        """Create body using its anatomy, its motion and its angular moment.
+        #Attributes:
+        #self.form,self.motion,self.moment
+        #Properties:
+        #self.absolute"""
         self.form=form
         self.motion=motion
         self.moment=moment
+
 
     def __str__(self):
         """Return the string representation of the body."""
@@ -105,11 +111,12 @@ class Body(Material):
 class PhysicalBody(Body):
     def __init__(self,form,motion=Motion(d=2),moment=Motion(d=1),mass=1):
         """Create body using form and optional name."""
-        self.form=form
-        self.motion=motion
-        self.moment=moment
+        super().__init__(form,motion,moment)
         self.mass=mass
 
+    def __str__(self):
+        """Return the string representation of a physical body."""
+        return "p"+super().__str__()
 
 
 
@@ -117,5 +124,19 @@ class PhysicalBody(Body):
 
 
 if __name__=="__main__":
-    from mysurface import Surface
-    surface=Surface(fullscreen=True)
+    from mycontext import Context
+    context=Context(fullscreen=False)
+    ru=random.uniform
+    form1=Form.random(n=4)
+    motion1=Motion(Vector(0,0),Vector(ru(-1,1),ru(-1,1)),Vector(0,0))
+    moment1=Motion(Vector([0]),Vector([ru(-1,1)]),Vector([0]))
+    b1=Body(form1,motion1,moment1)
+    #b=Body.random()
+    while context.open:
+        context.check()
+        context.clear()
+        context.show()
+        context.control()
+        b1.show(context)
+        b1.update(0.1)
+        context.flip()

@@ -223,19 +223,21 @@ class Plane:
     def getCorners(self,window):
         """Return the corners of the present view."""
         wsx,wsy=window.size
+        ux,uy=self.units
+        x,y=self.position
+        lx,ly=wsx/ux,wsy/uy
+        return [x-lx/2,y-ly/2,x+lx/2,y+ly/2]
+
         mx,my=self.getFromScreen([0,wsy],window)
         Mx,My=self.getFromScreen([wsx,0],window)
         return (mx,my,Mx,My)
 
     def setCorners(self,corners,window):
         """Change the actual corners of the plane by changing its position and units."""
-        wsx,wsy=window.size
         xmin,ymin,xmax,ymax=corners
-        xmin,ymin=self.getToScreen([xmin,ymin],window)
-        xmax,ymax=self.getToScreen([xmax,ymax],window)
-        x,y,sx,sy=self.getCoordonnatesFromCorners([xmin,ymin,xmax,ymax])
-        self.position=[x,y]
-        self.units=[wsx//sx,wsy//sy]
+        wsx,wsy=window.size
+        self.position=[xmin+(xmax-xmin)/2,ymin+(ymax-ymin)/2]
+        self.units=[wsx/(xmax-xmin),wsy/(ymax-ymin)]
 
     #The following functions are static methods
 
