@@ -9,7 +9,6 @@ There are 2 main types of interpolations:
 """
 
 from marclib.polynomial import Polynomial
-import numpy as np
 
 #Deprectated function
 def directInterpolation(points,t):
@@ -54,7 +53,8 @@ class PolynomialInterpolation:
     def sample(self,n):
         """Make a sample of the interpolation for n points."""
         lpts=len(self.points)
-        return [self(lpts*t) for t in np.linspace(0,1,n)]
+        l=lpts-1
+        return [self(l*t/n) for t in range(n+1)]
 
 class BezierInterpolation:
     """Make an interpolation using the bezier interpolation over a list of
@@ -74,7 +74,9 @@ class BezierInterpolation:
     def sample(self,n):
         """Make a sample of the interpolation for n points."""
         lpts=len(self.points)
-        return [self(lpts*t) for t in np.linspace(0,1,n)]
+        l=lpts-1
+        #return [self(lpts*t) for t in np.linspace(0,1,n)]
+        return [self(l*t/n) for t in range(n+1)]
 
 
 if __name__=="__main__":
@@ -113,7 +115,7 @@ if __name__=="__main__":
     """
 
     #Final version
-    interpolation=Interpolation(pts)
+    interpolation=PolynomialInterpolation(pts)
     npts=interpolation.sample(200) #Sample 200 points by interpolation
 
     #Main loop of the context
@@ -122,6 +124,6 @@ if __name__=="__main__":
         context.control()
         context.clear()
         context.show()
-        context.draw.lines(context.screen,mycolors.GREEN,pts,connected=False)
-        context.draw.lines(context.screen,mycolors.YELLOW,npts,connected=False)
+        context.draw.lines(context.screen,mycolors.GREEN,pts,width=3,connected=False)
+        context.draw.lines(context.screen,mycolors.RED,npts,connected=False)
         context.flip()
