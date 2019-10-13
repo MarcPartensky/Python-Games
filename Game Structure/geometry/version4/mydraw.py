@@ -1,8 +1,8 @@
 
 from myplane import Plane
 from mywindow import Window
-from mycolors import *
 from math import sqrt
+import mycolors
 
 """
 Structure:
@@ -102,9 +102,47 @@ class Draw:
         size=self.plane.getToScreen(size,self.window)
         self.window.draw.arc(screen,color,rect,start_angle,stop_angle,width)
 
+    def point(self,screen,color,position,radius=1,**kwargs):
+        self.circle(screen,color,position,radius,**kwargs)
 
-    def complex(self,screen,color,z,radius,**kwargs):
-        self.circle(screen,color,(z.real,z.imag),radius,**kwargs)
+    def complex(self,screen,color,z,radius=1,**kwargs):
+        self.point(screen,color,(z.real,z.imag),radius,**kwargs)
+
+    def image(self,screen,image,position,smax=1,corners=None):
+        w,h=image.get_size()
+        ux,uy=self.plane.units
+        if corners is not None:
+            x,y,sx,sy=corners
+            rx,ry=self.plane.getToScreen([x,y],self.window)
+            rsx=int(sx*ux); rsy=int(sy*uy)
+            image=self.window.scale(image,(rsx,rsy))
+        else:
+            x,y=position
+            rx,ry=self.plane.getToScreen([x,y],self.window)
+            m=max(w,h)
+            if w>h:
+                sx=smax; sy=h/w*smax
+            else:
+                sy=smax; sx=w/h*smax
+            rsx=int(sx*ux); rsy=int(sy*uy)
+            image=self.window.scale(image,(rsx,rsy))
+        self.window.screen.blit(image,(rx,ry))
+
+    def print(self,text,position=None,size=None,color=mycolors.WHITE,font=None,conversion=True):
+        """Print a text the window's screen using text and position and optional
+        color, pygame font and conversion."""
+        if conversion:
+            if not position: position=(0,0)
+            if not size: size=1
+            position=self.draw.plane.getToScreen(position,self.draw.window)
+            ux,uy=self.draw.plane.units
+            size=int(size*ux/50)
+        else:
+            if not position: position=(10,10)
+            if not size: size=20
+        self.window.print(text,position,size,color,font)
+
+
 
     def show(self):
         self.plane.showGrid(self.window)
@@ -125,9 +163,11 @@ if __name__=="__main__":
     window=Window("mydraw")
     plane=Plane()
     draw=Draw(plane,window)
+
+
     while draw.window.open:
         draw.check()
         draw.control()
         draw.clear()
-        draw.line(WHITE,(3,-5),(-2,6))
+        draw.line(draw.window.screen,mycolors.WHITE,(3,-5),(-2,6))
         draw.show()

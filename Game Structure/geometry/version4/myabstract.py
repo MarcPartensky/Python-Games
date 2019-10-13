@@ -10,7 +10,6 @@ average=mean=lambda x:sum(x)/len(x)
 
 digits=2 #Number of digits of precision of the objects when displayed
 
-
 class Point:
     """Representation of a point that can be displayed on screen."""
     def origin(d=2):
@@ -466,6 +465,12 @@ class Vector:
         context.draw.line(context.screen,color,q.components,a.components,width)
         context.draw.line(context.screen,color,q.components,b.components,width)
 
+    def showFromTuple(self,context,t=(0,0),**kwargs):
+        """Show a vector from a tuple."""
+        p=Point(*t)
+        self.show(context,p,**kwargs)
+
+
     def showText(self,surface,point,text,color=None,size=20):
         """Show the text next to the vector."""
         if not color: color=self.color
@@ -630,6 +635,11 @@ class Segment(Direction):
     def __call__(self,t=1/2):
         """Return the point C of the segment so that Segment(p1,C)=t*Segment(p1,p2)."""
         return (t*self.vector)(self.p1)
+
+    def sample(self,n,include=True):
+        """Sample n points of the segment.
+        It is also possible to include the last point if wanted."""
+        return [self(t/n) for t in range(n+int(include))]
 
     __rmul__=__imul__=__mul__=lambda self,t: Segment(self.p1,self(t))
 
@@ -1813,9 +1823,9 @@ class Circle:
         radius=1
         return Circle.createFromPointAndRadius(point,radius,color,fill)
 
-    def createFromPointAndRadius(point,radius,fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+    def createFromPointAndRadius(point,radius,**kwargs):
         """Create a circle from point."""
-        return Circle(point.position,radius,color,fill)
+        return Circle(*point,radius=radius,**kwargs)
 
     def __init__(self,*args,radius,fill=False,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
         """Create a circle object using x, y and radius and optional color and width."""
@@ -1910,9 +1920,21 @@ class Circle:
         return vector.norm<self.radius+other.radius
 
     def crossCircle(self,other):
-        """Return the intersections points of two circles maybe crossing."""
-        pass #Math are involved...
-        return points
+        """Return the intersections points of two circles if crossing else
+        return None."""
+        if self.isCrossingCircle(other):
+            s=Segment(self.center,other.center)
+            m=s.middle
+            n=math.sqrt(self.radius**2-(s.norm/2)**2)
+            a=s.angle+math.pi/2
+            v1=Vector.createFromPolarCoordonnates(n,a)
+            v2=Vector.createFromPolarCoordonnates(n,-a)
+            p1=v1(m)
+            p2=v2(m)
+            return [p1,p2]
+
+
+
 
 
 if __name__=="__main__":
@@ -1927,6 +1949,7 @@ if __name__=="__main__":
     l1=HalfLine(origin,math.pi/4)
     l2=Line(p1,math.pi/2,correct=False)
     s1=Segment(p1,p2)
+    print(Point.null)
 
 
 

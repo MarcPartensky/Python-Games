@@ -1,18 +1,41 @@
-from myabstract import Point,Segment,Form
+from myabstract import Point,Segment,Form,Line
 
 import random
 import mycolors
+import itertools
 
 class Trajectory:
+    def createFromTuples(tuples,**kwargs):
+        """Create a trajectory using tuples and optional arguments."""
+        pts=[Point(*t) for t in tuples]
+        return Trajectory(pts,**kwargs)
+
     def __init__(self,points,segment_color=mycolors.WHITE,point_color=mycolors.WHITE):
         """Create a trajectory using the list of points."""
         self.points=points
         self.segment_color=segment_color
         self.point_color=point_color
 
-    def segments(self):
-        """Return the segments that connect the points."""
-        return [Segment(self.points[i],self.points[i+1]) for i in range(len(self.points)-1)]
+    def __call__(self,t):
+        """Evaluate the trajectory by t between 0 and 1."""
+        if len(self.points)<=1:
+            raise Exception("It is impossible to interpolate without at least 2 points.")
+        length=self.length
+        ns=len(self.segments)
+        #lenghts=list(map(lambda s:s.lengths,self.segments))
+        #sum_lengths=list(itertools.accumulate(lengths))
+        tsl=0
+        for i in range(ns):
+            s=Segment(self.points[i],self.points[i+1])
+            if t*length-tsl<=s.length:
+                st=(t*length-tsl)/s.length
+                return tuple(s(st).components)
+            tsl+=s.length
+        return tuple(s(1)) #Its a fix that isn't always true
+
+    def __str__(self):
+        """Return the string representation of a trajectory."""
+        return "Tjc("+",".join(map(str,self.points))+")"
 
     def show(self,surface,**kwargs):
         """Show the trajectory on the surface."""
@@ -28,8 +51,52 @@ class Trajectory:
     def showSegments(self,surface,color=None):
         """Show the segments on the surface."""
         if not color: color=self.segment_color
-        for segment in self.segments():
+        for segment in self.segments:
             segment.show(surface,color=color)
+
+    def getSegments(self):
+        """Return the segments of the trajectory of the curve."""
+        return [Segment(self.points[i],self.points[i+1]) for i in range(len(self.points)-1)]
+
+    def getLength(self):
+        """Return the length of the trajectory."""
+        return sum([segment.length for segment in self.segments])
+
+    def sample(self,n,include=True):
+        """Sample n points of the trajectory at equal distance.
+        It is also possible to include the last one if wanted."""
+        return [self(i/n) for i in range(n+int(include))]
+
+    def fastSample(self,n,include=True):
+        """Sample n points of the trajectory at equal distance but fast.
+        It is also possible to include the last one if wanted."""
+        length=self.length
+        ns=len(self.segments)
+        k=0
+        l=[]
+        tsl=0
+        for i in range(ns):
+            s=Segment(self.points[i],self.points[i+1])
+            if t*length-tsl<=s.length:
+                st=(t*length-tsl)/s.length
+                l.append(tuple(s(st).components))
+                k+=1
+                t=k/n
+            tsl+=s.length
+        if include:
+            l.append(self.points[-1])
+        return l
+
+    def sampleSegments(self,n):
+        """Sample n points for each segment of the trajectory."""
+        points=[]
+        segments=self.segments
+        for i in range(len(segments)):
+            points+=segments[i].sample(n,include=False)
+        return points
+
+    segments=property(getSegments)
+    length=property(getLength)
 
 class CurvedForm(Form):
     def __init__(self,*args,**kwargs):
@@ -78,8 +145,8 @@ class BezierCurve:
 
     def show(self,surface,p=50):
         """Show the bezier curve on the surface."""
-        points=[self(i/p) for i in range(p)]
-        segments=[Segment(points[i],points[i+1]) for i in range(p-1)]
+        points=[self(i/p) for i in range(p+1)]
+        segments=[Segment(points[i],points[i+1]) for i in range(p)]
         self.showPoints(surface,points)
         self.showSegments(surface,segments)
 
@@ -101,7 +168,7 @@ class BezierCurve:
             k=255*(i+1)/l
             color=(0,0,k)
             for segment in construction[i]:
-                print(segment)
+                #print(segment)
                 segment.show(surface,color=color,width=2)
 
     def showPoints(self,surface,points,color=None):
@@ -116,6 +183,13 @@ class BezierCurve:
         for segment in segments:
             segment.show(surface,color=color,width=2)
 
+    def getSegments(self):
+        """Return the segments of the trajectory of the curve."""
+        return [Segment(points[i],points[i+1]) for i in range(len(self.points)-1)]
+
+    segments=property(getSegments)
+
+
 
 
 class Arrow(BezierCurve):
@@ -125,7 +199,7 @@ class Arrow(BezierCurve):
 
     def show(self,surface,p=50):
         """Show the arrow on the screen."""
-        points=[self(i/p) for i in range(p)]
+        points=[self(i/p) for i in range(p)] #p=p+1 ?
         segments=[Segment(points[i],points[i+1]) for i in range(p-1)]
         vectors=[Vector(points[i],points[i+1]) for i in range(0,p-1,5)]
         self.showPoints(surface,points)
@@ -142,14 +216,20 @@ class Arrow(BezierCurve):
 
 
 if __name__=="__main__":
-    from mysurface import Surface
-    surface=Surface()
+    from mycontext import Surface
+    surface=Surface(name="Curves demonstration")
     l=10
-    points=[Point(2*x,random.randint(-5,5)) for x in range(l)][:3]
-    t=Trajectory(points,segment_color=mycolors.GREY)
+    points=[Point(2*x,random.randint(-5,5)) for x in range(l)]
+    t=Trajectory(points,segment_color=mycolors.GREEN)
     b=BezierCurve(points,segment_color=mycolors.RED)
-    #b=CurvedForm(points)
+    #st=t.sampleSegments(3)
+    #t1=Trajectory(st,segment_color=mycolors.BLUE)
+    #print(b.points[-1])
+    #print(b(1))
+    #print(b.segments[-1])
+    #c=CurvedForm(points)
     n=0
+    ncp=50 #number construction points
 
     while surface.open:
         surface.check()
@@ -158,13 +238,20 @@ if __name__=="__main__":
         surface.show()
 
         Point.turnPoints([1/1000 for i in range(l)],points)
-        n=(n+1)%50
-        b.showConstruction(surface,n/50)
+        n=(n+1)%(ncp+1)
+        b.showConstruction(surface,n/ncp)
 
         t.show(surface)
         b.show(surface)
 
-        b(n/50).show(surface,color=mycolors.YELLOW,radius=0.1,fill=True)
+        p1=b(n/ncp)
+        p2=Point(*t(n/ncp))
+
+        #l1=Line.createFromTwoPoints(p1,p2)
+
+        p1.show(surface,color=mycolors.YELLOW,radius=0.1,fill=True)
+        p2.show(surface,color=mycolors.YELLOW,radius=0.1,fill=True)
+        #l1.show(surface,color=mycolors.LIGHTGREY)
 
 
         surface.flip()

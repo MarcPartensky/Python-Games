@@ -53,7 +53,7 @@ class SimpleManager:
 
 
 
-class Manager:
+class Manager2:
     """Manage a program using the context by many having functions that can be
     overloaded to make simple and fast programs.
     This process allow the user to think directly about what the program does,
@@ -128,9 +128,89 @@ class Manager:
 
 
 
+
+
+class Manager:
+    def __init__(self,title="Unnamed"):
+        """Create a manager using a context, this methods it to be overloaded."""
+        self.context=Context(name=title)
+
+    def __call__(self):
+        """Call the main loop, this method is to be overloaded."""
+        self.main()
+
+    def main(self):
+        """Main loop of the simple manager."""
+        self.setup() #Name choices inspired from processing
+        while self.context.open:
+            self.loop()
+
+    def setup(self):
+        """Code executed before the loop."""
+        pass
+
+    def loop(self):
+        """Code executed during the loop."""
+        self.eventsLoop()
+        self.updateLoop()
+        self.showLoop()
+
+    def eventsLoop(self):
+        """Deal with the events in the loop."""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.reactQuit()
+            if event.type == KEYDOWN:
+                self.reactKeyDown(event.key)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.reactMouseButtonDown(event.button)
+
+
+    def reactQuit(self,event):
+        """React to a quit event."""
+        self.context.open=False
+
+    def reactKeyDown(self,key):
+        """React to a keydown event."""
+        if key == K_ESCAPE:
+            self.context.open=False
+
+    def reactMouseButtonDown(self,button):
+        """React to a mouse button down event."""
+        if button == 4: self.context.draw.plane.zoom([1.1,1.1])
+        if button == 5: self.context.draw.plane.zoom([0.9,0.9])
+
+
+
+    def updateLoop(self):
+        """Update the manager while in the loop."""
+        self.update()
+
+    def update(self):
+        """Update the components of the manager of the loop. This method is to be
+        overloaded."""
+        pass
+
+    def showLoop(self):
+        """Show the graphical components and deal with the context in the loop."""
+        self.context.control()
+        self.context.clear()
+        self.context.show()
+        self.show()
+        self.context.showConsole()
+        self.context.flip()
+
+    def show(self):
+        """Show the graphical components on the context. This method is to be
+        overloaded."""
+        pass
+
+
+
+
+
+
+
 if __name__=="__main__":
-    context=Context()
-    cm=Manager(context)
-    print(cm.__dict__)
-    print(ContextManager.__dict__)
+    cm=Manager()
     cm()

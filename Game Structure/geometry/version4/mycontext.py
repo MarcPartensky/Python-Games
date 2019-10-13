@@ -3,19 +3,94 @@ from myrect import Rect
 from mywindow import Window
 
 import mycolors
+import time
+
+
+class Line:
+    def __init__(self,*content,time=None,separator=" "):
+        """Object of line created using the text and optional time."""
+        self.content=content
+        self.time=time
+        self.separator=separator
+    def __str__(self):
+        return self.separator.join(map(str,self.content))
+    def __iter__(self):
+        self.iterator=0
+        return self
+    def __next__(self):
+        if self.iterator<2:
+            self.iterator+=1
+            if self.iterator+1==0:
+                return self.content
+            elif self.iterator+1==1:
+                return self.time
+    def getText(self):
+        return self.content
+    text=property(getText)
+
+class Console:
+    def __init__(self,draw):
+        """Create a console."""
+        self._draw=draw #Draw is protected and can only be read
+        self.lines=[] #List of Lines
+        self.interline=15
+        self.left_padding=10
+        self.down_padding=20
+        self.conversion=False
+        self.size=20
+        self.position=(0,0)
+        self.font=None
+        self.max_lines_shown=10
+        self.colors=[mycolors.WHITE,mycolors.BLACK] #Gamme of colors that are shown
+
+    def clear(self):
+        """Clear the console by removing all the lines."""
+        self.lines=[]
+    def __getitem__(self,i):
+        """Return the i-th line."""
+        return self.lines[i]
+    def __setitem__(self,v,i):
+        """Set the i-th line."""
+        self.lines[i]=v
+    def __iadd__(self,l):
+        """Add a line to the console."""
+        self.lines.append(l)
+    append=__iadd__
+    def __call__(self,*args,show=False):
+        """Display a message on the context as a console would do."""
+        l=Line(*args)
+        self.lines.append(l)
+        if show: self.show()
+    def show(self):
+        """Show the console without adding a text."""
+        sx,sy=self._draw.window.size
+        n=len(self.lines)
+        nmax=self.max_lines_shown
+        for i in range(min(n,nmax)):
+            position=(self.left_padding,sy-self.interline*i-self.down_padding)
+            self._draw.print(self.lines[-i-1],position,self.size,mycolors.nuance(*self.colors,i/nmax),self.font,self.conversion)
+    def getDraw(self):
+        """The draw object can only be read."""
+        return self._draw
+
+    draw=property(getDraw)
+
 
 
 class Context(Rect):
+    """The context is an object that allows the user to display graphical objects
+    on the screen in a virtual mathematical plane."""
 
     def createFromSizeAndCorners(size,corners,**kwargs):
         c=Context(size=size,**kwargs)
         c.corners=corners
         return c
 
-    def __init__(self,draw=None,**kwargs):
+    def __init__(self,draw=None,console=None,**kwargs):
         """Create a context."""
-        if not draw: self.draw=Draw(**kwargs)
+        if draw is None: self.draw=Draw(**kwargs)
         else: self.draw=draw
+        if console is None: self.console=Console(self.draw)
         self.screen=self.draw.window.screen
         #self.open=self.draw.window.open
         self.clear=self.draw.clear
@@ -28,8 +103,8 @@ class Context(Rect):
         self.control=self.draw.control
         self.events=self.draw.window.events
         self.checking=self.draw.window.checking
-
-        self.text=[]
+        self.loadImage=self.draw.window.loadImage
+        self.print=self.draw.print
 
     def getKeys(self):
         """Return the keys of the window."""
@@ -116,15 +191,6 @@ class Context(Rect):
         self.draw.window.clear()
         self.draw.plane.show(self.draw.window)
 
-    def print(self,text,position,size=1,color=mycolors.WHITE,font=None,conversion=True):
-        """Print a text the window's screen using text and position and optional
-        color, pygame font and conversion."""
-        if conversion:
-            position=self.draw.plane.getToScreen(position,self.draw.window)
-            ux,uy=self.draw.plane.units
-            size=int(size*ux/50)
-        self.draw.window.print(text,position,size,color,font)
-
     def controlZoom(self):
         """Control the zoom of the surface's plane."""
         self.draw.plane.controlZoom(self.draw.window)
@@ -140,26 +206,6 @@ class Context(Rect):
     def blit(self,image,position):
         """Blit a given image to a given position."""
         sx,sy=self.image.size()
-
-    def console(self,*text,text_size=20,color1=mycolors.WHITE,color2=mycolors.BLACK,interline=15,left_padding=10,down_padding=20,font=None,conversion=False,show=True,nmax=10):
-        """Display a message on the context as a console would do."""
-        text=" ".join(text)
-        self.text.append(text)
-        if show:
-            self.showConsole(text_size,color1,color2,interline,left_padding,down_padding,font,conversion,nmax)
-
-
-    def showConsole(self,text_size=20,color1=mycolors.WHITE,color2=mycolors.BLACK,interline=15,left_padding=10,down_padding=20,font=None,conversion=False,nmax=10):
-        """Show the console without adding a text."""
-        sx,sy=self.draw.window.size
-        n=len(self.text)
-        for i in range(min(n,nmax)):
-            size=(left_padding,sy-interline*i-down_padding)
-            self.print(self.text[-i-1],size,text_size,self.nuance(color1,color2,i/nmax),font,conversion)
-
-    def nuance(self,color1,color2,degree,p=1/2):
-        """Return a color between the two depending on the degree."""
-        return [c1*(1-degree**p)+c2*(degree**p) for (c1,c2) in zip(color1,color2)]
 
 
     def transform(self,image,size):
@@ -204,6 +250,23 @@ class Context(Rect):
         """Set the height of the window."""
         self.size[1]=height
 
+    def __bool__(self):
+        """Determine if the context is opened or not."""
+        return self.open
+
+    def getText(self):
+        """Text is an alias for console and can be read."""
+        return self.console
+
+    def setText(self,value):
+        """Text is an alias for console and can be written."""
+        self.console=value
+
+    def showConsole(self,*args):
+        """Show the console, this function is a fix for deprecated programs."""
+        self.console.show(*args)
+
+
     corners=property(getCorners,setCorners,"Allow the user to manipulate the corners of the surface easily.")
     rect=property(getRect,setRect,"Allow the user to manipulate the rect of the surface easily.")
     coordonnates=property(getCoordonnates,setCoordonnates,"Allow the user to manipulate the coordonnates of the surface easily.")
@@ -214,14 +277,24 @@ class Context(Rect):
     open=property(getOpen,setOpen)
     width=property(getWidth,setWidth)
     height=property(getHeight,setHeight)
+    text=property(getText,setText)
 
 
-
-Surface=Context
-
+Surface=Context #Ugly fix for deprectated programs
 
 if __name__=="__main__":
-    context=Context()
+    context=Context(name="Context test")
     context.corners=[0,0,1,1]
     print(context.corners)
-    context()
+    print(bool(context))
+    while context:
+        context.check()
+        context.control()
+        context.clear()
+        context.show()
+
+        context.console.append('test1')
+        context.console.show()
+        context.console('test2')
+
+        context.flip()

@@ -452,10 +452,10 @@ if __name__=="__main__":
     context=Context(name="Application of the Fourier Transform.",fullscreen=False)
     fourier=Fourier(context)
     #fourier.coefficients=[[0,1,2,0.5],[0,1,5,2],[0,-2,1,6],[0,-4,3,1]]
-    fourier.coefficients=np.array([(3+5j),(2+1j),(0-0.5j),(1+3.5j),dtype=complex])
+    #fourier.coefficients=np.array([(3+5j),(2+1j),(0-0.5j),(1+3.5j)])
     #cx=[0+50j,0+18j,12+0j,-14+0j]
     #cy=[-60-30j,0+8j,0-10j]
 
     #fourier.coefficients=np.array(list(zip(cx,cy)))
-    fourier.mode=1
+    #fourier.mode=1
     fourier()

@@ -89,11 +89,12 @@ class Window:
         """Update the screen."""
         pygame.display.update()
 
-    def save(self,name=None):
-        """Save picture of the surface."""
-        if name==None:
-            name=self.name+"-"+str(self.picture_saved)+".png"
-        pygame.image.save(self.screen,name)
+    def screenshot(self,image=None,name=None):
+        """Save an image using the image and the name.
+        - If the image is not given, a screenshot will be made.
+        - If the name is not given, the named will be unnamed."""
+        if name==None: name="unnamed"
+        if image==None: pygame.image.save(self.screen,name)
         self.picture_saved+=1
 
     def rename(self,name):

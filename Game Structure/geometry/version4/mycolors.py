@@ -1,6 +1,5 @@
 from __future__ import division
 import random as rd
-from math import exp,log
 import math
 
 BLUE       = (  0,  0,255)
@@ -26,11 +25,10 @@ LIGHTGREY  = (200,200,200)
 BEIGE      = (199,175,138)
 
 sigmoid = s = lambda x:1/(1+math.exp(-x))
-reverse_sigmoid = lambda x:log(x/(1-x))
+reverse_sigmoid = lambda x:math.log(x/(1-x))
 #r=reverse_sigmoid()
 
 bijection = lambda x,e,s:(x-e[0])/(e[1]-e[0])*(s[1]-s[0])+s[0]
-
 
 random    = lambda :            tuple([rd.randint(0,255)              for i in range(3)])
 reverse   = lambda color:       tuple([255-c                          for c in color])
@@ -38,7 +36,13 @@ darken    = lambda color,n=0:   tuple([int(c*sigmoid(n/10))           for c in c
 lighten   = lambda color,n=0:   tuple([int(255-(255-c)*sigmoid(n/10)) for c in color])
 mix       = lambda cl1,cl2:     tuple([(c1+c2)//2                     for (c1,c2) in zip(cl1,cl2)])
 substract = lambda cl1,cl2:     tuple([max(min(2*c1-c2,255),0)        for (c1,c2) in zip(cl1,cl2)])
-increase  = lambda color,n=2:   tuple([int(255*exp(n*log(c/255)))     for c in color])
+increase  = lambda color,n=2:   tuple([int(255*math.exp(n*math.log(c/255)))     for c in color])
+
+
+def nuance(color1,color2,degree,p=1/2):
+    """Return a color between the two depending on the degree."""
+    return [c1*(1-degree**p)+c2*(degree**p) for (c1,c2) in zip(color1,color2)]
+
 
 
 def setFromWavelength(wavelength):
@@ -61,14 +65,15 @@ def setFromWavelength(wavelength):
     r,g,b=adjust(r,factor),adjust(g,factor),adjust(b,factor)
     return (r,g,b)
 
-#if __name__=="__main__":
-    #print(darken(RED,10))
-    #print(mix(YELLOW,RED))
-    #print(reverse(LIGHTBROWN))
-    #print(substract(LIGHTBROWN,ORANGE))
-    #print(increase(LIGHTBROWN))
+if __name__=="__main__":
+    print(darken(RED,10))
+    print(mix(YELLOW,RED))
+    print(reverse(LIGHTBROWN))
+    print(substract(LIGHTBROWN,ORANGE))
+    print(increase(LIGHTBROWN))
+    print(nuance(YELLOW,RED,10))
 
-    #for i in range(380,780,10):
-    #    print(setFromWavelength(i))
+    for i in range(380,780,10):
+        print(setFromWavelength(i))
 
-    #print("mycolors imported")
+    print("mycolors imported")
