@@ -179,9 +179,9 @@ class Point:
         if mode==1 or mode=="cross":
             self.showCross(window,color,size,width,conversion)
 
-    def showText(self,context,text,text_size=20,color=mycolors.WHITE,conversion=None):
+    def showText(self,context,text,size=1,color=mycolors.WHITE,conversion=True):
         """Show the text next to the point on the window."""
-        context.print(text,self.components,text_size,color=color,conversion=conversion)
+        context.print(text,self.components,size,color=color,conversion=conversion)
 
     def __add__(self,other):
         """Add two points."""
@@ -651,7 +651,6 @@ class Segment(Direction):
         """Set the center of the segment."""
         p=self.getCenter()
         v=Vector.createFromTwoPoints(p,np)
-        print("v",v)
         for i in range(len(self.points)):
             self.points[i]=v(self.points[i])
 
@@ -1343,6 +1342,12 @@ class Form:
         return result
 
 
+    def createFromTuples(tps,conversion=True,radius=0.01,**kwargs):
+        """Create a form from the tuples 'tps' and some optional arguments."""
+        pts = [Point(*t,conversion=conversion,radius=0.01) for t in tps]
+        return Form(pts,**kwargs)
+
+
     def __init__(self,points,fill=False,point_mode=0,point_size=[0.01,0.01],point_radius=0.01,point_width=1,point_fill=False,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE,cross_point_color=mycolors.WHITE,cross_point_radius=0.01,cross_point_mode=0,cross_point_width=1,cross_point_size=[0.1,0.1],point_show=True,side_show=True,area_show=False):
         """Create the form object using points."""
         self.points=points
@@ -1682,7 +1687,9 @@ class Form:
 
     def setPosition(self,position):
         """Move the object to an absolute position."""
-        self.center.position=position
+        v=Vector(*position)
+        for i in range(len(self.points)):
+            self.points[i]=v(self.points[i])
 
     def getPosition(self,position):
         """Return the position of the geometric center of the form."""
@@ -1806,6 +1813,7 @@ class Form:
     center=point=   property(getCenter,setCenter,"Represents the center.")
     color=          property(getColor,setColor,delColor,"Represents the color.")
     cross_points=   property(getCrossPoints, "Represents the point of intersections of the segments.")
+    position=       property(getPosition,setPosition, "Change the position of the form.")
     #cross_points=   property(getCrossPoints,setCrossPoints,delCrossPoints, "Represents the point of intersections of the segments.")
     #point_color=    property(getPointColor,setPointColor,delPointColor,"Represents the color of the points.")
     #point_mode=     property(getPointMode,setPointMode,delPointMode,"Represents the mode of the points.")
@@ -1846,6 +1854,10 @@ class Circle:
         self.text_color=text_color
         self.text_size=text_size
 
+    def __str__(self):
+        """Str representation of a circle."""
+        return "cir(pos:"+str(self.position)+",rad:"+str(self.radius)+")"
+
     def getX(self):
         """Return the x component of the circle."""
         return self.position[0]
@@ -1864,7 +1876,7 @@ class Circle:
 
     def getPoint(self):
         """Return the point that correspond to the center of the circle."""
-        return Point(self.position)
+        return Point(*self.position)
 
     def setPoint(self,point):
         """Set the center point of the circle by changing the position of the circle."""
@@ -1874,11 +1886,6 @@ class Circle:
     y=property(getY,setY,"Allow the user to manipulate the y component easily.")
     center=point=property(getPoint,setPoint,"Allow the user to manipulate the point easily.")
 
-
-    def center(self):
-        """Return the point that correspond to the center of the circle."""
-        return Point(self.position)
-
     def show(self,window,color=None,border_color=None,area_color=None,fill=None):
         """Show the circle on screen using the window."""
         if color:
@@ -1887,8 +1894,7 @@ class Circle:
         if not border_color: border_color=self.border_color
         if not area_color: area_color=self.area_color
         if not fill: fill=self.fill
-        if fill: window.draw.circle(window.screen,area_color,[self.x,self.y],self.radius,True)
-        window.draw.circle(window.screen,border_color,[self.x,self.y],self.radius)
+        window.draw.circle(window.screen,area_color,self.position,self.radius,fill)
 
     def showCenter(self,window,color=None,mode=None):
         """Show the center of the screen."""
@@ -1933,6 +1939,12 @@ class Circle:
             p2=v2(m)
             return [p1,p2]
 
+    def getArea(self):
+        """Return the area of a circle using basic geometry."""
+        return math.pi*self.radius**2
+
+    area=property(getArea)
+
 
 
 
@@ -1949,7 +1961,7 @@ if __name__=="__main__":
     l1=HalfLine(origin,math.pi/4)
     l2=Line(p1,math.pi/2,correct=False)
     s1=Segment(p1,p2)
-    print(Point.null)
+    print(Point.null())
 
 
 

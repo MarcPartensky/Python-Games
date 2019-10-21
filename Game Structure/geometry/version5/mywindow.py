@@ -17,6 +17,7 @@ class Window:
     mouse=pygame.mouse
     #blit=pygame.blit
     display=pygame.display
+    transform=pygame.transform
 
 
     #Creation of the window

@@ -25,9 +25,10 @@ class Motion:
         return Motion.sum(motions)/len(motions)
 
     #Random
-    def random(corners=[-1,-1,1,1],n=3,d=2):
+    def random(corners=[-1,-1,1,1],n=3,d=2,colors=None):
         """Create a random motion using optional minimum and maximum."""
-        return Motion([Vector.random(corners) for i in range(n)])
+        colors=[mycolors.GREEN,mycolors.BLUE,mycolors.RED]+[mycolors.random() for i in range(n-3)]
+        return Motion([Vector.random(corners,color=colors[i]) for i in range(n)])
 
     #Object functions
     #Initializing
@@ -232,7 +233,7 @@ class Moment(Motion):
 
 if __name__=="__main__":
     from mycontext import Context
-    context=Context(name="Motion")
+    context=Context(name="Motion Demonstration")
     motion1=Motion.random()
     motion2=Motion.random()
     motion=motion1+motion2

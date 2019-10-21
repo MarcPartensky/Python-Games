@@ -2,9 +2,15 @@ import copy
 from myabstract import Vector
 
 class Material:
-    """Class containing physics function that can be used for all sorts of material classes."""
-    def __init__(self):
-        pass
+    """The material class is a class that contains a motion attributes and lots of
+    properties that help its users to change its motion by using shorcuts.
+    The user can consider a material object solely instead of modifying directly its
+    motion which makes it an easy tool to use for 2d visualisations and games."""
+
+    def __init__(self,motion):
+        """Create a material object from its motion. This method doesn't necessarily
+        need to be called since a motion property can replace it."""
+        self.motion=motion
 
     #Class functions
     #Mathematical operations

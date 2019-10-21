@@ -11,6 +11,11 @@ import math
 import copy
 
 class MaterialForm(Material,Form):
+    """A material form is a form that is composed of material points and act
+    according to them only by linking them. However, it's not really useful in
+    practice because manipulating the material points directly is not an easy
+    task."""
+
     def null():
         """Return the null material form."""
         return MaterialForm([],[])
@@ -274,7 +279,7 @@ class MaterialForm(Material,Form):
 FallingForm=lambda:MaterialForm([mymaterialpoint.FallingPoint() for i in range(5)])
 
 if __name__=="__main__":
-    from mysurface import Surface
+    from mycontext import Surface
     surface=Surface()
     c1=[-10,-10,10,10]
     f1=Form.random(c1,n=5)

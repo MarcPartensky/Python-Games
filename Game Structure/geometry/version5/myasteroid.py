@@ -2,59 +2,54 @@ from myabstract import Form
 from mymaterialform import MaterialForm
 from myplane import Plane
 
-class Game:
-    def __init__(self,window):
+
+class Game(Manager):
+    def __init__(self, name, **kwargs):
         """Create a game."""
-        self.name="Asteroid"
-        self.window=window
-        self.window.name=self.name
-        self.window.build()
-        self.levels=[]
-
-    def __call__(self):
-        """Main loop of the game."""
-        while surface.open:
-            surface.check()
-
-
-    def show(self):
-        """Show the entities on screen."""
+        super().__init__(**kwargs)
+        self.context.name = name
+        self.levels = []
+        self.level = 0
 
 
 class Level:
-    def __init__(self,entities):
+    def __init__(self, entities):
         """Create a level."""
-        self.entities=entities
+        self.entities = entities
 
     def update(self):
         """Update all the entities."""
         for entity in self.entities:
             entity.update()
 
-    def show(self,map):
+    def show(self, map):
         """Show all the entities."""
         for entity in self.entities:
             entity.show(map)
 
-class Entity:
+
+class Entity(Body):
     def __init__(self):
         """Create a new entity."""
-
-
-
-class Asteroid(MaterialForm,Entity):
-    def __init__(self,*args,**kwargs):
-        """Create an asteroid."""
-        super().__init__(*args,**kwargs)
-
-    def update(self):
-        """Update the asteroid."""
         pass
 
+
+class Asteroid(Physics):
+    def __init__(self, absolute):
+        """Create an asteroid."""
+        super().__init__(*args, **kwargs)
+
+    def show(self, context):
+        """Show the asteroid on the context."""
+        self.form.show(context)
+
+    form = property(getForm)
+
+
 class Spaceship(MaterialForm):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """Create a space ship."""
-        super().__init__(*args,**kwargs)
+        super().__init__(*args, **kwargs)
 
     def update(self):
         """Update the spaceship."""
@@ -64,18 +59,16 @@ class Spaceship(MaterialForm):
         """Control the spaceship."""
         pass
 
-    def shoot(self,vector):
+    def shoot(self, vector):
         """Return a missile that follow the vector."""
-        motion=self.getMotion()
+        motion = self.getMotion()
         return Missile(motion)
 
 
-
-
 class Missile(MaterialForm):
-    def __init__(self,motion):
+    def __init__(self, motion):
         """Create a missile."""
-        super().__init__(*args,**kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class Player:
@@ -83,7 +76,7 @@ class Player:
         """Create a player."""
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     from mycontext import Context
-    context=Context()
-    game=Game(context)
+    context = Context()
+    game = Game(context)

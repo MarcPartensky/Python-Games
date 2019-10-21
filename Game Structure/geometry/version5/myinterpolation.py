@@ -27,23 +27,23 @@ def directInterpolation(points,t):
     l=len(pts)
     mst=100
 
-    #Creation of the points
-    #pts=[(random.uniform(xmin,xmax),random.uniform(ymin,ymax)) for i in range(n)]
+    # Creation of the points
+    # pts=[(random.uniform(xmin,xmax),random.uniform(ymin,ymax)) for i in range(n)]
 
-    """ Tests:
-    Calculations for n points in dimension 2:
-
-    x=[pt[0] for pt in pts]
-    y=[pt[1] for pt in pts]
-    plx=Polynomial.createFromInterpolation(range(len(x)),x)
-    ply=Polynomial.createFromInterpolation(range(len(y)),y)
-    print(plx)
-    print(ply)
-    l=len(pts)
-    mst=100
-    npts=[(plx(l*st/mst),ply(l*st/mst)) for st in range(mst)]
-    grapher=Grapher(context,functions=[plx,ply])
-    """
+    # # """ Tests:
+    # # Calculations for n points in dimension 2:
+    #
+    # x=[pt[0] for pt in pts]
+    # y=[pt[1] for pt in pts]
+    # plx=Polynomial.createFromInterpolation(range(len(x)),x)
+    # ply=Polynomial.createFromInterpolation(range(len(y)),y)
+    # print(plx)
+    # print(ply)
+    # l=len(pts)
+    # mst=100
+    # npts=[(plx(l*st/mst),ply(l*st/mst)) for st in range(mst)]
+    # grapher=Grapher(context,functions=[plx,ply])
+    # """
 
 
 class Interpolation:

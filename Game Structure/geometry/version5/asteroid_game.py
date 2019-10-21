@@ -1,7 +1,6 @@
 from myabstract import Form,Vector,Point,Segment
 from mybody import Body
 from mymotion import Motion
-from mysurface import Context
 from pygame.locals import *
 
 import socket
@@ -207,6 +206,7 @@ class Spaceship(Body):
 
 
 if __name__=="__main__":
+    from mycontext import Context
     context=Context()
     game=SoloAsteroid(context,dt=0.5)
     game.main()
