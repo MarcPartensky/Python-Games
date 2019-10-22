@@ -138,7 +138,7 @@ class PhysicalBody(Physics, Body):
         self.velocity.angle = v.angle
 
 
-class SimpleBody(Physics):
+class NewBody(Physics):
     """
     A simple body is composed of its motion and its anatomy.
     An atomy must have:
@@ -180,6 +180,86 @@ class SimpleBody(Physics):
         c=self.anatomy.center
         v=-Vector(*c)
         self.anatomy.position=v
+
+    def show(self, context):
+        """Show the simple body on the context."""
+        self.showAbsolute(context)
+        self.showMotion(context)
+
+    def showAnatomy(self, context):
+        """Show the anatomy on the context."""
+        self.anatomy.show(context)
+
+    def showAbsolute(self, context):
+        """Show the body on the context."""
+        self.getAbsolute().show(context)
+
+    def showMotion(self, context):
+        """Show the motion of the body on the context."""
+        self.velocity.show(context,self.position)
+        self.acceleration.show(context,self.position)
+
+    def update(self, dt=1):
+        """Update the simple body."""
+        self.motion.update(dt)
+
+    def follow(self, position):
+        """Follow the cursor."""
+        a=Vector(*position)
+        b=self.position
+        v=Vector(a-b)
+        self.velocity.angle=v.angle
+        #self.velocity.norm=min(v.norm,1)
+
+    def __contains__(self, other):
+        """Determine if the object other is in the absolute anatomy."""
+        return other in self.getAbsolute()
+
+    def getAbsolute(self):
+        """Return the absolute anatomy of the body which means its form after
+        changing the position depending on its motion."""
+        anatomy = deepcopy(self.anatomy)
+        anatomy.position=self.motion.position  # change its position
+        anatomy.rotate(self.velocity.angle)  # change its rotation
+        return anatomy
+
+    absolute = property(getAbsolute)
+
+
+class MaterialBody(Material):
+    """Unlike the other bodies, the material body only has one motion."""
+    def __init__(self,anatomy,motion):
+        """Create a material body from its anatomy and its motion."""
+        self.anatomy = anatomy
+        self.motion = motion
+
+    @classmethod
+    def createFromAbsolute(cls, absolute, motion):
+        """Create a simple body from its absolute anatomy and its motion."""
+        return cls(anatomy, motion)
+
+    @classmethod
+    def random(cls,nv=2,d=2):
+        """Return a random simple body."""
+        motion = Motion.random(n=nv,d=d)
+        anatomy = Form.random(n=5)
+        return cls(anatomy, motion)
+
+    def __init__(self,  anatomy, motion):
+        """Create a simple body."""
+        self.motion = motion
+        self.anatomy = anatomy
+        self.center()
+
+    def __str__(self):
+        """Return the string representation of the body."""
+        return "b(" + str(self.anatomy) + "," + str(",".join(map(str,self.motions))) + ")"
+
+    def center(self):
+        """Center the anatomy."""
+        c=self.anatomy.center
+        v=-Vector(*c)
+        self.anatomy.position.set(v)
 
     def show(self, context):
         """Show the simple body on the context."""

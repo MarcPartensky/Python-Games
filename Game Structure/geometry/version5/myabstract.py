@@ -378,6 +378,10 @@ class Vector:
         self.width=width
         self.arrow=arrow
 
+    def set(self,v):
+        """Set a vector to the values of another without changing its color, with or arrow."""
+        self.components=v.components
+
     def setNull(self):
         """Set the components of the vector to zero."""
         self.components=[0 for i in range(len(self.components))]
@@ -538,8 +542,18 @@ class Vector:
         """Sub two vector together."""
         return Vector([c1-c2 for (c1,c2) in zip(self.components,other.components)])
 
-    __iadd__=__radd__=__add__
-    __isub__=__rsub__=__sub__
+    def __iadd__(self,other):
+        """Add a vector to another."""
+        self.components=[c1+c2 for (c1,c2) in zip(self.components,other.components)]
+        return self
+
+    def __isub__(self,other):
+        """Substract a vector to another."""
+        self.components=[c1-c2 for (c1,c2) in zip(self.components,other.components)]
+        return self
+
+    __radd__=__add__
+    __rsub__=__sub__
 
     def rotate(self,angle):
         """Rotate a vector using the angle of rotation."""

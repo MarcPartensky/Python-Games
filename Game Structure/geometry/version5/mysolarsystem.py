@@ -5,13 +5,13 @@ from myforce import Force
 from mymanager import Manager
 
 from pygame.locals import K_f
-#from playsound import playsound
+# from playsound import playsound # Doesn't work on macos
 
 import mycolors
 import random
 import math
 
-G = 6.67408e-11
+G = 6.67408e-11  # gravity constant of international system of units
 ud = 1  # unit distance for computing
 um = 1  # unit mass for computing
 udd = 10e-10  # unit distance for visualizing
@@ -282,23 +282,26 @@ class Neptune(Planet):
 class SystemManager(Manager):
     """Manage a space system. Note that all the values are in si units."""
 
-    def __init__(self):
-        """Create a system manager."""
-        super().__init__()
-        self.system = self.getSolarSystem()
-        #self.system = self.getRandomSystem()
-        self.dt = 3600  # 1 hour in seconds
-        self.generateStars()
-
-    def getSolarSystem(self):
-        """Create a representation of the true solar system with the true values."""
+    @classmethod
+    def createSolarSystem(cls, **kwargs):
+        """Create the solar system."""
         astres = [Sun(), Mercury(), Venus(), Earth(), Mars(),
                   Jupiter(), Saturn(), Uranus(), Neptune()]
-        return System(astres)
+        system = System(astres)
+        return cls(system, **kwargs)
 
-    def getRandomSystem(self, n=50):
+    @classmethod
+    def createRandomSystem(cls, n=50, **kwargs):
         """Create a random system."""
-        return System.random(n=n)
+        system = System.random(n=n)
+        return cls(system, **kwargs)
+
+    def __init__(self, system, **kwargs):
+        """Create a system manager."""
+        super().__init__(**kwargs)
+        self.system = system
+        self.dt = 3600  # 1 hour in seconds
+        self.generateStars()
 
     def setup(self):
         """Play the sound."""
@@ -342,5 +345,5 @@ class SystemManager(Manager):
 
 
 if __name__ == "__main__":
-    sm = SystemManager()
+    sm = SystemManager.createRandomSystem()
     sm()

@@ -50,9 +50,10 @@ class Motion:
             vector.show(context)
 
     #Updating the motion
-    def update(self,t=1):
+    def update(self,dt=1):
         """Update the motion according to physics."""
-        self.vectors[:-1]=[v+d*t for (v,d) in zip(self.vectors[:-1],self.vectors[1:])]
+        for i in range(len(self.vectors)-1):
+            self.vectors[i]+=self.vectors[i+1]*dt
 
     #Representation
     def __str__(self):
