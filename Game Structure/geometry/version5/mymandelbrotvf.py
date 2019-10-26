@@ -15,13 +15,12 @@ class Mandelbrot(Manager):
             z = z**2 + c
         return self.maxiter
 
-    def __init__(self, context, precisions, maxiter=80):
+    def __init__(self,name, precisions, maxiter=80):
         """Create a set of mandelbrot using the size, the corners and the maxiter (maxiteration)."""
-        self.context = context
+        super().__init__(name)
         self.maxiter = maxiter
         self.precisions = precisions
         self.n = 0
-        self.count = self.context.count
 
     def loop(self):
         """Code executed during the loop."""
@@ -139,8 +138,6 @@ if __name__ == "__main__":
     maxiter = 80
     corners = [-2, -1, 1, 1]
     name = "Mandelbrot"
-
-    context = Context(name=name, fullscreen=True)
-    context.corners = corners
-    m = Mandelbrot(context, precisions, maxiter)
+    m = Mandelbrot(name, precisions, maxiter)
+    m.context.corners = corners
     m()

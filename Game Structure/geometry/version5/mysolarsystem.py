@@ -345,5 +345,5 @@ class SystemManager(Manager):
 
 
 if __name__ == "__main__":
-    sm = SystemManager.createRandomSystem()
+    sm = SystemManager.createSolarSystem()
     sm()

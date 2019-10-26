@@ -47,6 +47,7 @@ class BoidGroup:
         """Create a boid group using boids."""
         self.boids = boids
         self.neighbours_number = 3
+        self.neighbours_radius = 20
 
     def show(self, context):
         """Show the object."""

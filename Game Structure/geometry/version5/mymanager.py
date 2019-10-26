@@ -2,6 +2,7 @@ from mycontext import Context
 from pygame.locals import *
 import pygame
 
+
 class SimpleManager:
     """Manage a program using the context by many having functions that can be
     overloaded to make simple and fast programs.
@@ -50,7 +51,7 @@ class SimpleManager:
         self.context.flip()
 
 
-class oldManager: #This manager is deprecated
+class oldManager:  # This manager is deprecated
     """Manage a program using the context by many having functions that can be
     overloaded to make simple and fast programs.
     This process allow the user to think directly about what the program does,

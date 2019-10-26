@@ -305,10 +305,10 @@ class Window:
         else:
             self.screen=pygame.display.set_mode(size,RESIZABLE)
 
-    def switch(self):
+    def switch(self,size=None):
         """Switch the mode into fullscreen or normal."""
         self.fullscreen=not(self.fullscreen)
-        self.setScreenMode()
+        self.setScreenMode(size)
 
 
     #Usefull functions
@@ -398,6 +398,10 @@ class Window:
     def getCenter(self):
         """Return the center of the screen."""
         return tuple([s//2 for s in self.size])
+
+    def __bool__(self):
+        """Determine if the window is still active."""
+        return self.open
 
     size=    property(getSize,    doc="Size can only be read not written.")
     corners= property(getCorners, doc="Corners can only be read not written.")
