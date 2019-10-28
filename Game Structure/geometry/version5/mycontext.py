@@ -226,9 +226,12 @@ class Line:
 
     def eval(self):
         """Execute the given line."""
-        for e in self.content:
-            eval(e)
-
+        if self.content[0]=="/":
+            for command in self.content[1:]:
+                eval(command)
+        if self.content[0]=="print":
+            for value in self.content[1:]:
+                print(value)
 
     text = property(getText)
 

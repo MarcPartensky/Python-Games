@@ -9,8 +9,6 @@ d={
     K_c: "c"
 }
 
-
-
 print(K_a)
 print(K_z)
 
@@ -44,21 +42,32 @@ class Writer(Manager):
     def reactTyping(self,key):
         if 97<=key<=122:
             self.add(alphabet[key-97])
+        if key==K_SLASH:
+            self.add("/")
+        if key==K_LEFTPAREN:
+            self.add("(")
+        if key==K_RIGHTPAREN:
+            self.add(")")
+        if key==K_PERIOD:
+            self.add(".")
         if key==K_SPACE:
+            self.add(" ")
+        if key==K_COMMA:
             self.context.console.lines[-1].content.append("")
         if key==8:
             self.delete()
         if key==K_RETURN:
+            self.context.console.lines[-1].eval()
             self.context.console("")
         if key==K_LALT:
             self.context.console.lines[-1].eval()
 
     def add(self,c):
-        self.context.console.lines[-1].content[0]+=c
+        self.context.console.lines[-1].content[-1]+=c
         self.context.console.lines[-1].time=time.time()
 
     def delete(self,n=1):
-        self.context.console.lines[-1].content[0]=self.context.console.lines[-1].content[0][:-n]
+        self.context.console.lines[-1].content[-1]=self.context.console.lines[-1].content[-1][:-n]
         self.context.console.lines[-1].time=time.time()
 
 
