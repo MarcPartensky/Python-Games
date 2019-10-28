@@ -9,7 +9,7 @@ There are 2 main types of interpolations:
 """
 
 #Polynomial Interpolation
-from marclib.polynomial import Polynomial
+from polynomial import Polynomial
 
 #Pseudo Bezier Interpolation
 from mycurves import BezierCurve

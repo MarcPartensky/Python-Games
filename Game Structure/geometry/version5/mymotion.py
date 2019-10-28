@@ -6,36 +6,41 @@ import copy
 class Motion:
     #Class functions
     #Operations
-    def null(n=3,d=2):
+    @classmethod
+    def null(cls,n=3,d=2):
         """Return the neutral motion."""
         #The dimension d still needs to be implemented for the vectors.
-        return Motion([Vector.null(d=d) for i in range(n)])
+        return cls([Vector.null(d=d) for i in range(n)])
 
     neutral=zero=null
 
-    def sum(motions):
+    @classmethod
+    def sum(cls,motions):
         """Return the sum of the motions together."""
-        result=Motion.null()
+        result=cls.null()
         for motion in motions:
             result+=motion
         return result
 
+    @classmethod
     def average(motions):
         """Return the average of the motions."""
-        return Motion.sum(motions)/len(motions)
+        return cls.sum(motions)/len(motions)
 
     #Random
-    def random(corners=[-1,-1,1,1],n=3,d=2,colors=None):
+    @classmethod
+    def random(cls,corners=[-1,-1,1,1],n=3,d=2,colors=None):
         """Create a random motion using optional minimum and maximum."""
         colors=[mycolors.GREEN,mycolors.BLUE,mycolors.RED]+[mycolors.random() for i in range(n-3)]
-        return Motion([Vector.random(corners,color=colors[i]) for i in range(n)])
+        return cls([Vector.random(corners,color=colors[i]) for i in range(n)])
 
     #Object functions
     #Initializing
+
     def __init__(self,*vectors,n=3,d=2):
         """Create a motion using vectors."""
-        if vectors!=():
-            if type(vectors[0])==list:
+        if vectors:
+            if isinstance(vectors[0],list):
                 vectors=vectors[0]
         self.vectors=list(vectors)
         self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
@@ -190,47 +195,38 @@ class Motion:
     #Other derivatives in order...
     #jerk=property(getJerk,setJerk,delJerk,"Representation of the jerk.")
     #snap=jounce=property(getSnap,setSnap,delSnap,"Representation of the snap.")
+    #crackle=property(getCrackle,setCrackle,delCrackle,"Representation of the crackle.")
     #pop=property(getPop,setPop,delPop,"Representation of the pop.")
 
 class Moment(Motion):
-    #Class functions
-    #Operations
-    def null(n=3,d=2):
-        """Return the neutral motion."""
-        #The dimension d still needs to be implemented for the vectors.
-        return Moment([Vector.null(d=d) for i in range(n)])
-
-    neutral=zero=null
-
-    def sum(motions):
-        """Return the sum of the motions together."""
-        result=Moment.null()
-        for motion in motions:
-            result+=motion
-        return result
-
-    def average(motions):
-        """Return the average of the motions."""
-        return Moment.sum(motions)/len(motions)
+    """A moment is a motion that correspond to the angular momentum of an object.
+    The only difference here are the default parameters such as the dimensions,
+    the number of vectors and the colors."""
 
     #Random
-    def random(corners=[-1,-1,1,1],n=3,d=2):
+    @classmethod
+    def random(cls,corners=[-1,-1,1,1],n=2,d=1,colors=None):
         """Create a random motion using optional minimum and maximum."""
-        return Moment([Vector.random(corners) for i in range(n)])
+        colors=[mycolors.PURPLE,mycolors.ORANGE,mycolors.YELLOW]+[mycolors.random() for i in range(n-3)]
+        return cls(*[Vector.random(corners,color=colors[i]) for i in range(n)])
 
     #Object functions
     #Initializing
-    def __init__(self,*vectors,n=3,d=2):
+    def __init__(self,*vectors,n=2,d=1):
         """Create a motion using vectors."""
         if vectors!=():
             if type(vectors[0])==list:
                 vectors=vectors[0]
         self.vectors=list(vectors)
         self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
-        if len(self.vectors)>=1: self.position.color     = mycolors.GREEN
-        if len(self.vectors)>=2: self.velocity.color     = mycolors.BLUE
-        if len(self.vectors)>=3: self.acceleration.color = mycolors.RED
+        if len(self.vectors)>=1: self.position.color     = mycolors.PURPLE
+        if len(self.vectors)>=2: self.velocity.color     = mycolors.ORANGE
+        if len(self.vectors)>=3: self.acceleration.color = mycolors.YELLOW
 
+    #Representation
+    def __str__(self):
+        """Return the str representation of the moment."""
+        return "Moment("+",".join([str(v) for v in self.vectors])+")"
 
 if __name__=="__main__":
     from mycontext import Context
@@ -239,7 +235,8 @@ if __name__=="__main__":
     motion2=Motion.random()
     motion=motion1+motion2
     motion=Motion.sum([Motion.random() for i in range(9)]+[motion]) #Summing 10 motions together
-    print(motion)
+    moment=Moment.random()
+    print(motion,moment)
     while context.open:
         context.check()
         context.control()

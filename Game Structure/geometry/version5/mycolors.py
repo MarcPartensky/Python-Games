@@ -51,13 +51,16 @@ def nuances(colors,t):
     n=len(colors)
     int(t*n)
 
+def ponderNuances(colors,t):
+    """Does an interpolation between all the colors in order."""
+    n=len(colors)
+    int(t*n)
 
 
 
 
 
-
-def setFromWavelength(wavelength):
+def getFromWavelength(wavelength):
     """Return a color using wavelength."""
     gamma,max_intensity=0.80,255
     def adjust(color, factor):
@@ -77,6 +80,14 @@ def setFromWavelength(wavelength):
     r,g,b=adjust(r,factor),adjust(g,factor),adjust(b,factor)
     return Color(r,g,b)
 
+def colorRange(t):
+    bt=bijection(t,[0,1],[380,780])
+    return getFromWavelength(bt)
+
+
+
+
+
 if __name__=="__main__":
     print(darken(RED,10))
     print(mix(YELLOW,RED))
@@ -84,7 +95,5 @@ if __name__=="__main__":
     print(substract(LIGHTBROWN,ORANGE))
     print(increase(LIGHTBROWN))
     print(nuance(YELLOW,RED,10))
-    for i in range(380,780,10):
-        print(setFromWavelength(i))
-
+    print("colorRange(0.5):",colorRange(0.1))
     print("mycolors imported")

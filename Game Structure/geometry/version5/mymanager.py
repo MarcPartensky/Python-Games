@@ -156,7 +156,7 @@ class Manager:
         """Deal with the events in the loop."""
         for event in pygame.event.get():
             if event.type == QUIT:
-                self.reactQuit(event)
+                self.switchQuit()
             if event.type == KEYDOWN:
                 self.reactKeyDown(event.key)
             if event.type == MOUSEBUTTONDOWN:
@@ -164,32 +164,70 @@ class Manager:
             if event.type == MOUSEMOTION:
                 self.reactMouseMotion(event)
 
-    def reactQuit(self, event):
+    def switchQuit(self):
         """React to a quit event."""
-        self.context.open = False
+        self.context.open = not(self.context.open)
 
     def reactKeyDown(self, key):
         """React to a keydown event."""
         if key == K_ESCAPE:
-            self.context.open = False
+            self.switchQuit()
         if key == K_f:
-            self.context.switch()
-            if self.context.fullscreen:
-                self.context.console("The fullscreen mode is set.")
-            else:
-                self.context.console("The fullscreen mode is unset.")
-        if key == K_LALT:
-            self.context.camera.switchCapture()
-            if self.context.camera.capturing:
-                self.context.console('The camera capture is turned on.')
-            else:
-                self.context.console('The camera capture is turned off.')
+            self.switchFullscreen()
+        if key == K_1:
+            self.switchCapture()
+        if key == K_2:
+            self.switchCaptureWriting()
+        if key == K_3:
+            self.switchScreenWriting()
         if key == K_SPACE:
-            self.pause = not(self.pause)
-            if self.pause:
-                self.context.console('The system is paused.')
-            else:
-                self.context.console('The system is unpaused.')
+            self.switchPause()
+
+    def switchScreenWriting(self):
+        """Swtich the screen writing mode."""
+        if self.context.camera.screen_writing:
+            self.context.camera.screen_writer.release()
+        self.context.camera.switchScreenWriting()
+        if self.context.camera.screen_writing:
+            self.context.console('The screen is being written.')
+        else:
+            self.context.console('The screen video has been released')
+            self.context.console('and is not being written anymore.')
+
+    def switchCaptureWriting(self):
+        """Switch the capture writing mode."""
+        if self.context.camera.capture_writing:
+            self.context.camera.capture_writer.release()
+        self.context.camera.switchCaptureWriting()
+        if self.context.camera.capture_writing:
+            self.context.console('The capture is being written.')
+        else:
+            self.context.console('The capture video has been released')
+            self.context.console('and is not being written anymore.')
+
+    def switchPause(self):
+        """React to a pause event."""
+        self.pause = not(self.pause)
+        if self.pause:
+            self.context.console('The system is paused.')
+        else:
+            self.context.console('The system is unpaused.')
+
+    def switchCapture(self):
+        """React to a capture event."""
+        self.context.camera.switchCapture()
+        if self.context.camera.capturing:
+            self.context.console('The camera capture is turned on.')
+        else:
+            self.context.console('The camera capture is turned off.')
+
+    def switchFullscreen(self):
+        """React to a fullscreen event."""
+        self.context.switch()
+        if self.context.fullscreen:
+            self.context.console("The fullscreen mode is set.")
+        else:
+            self.context.console("The fullscreen mode is unset.")
 
     def reactMouseButtonDown(self, button):
         """React to a mouse button down event."""
@@ -207,6 +245,7 @@ class Manager:
         if not self.pause:
             self.update()
             self.count()
+        self.context.camera.write()  # Write on the camera writers if they are on
 
     def update(self):
         """Update the components of the manager of the loop. This method is to be
@@ -233,15 +272,18 @@ class Manager:
         if self.context.camera.capturing:
             self.context.camera.show()
 
-    def getCounter(self):
-        """Bind the counter of the manager to the one of the context."""
-        return self.context.counter
+    def counter():
+        doc = "The Counter property."
+        def fget(self):
+            """Bind the counter of the manager to the one of the context."""
+            return self.context.counter
+        def fset(self, counter):
+            """Set the counter of the context."""
+            self.context.counter = counter
+        return locals()
+    counter = property(**counter())
 
-    def setCounter(self, counter):
-        """Set the counter of the context."""
-        self.context.counter = counter
 
-    counter = property(getCounter, setCounter)
 
 
 class BodyManager(Manager):
@@ -253,14 +295,24 @@ class BodyManager(Manager):
         bodies = [t.random() for i in range(n)]
         return cls(bodies, **kwargs)
 
-    def __init__(self, bodies, **kwargs):
+    def __init__(self, bodies, following=False, **kwargs):
         """Create a body manager using its bodies and optional arguments for the context."""
         super().__init__(**kwargs)
         self.bodies = bodies
+        self.following = following
 
     def update(self):
         """Update the bodies."""
+        self.updateFollowers()
         self.updateBodies()
+
+    def updateFollowers(self):
+        """Update the bodies that are followers."""
+        #This is not implemented correctly for now."""
+        p=self.context.point()
+        if self.following:
+            for body in self.bodies:
+                body.follow(p)
 
     def updateBodies(self):
         """Update the bodies individually."""

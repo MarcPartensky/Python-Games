@@ -2,9 +2,10 @@ from math import pi,sqrt,atan,cos,sin
 from cmath import polar
 from mytools import timer
 
-import math
-import random
 import mycolors
+import random
+import math
+import copy
 
 average=mean=lambda x:sum(x)/len(x)
 
@@ -12,18 +13,28 @@ digits=2 #Number of digits of precision of the objects when displayed
 
 class Point:
     """Representation of a point that can be displayed on screen."""
+    @classmethod
+    def sum(cls,points):
+        """Return the points which components are the respectives sums of the
+        components of the given points."""
+        p=Point.null()
+        for point in points:
+            p+=point
+        return p
+
     def origin(d=2):
         """Return the origin."""
         return Point([0 for i in range(d)])
 
     null=neutral=zero=origin
 
-    def random(corners=[-1,-1,1,1],radius=0.02,fill=False,color=mycolors.WHITE):
+    @classmethod
+    def random(cls,corners=[-1,-1,1,1],radius=0.02,fill=False,color=mycolors.WHITE):
         """Create a random point using optional minimum and maximum."""
         xmin,ymin,xmax,ymax=corners
         x=random.uniform(xmin,xmax)
         y=random.uniform(ymin,ymax)
-        return Point(x,y,radius=radius,fill=fill,color=color)
+        return cls(x,y,radius=radius,fill=fill,color=color)
 
     def distance(p1,p2):
         """Return the distance between the two points."""
@@ -57,6 +68,10 @@ class Point:
         self.fill=fill
         self.color=color
         self.conversion=conversion
+
+    def set(self,point):
+        """Set the components of the point to the components of an other given point."""
+        self.components=copy.deepcopy(point.components)
 
     def __len__(self):
         """Return the number of components of the point."""
@@ -97,9 +112,13 @@ class Point:
         """Determine if two points are unequals by comparing its components."""
         return tuple(self)!=tuple(other)
 
-    def __position__(self):
-        """Return the coordonnates of the points."""
-        return [self.x,self.y]
+    def __rmul__(self,r):
+        """Multiplication by a scalar like vectors."""
+        return Point(*[r*c for c in self.components])
+
+    def __truediv__(self,r):
+        """Divide a points by a scalar."""
+        return Point(*[c/r for c in self.components])
 
     def __contains__(self,other):
         """Determine if an object is in the point."""
@@ -190,6 +209,7 @@ class Point:
     def __iadd__(self,other):
         """Add a point to the actual point."""
         self.components=[c1+c2 for (c1,c2) in zip(self.components,other.components)]
+        return self
 
     __radd__=__add__
 
@@ -621,15 +641,24 @@ class Vector:
         return self.components
 
 class Segment(Direction):
-    def null():
+    @classmethod
+    def null(cls):
         """Return the segment whoose points are both the origin."""
-        return Segment([Point.origin() for i in range(2)])
+        return cls([Point.origin() for i in range(2)])
 
-    def random(corners=[-1,-1,1,1],width=1,color=mycolors.WHITE):
+    @classmethod
+    def random(cls,corners=[-1,-1,1,1],width=1,color=mycolors.WHITE):
         """Create a random segment."""
         p1=Point.random(corners)
         p2=Point.random(corners)
-        return Segment([p1,p2],width=width,color=color)
+        return cls([p1,p2],width=width,color=color)
+
+
+    @classmethod
+    def createFromTuples(cls,*tps,**kwargs):
+        """Create a segment using tuples and optional arguments."""
+        pts=[Point(*tp) for tp in tps]
+        return cls(*pts,**kwargs)
 
     def __init__(self,*points,width=1,color=mycolors.WHITE):
         """Create the segment using 2 points, width and color."""
@@ -824,7 +853,7 @@ class Segment(Direction):
         sl=self.getLine()
         ol=other.getLine()
         point=sl.crossLine(ol)
-        if point:
+        if point is not None:
             if point in self and point in other:
                 return point
 
@@ -1269,10 +1298,11 @@ class HalfLine(Line):
 
 
 class Form:
-    def random(corners=[-1,-1,1,1],n=random.randint(1,10),**kwargs):
+    @classmethod
+    def random(cls,corners=[-1,-1,1,1],n=random.randint(1,10),**kwargs):
         """Create a random form using the point_number, the minimum and maximum position for x and y components and optional arguments."""
         points=[Point.random(corners) for i in range(n)]
-        form=Form(points,**kwargs)
+        form=cls(points,**kwargs)
         form.makeSparse()
         return form
 
@@ -1307,7 +1337,8 @@ class Form:
         return points
 
 
-    def intersectionTwoForms(form1,form2):
+    @classmethod
+    def intersectionTwoForms(cls,form1,form2):
         """Return the form which is the intersection of two forms."""
         if form1==None: return form2
         if form2==None: return form1
@@ -1320,46 +1351,50 @@ class Form:
         for point in form2.points:
             if point in form1:
                 points.append(point)
-        form=Form(points)
+        form=cls(points)
         form.makeSparse()
         return form
 
-    def intersection(forms):
+    @classmethod
+    def intersection(cls,forms):
         """Return the form which is the intersection of all the forms."""
         result=forms[0]
         for form in forms[1:]:
-            result=Form.intersectionTwoForms(result,form)
+            result=cls.intersectionTwoForms(result,form)
         return result
 
 
-    def unionTwoForms(form1,form2):
+    @classmethod
+    def unionTwoForms(cls,form1,form2):
         """Return the union of two forms."""
         intersection_points=set(form1.crossForm(form2))
         if intersection_points:
             all_points=set(form1.points+form2.points)
             points=all_points.intersection(intersection_points)
-            return [Form(points)]
+            return [cls(points)]
         else:
             return [form1,form2]
 
-    def union(forms):
+    @classmethod
+    def union(cls,forms):
         """Return the union of all forms."""
         """This function must be recursive."""
         if len(forms)==2:
-            return Form.unionTwoForms(forms[0],forms[1])
+            return cls.unionTwoForms(forms[0],forms[1])
         else:
             pass
 
         result=forms[0]
         for form in forms[1:]:
-            result.extend(Form.union(form,result))
+            result.extend(cls.union(form,result))
         return result
 
 
-    def createFromTuples(tps,conversion=True,radius=0.01,**kwargs):
+    @classmethod
+    def createFromTuples(cls,tps,conversion=True,radius=0.01,**kwargs):
         """Create a form from the tuples 'tps' and some optional arguments."""
         pts = [Point(*t,conversion=conversion,radius=0.01) for t in tps]
-        return Form(pts,**kwargs)
+        return cls(pts,**kwargs)
 
 
     def __init__(self,points,fill=False,point_mode=0,point_size=[0.01,0.01],point_radius=0.01,point_width=1,point_fill=False,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE,cross_point_color=mycolors.WHITE,cross_point_radius=0.01,cross_point_mode=0,cross_point_width=1,cross_point_size=[0.1,0.1],point_show=True,side_show=True,area_show=False):
@@ -1444,16 +1479,47 @@ class Form:
         return sorted(self.points)==sorted(other.points)
 
     def getCenter(self):
-        """Return the point of the center."""
-        mx=mean([p.x for p in self.points])
-        my=mean([p.y for p in self.points])
-        return Point(mx,my,color=self.point_color,radius=self.point_radius)
+        """Return the point of the center.
+        This only works for 2 dimensional forms obviously."""
+        if len(self.points)==0:
+            #None
+            return None
+        elif len(self.points)==1:
+            #Same point
+            return self.points[0]
+        elif len(self.points)==2:
+            #Middle of a segment
+            return Segment(*self.points).middle
+        elif len(self.points)==3:
+            #Intersection point of 2 medians
+            p1,p2,p3=self.points
+            s2=Segment(p2,p3)
+            s3=Segment(p3,p1)
+            m1=Segment(p1,s2.middle)
+            m2=Segment(p2,s3.middle)
+            return m1.crossSegment(m2)
+        else:
+            #Geometric decomposition to compute centroids (wikipedia)
+            n=len(self.points) #n is the number of points
+            #There are n-2 forms
+            forms=[Form([self.points[0]]+self.points[i:i+2]) for i in range(1,n-1)]
+            #So n-2 centroids and areas, except if some of the points are one upon another, no area is null
+            centroids=[form.center for form in forms]
+            areas=[form.area for form in forms]
+            #we compute the average centroid weighted by the areas
+            weighted_centroid=Point.sum([a*c for (c,a) in zip(centroids,areas)])
+            centroid=weighted_centroid/sum(areas)
+            return centroid
 
     def setCenter(self,center):
         """Set the center of the form."""
-        p=center-self.getCenter()
-        for point in self.points:
-            point+=p
+        p=center-self.center
+        for i in range(len(self.points)):
+            self.points[i]+=p
+
+    def recenter(self,point=(0,0)):
+        """Recenter a form using the new center point."""
+        self.center=Point(*point)
 
     def getSegments(self):
         """"Return the list of the form sides."""
@@ -1666,18 +1732,19 @@ class Form:
 
     def getSparse(self): #as opposed to makeSparse which keeps the same form and return nothing
         """Return the form with the most sparsed points."""
-        cx,cy=self.center
-        list1=[]
-        for point in self.points:
-            angle=Vector.createFromTwoPoints(point,self.center).angle
-            list1.append((angle,point))
-        list1=sorted(list1,key=lambda x:x[0])
-        points=[element[1] for element in list1]
-        return Form(points,fill=self.fill,side_width=self.side_width,point_radius=self.point_radius,point_color=self.point_color,side_color=self.side_color,area_color=self.area_color)
+        return copy.deepcopy(self.makeSparse())
 
     def makeSparse(self):
         """Change the form into the one with the most sparsed points."""
-        self.points=self.getSparse().points
+        center=self.center
+        cx,cy=center
+        l=[]
+        for point in self.points:
+            angle=Vector.createFromTwoPoints(point,center).angle
+            l.append((angle,copy.deepcopy(point)))
+        l=sorted(l,key=lambda x:x[0])
+        for i in range(len(l)):
+            self.points[i].set(l[i][1])
 
     def __contains__(self,point):
         """Return the boolean: (the point is in the form)."""
@@ -1698,16 +1765,6 @@ class Form:
             l=min(len(step),len(point.position))
             for i in range(l):
                 point.position[i]=step[i]
-
-    def setPosition(self,position):
-        """Move the object to an absolute position."""
-        v=Vector(*position)
-        for i in range(len(self.points)):
-            self.points[i]=v(self.points[i])
-
-    def getPosition(self,position):
-        """Return the position of the geometric center of the form."""
-        return self.center.position
 
     def addPoint(self,point):
         """Add a point to the form."""
@@ -1739,6 +1796,7 @@ class Form:
         """Change the points of a form."""
         self.points[index]=value
 
+    @property #This can only be a getter
     def area(self):
         """Return the area of the form using its own points.
         General case in 2d only for now..."""
@@ -1756,7 +1814,7 @@ class Form:
                 A=self.points[i]
                 B=self.points[(i+1)%l]
                 triangle=Form([A,B,C])
-                area+=Form.area(triangle)
+                area+=triangle.area
             return area
 
     def __len__(self):
@@ -1823,11 +1881,10 @@ class Form:
 
 
     #points=         property(getPoints,setPoints,"Represents the points.") #If I do this, the program will be very slow...
-    sides=segments= property(getSegments,setSegments,"Represents the segments.")
-    center=point=   property(getCenter,setCenter,"Represents the center.")
-    color=          property(getColor,setColor,delColor,"Represents the color.")
-    cross_points=   property(getCrossPoints, "Represents the point of intersections of the segments.")
-    position=       property(getPosition,setPosition, "Change the position of the form.")
+    sides=segments=  property(getSegments,setSegments,"Represents the segments.")
+    center=          property(getCenter,setCenter,"Represents the center.")
+    color=           property(getColor,setColor,delColor,"Represents the color.")
+    cross_points=    property(getCrossPoints, "Represents the point of intersections of the segments.")
     #cross_points=   property(getCrossPoints,setCrossPoints,delCrossPoints, "Represents the point of intersections of the segments.")
     #point_color=    property(getPointColor,setPointColor,delPointColor,"Represents the color of the points.")
     #point_mode=     property(getPointMode,setPointMode,delPointMode,"Represents the mode of the points.")
@@ -2000,7 +2057,7 @@ if __name__=="__main__":
         #Show
         surface.draw.window.print("l1.angle: "+str(l1.angle),(10,10))
         surface.draw.window.print("l2.angle: "+str(l2.angle),(10,30))
-        surface.draw.window.print("f.area: "+str(f.area()),(10,50))
+        surface.draw.window.print("f.area: "+str(f.area),(10,50))
 
         f.show(surface)
         f.center.show(surface)

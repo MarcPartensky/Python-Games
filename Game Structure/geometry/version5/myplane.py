@@ -18,6 +18,7 @@ class Plane:
         if not "grid nscale" in theme: theme["grid nscale"] = 3
         if not "show scale"  in theme: theme["show scale"]  = False
         if not "show origin" in theme: theme["show origin"] = False
+        if not "show units" in theme:  theme["show units"]  = False
         self.theme=theme
 
     def createView(self,view=None):
@@ -103,16 +104,20 @@ class Plane:
     def show(self,window):
         """Show the elements on screen using the window."""
         self.showGrids(window)
+
+    def showAll(self):
+        self.showGrids(window)
         if self.theme["show scale"]:
             window.print("scale:"+str(self.getScale(window)),(10,10),size=20)
         if self.theme["show origin"] and self.contains((0,0),window):
             self.showOrigin(window)
+        if self.theme["show units"]:
+            window.print("units:"+str(self.units),(10,10),size=20)
         #self.showUnits(window) #Does not work for now
 
     def showOrigin(self,window,color=mycolors.WHITE,radius=3):
         """Show the origin of the plane."""
         position=self.getToScreen([0,0],window)
-        #print(position)
         window.draw.circle(window.screen,color,position,radius,0)
 
 

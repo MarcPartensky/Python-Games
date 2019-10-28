@@ -1,14 +1,13 @@
-from __future__ import division
-
 from mycolors import *
 
 from pygame.locals import *
 import pygame
 
-
 import time
 import random
 import json
+
+import sys
 
 class Window:
     made=0

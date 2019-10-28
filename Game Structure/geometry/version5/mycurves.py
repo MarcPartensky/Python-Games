@@ -5,10 +5,11 @@ import mycolors
 import itertools
 
 class Trajectory:
-    def createFromTuples(tuples,**kwargs):
+    @classmethod
+    def createFromTuples(cls,tuples,**kwargs):
         """Create a trajectory using tuples and optional arguments."""
         pts=[Point(*t) for t in tuples]
-        return Trajectory(pts,**kwargs)
+        return cls(pts,**kwargs)
 
     def __init__(self,points,segment_color=mycolors.WHITE,point_color=mycolors.WHITE):
         """Create a trajectory using the list of points."""
@@ -96,8 +97,19 @@ class Trajectory:
         if include and len(self.points)>1: points.append(self.points[-1])
         return points
 
+    def getCenter(self):
+        """Return the center (or middle) of the trajectory."""
+        return self(1/2)
+
+    def setCenter(self):
+        """Set the center (or middle) of the trajectory."""
+        center=self.center
+        for n in range(len(self.points)):
+            self.points[n]-=center
+
     segments=property(getSegments)
     length=property(getLength)
+    center=property(getCenter)
 
 class CurvedForm(Form):
     def __init__(self,*args,**kwargs):

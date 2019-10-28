@@ -1,9 +1,6 @@
 from myabstract import Form,Point
-
 from mypixel import Pixel
-
 from pygame.locals import *
-
 
 import time
 import mycolors
@@ -205,7 +202,7 @@ class Case(Pixel):
     center=property(getCenter,setCenter,"Allow the user to manipulate the center of the case easily.")
 
 if __name__=="__main__":
-    from mysurface import Surface
+    from mycontext import Surface
     from myzone import Zone
     #surface=Surface(plane=Zone(size=[20,20]))
     surface=Surface()

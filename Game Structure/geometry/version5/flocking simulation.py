@@ -111,5 +111,5 @@ class Simulation(Manager):
 
 
 if __name__ == "__main__":
-    s = Simulation.random(n=50,dt=1)
+    s = Simulation.random(n=20,dt=1)
     s()

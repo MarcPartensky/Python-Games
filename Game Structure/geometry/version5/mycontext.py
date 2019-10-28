@@ -19,12 +19,17 @@ class Camera:
     def __init__(self, draw, position=[0, 0],
                  build_capture=False,
                  build_screen_writer=False,
-                 build_capture_writer=False):
+                 build_capture_writer=False,
+                 filename="unnamed.mp4",
+                 framerate=15):
         """Create an opencv camera. By default the capture is not active, it must
         be built using the build method, or by setting build to True in the
         init method."""
         self._draw = draw
         self.position = position
+        self.filename = filename
+        self.fourccs={'mp4':'MP4V','avi':'DIVX'}
+        self.framerate = framerate
         # Building videos components
         if build_capture:
             self.buildCapture()
@@ -39,24 +44,38 @@ class Camera:
         camera."""
         self.capture = cv2.VideoCapture(0)
 
-    def buildCaptureWriter(self):
+    def buildCaptureWriter(self, filename=None, framerate = None):
         """Write the videos of the camera, this is just an odd concept, nothing
         really functional."""
-        self.capture_writer = cv2.VideoWriter(0)
+        if not filename: filename=self.filename
+        _, extension=filename.split('.')
+        fourcc=self.fourccs[extension]
+        print(fourcc)
+        fourcc=cv2.VideoWriter_fourcc(*fourcc)
+        if not framerate: framerate = self.framerate
+        self.capture_writer = cv2.VideoWriter(filename,fourcc,framerate,frameSize=self._draw.window.size)
 
-    def buildScreenWriter(self):
+    def buildScreenWriter(self, filename=None, framerate = None):
         """Write the videos of the screen."""
-        self.screen_writer = cv2.VideoWriter(0)
+        if not filename: filename=self.filename
+        _, extension=filename.split('.')
+        fourcc=self.fourccs[extension]
+        fourcc=cv2.VideoWriter_fourcc(*fourcc)
+        if not framerate: framerate = self.framerate
+        self.screen_writer = cv2.VideoWriter(filename,fourcc,framerate,frameSize=self._draw.window.size)
 
     def writeCapture(self):
         """Write the capture."""
         # Note this cannot work if the video capture is not built
-        ret, frame = self.capture.read()
-        self.screen_writer.write(frame)
+        _, frame = self.capture.read()
+        self.capture_writer.write(frame)
 
     def writeScreen(self):
         """Write the screen."""
-        output = pygame.image.tostring(self._draw.window.screen)
+        output = pygame.surfarray.array3d(self._draw.window.screen)
+        output = cv2.transpose(output)
+        output = cv2.cvtColor(output, cv2.COLOR_RGB2BGR)
+        print(output.shape)
         self.screen_writer.write(output)
 
     def show(self):
@@ -69,14 +88,12 @@ class Camera:
 
     __call__ = show
 
-    def endVideoWriter(self):
+    def endCaptureWriter(self):
         """End the video writer and save its content."""
-        self.video_writer.release()
-        del self.video_writer
+        del self.capture_writer
 
     def endScreenWriter(self):
         """End the screen writer and record its content."""
-        self.screen_writer.release()
         del self.screen_writer
 
     def endCapture(self):
@@ -145,7 +162,7 @@ class Camera:
 
     def switchCaptureWriting(self):
         """Switch the capture writing mode."""
-        if self.screen_writing:
+        if self.capture_writing:
             self.endCaptureWriter()
         else:
             self.buildCaptureWriter()
@@ -160,6 +177,20 @@ class Camera:
             del self.capture_writer
         self.destroy()
 
+    def write(self):
+        """Write the screen or the capture video if they are on."""
+        if self.screen_writing:
+            self.writeScreen()
+        if self.capture_writing:
+            self.writeCapture()
+
+    def release(self):
+        """Release the screen or the capture video if they are on."""
+        if self.screen_writing:
+            self.screen_writer.release()
+        if self.capture_writing:
+            self.capture_writer.release()
+
 
 class Line:
     """Representation of a line in the console.
@@ -167,7 +198,7 @@ class Line:
 
     def __init__(self, *content, time=None, separator=" "):
         """Object of line created using the text and optional time."""
-        self.content = content
+        self.content = list(content)
         self.time = time
         self.separator = separator
 
@@ -192,6 +223,12 @@ class Line:
     def getText(self):
         """Return the content of a line."""
         return self.content
+
+    def eval(self):
+        """Execute the given line."""
+        for e in self.content:
+            eval(e)
+
 
     text = property(getText)
 
@@ -293,6 +330,7 @@ class Context(Rect):
             console = Console(draw)
         if camera is None:
             camera = Camera(draw)
+        self.start_time = time.time()
         self.draw = draw
         self.console = console
         self.camera = camera
@@ -512,6 +550,10 @@ class Context(Rect):
         """Return the resolution of the screen."""
         return self.width / self.height
 
+    @property
+    def rate(self):
+        return self.counter / (time.time() - self.start_time)
+
     window = property(getWindow, setWindow)
     plane = property(getPlane, setPlane)
 
@@ -536,7 +578,8 @@ Surface = Context  # Ugly fix for deprectated programs
 if __name__ == "__main__":
     context = Context(name="Context test")
     context.camera.buildCapture()
-    context.camera.buildScreenWriter()
+    context.camera.buildScreenWriter("mycontext test.mp4")
+    #context.camera.buildCaptureWriter('zzzz.mp4')
     context.console.duration_lines_shown = 2
     context.console.max_lines_shown = 40
     # context.corners=[0,0,1,1]
@@ -544,6 +587,7 @@ if __name__ == "__main__":
     print(bool(context))
     while context:
         context.count()
+        print(context.counter)
         context.check()
         context.update()
         context.control()
@@ -552,9 +596,12 @@ if __name__ == "__main__":
 
         context.camera.show()
         context.camera.write()
-        context.console(context.counter)
+        context.console(context.rate)
 
-        if context.counter > 100:
-            context.camera.destroy()
+        #if context.counter > 100:
+        #    context.camera.destroy()
 
         context.flip()
+    context.camera.capture.release()
+    context.camera.screen_writer.release()
+    print('released')
