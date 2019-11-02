@@ -297,6 +297,7 @@ class Window:
         if not size:
             if self.fullscreen:
                 size=[self.info.current_w,self.info.current_h]
+                print(size)
             else:
                 size=[2*self.info.current_w//3,2*self.info.current_h//3]
         if self.fullscreen:
@@ -424,10 +425,11 @@ if __name__=="__main__":
     w.alert("test")
     w.pause()
     w.clear()
+    w.switch()
     #w.alert(w.size)
     w.alert(w.center,w.size,background=(255,0,0))
     w.pause()
     w.clear()
     w.alert("je raconte de la merde juste pour avoir une longue chaine de caractere")
     w.pause()
-    w.stopMusic()
+    #w.stopMusic()

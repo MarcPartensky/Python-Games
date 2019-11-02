@@ -77,7 +77,6 @@ class Camera:
         output = pygame.surfarray.array3d(self._draw.window.screen)
         output = cv2.transpose(output)
         output = cv2.cvtColor(output, cv2.COLOR_RGB2BGR)
-        print(output.shape)
         self.screen_writer.write(output)
 
     def show(self):
