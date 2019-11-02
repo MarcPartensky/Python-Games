@@ -4,6 +4,8 @@ from mywindow import Window
 
 import mycolors
 import time
+import copy
+
 
 # For the camera only
 from pygame.locals import *
@@ -192,6 +194,7 @@ class Camera:
             self.capture_writer.release()
 
 
+
 class Line:
     """Representation of a line in the console.
     This might be used for visual debugging but also for typing commands."""
@@ -223,18 +226,15 @@ class Line:
     def getText(self):
         """Return the content of a line."""
         return self.content
-
-    def eval(self):
-        """Execute the given line."""
-        if self.content[0]=="/":
-            for command in self.content[1:]:
-                eval(command)
-        if self.content[0]=="print":
-            for value in self.content[1:]:
-                print(value)
-
     text = property(getText)
 
+    def refresh(self):
+        """Refresh the time."""
+        self.time=time.time()
+
+    @property
+    def empty(self):
+        return self.content[0]=="" #difficult to do uglier
 
 class Console:
     def __init__(self, draw,
@@ -264,10 +264,52 @@ class Console:
         self.duration_lines_shown = duration_lines_shown
         self.disappearance_lines_shown = disappearance_lines_shown
         self.colors = colors
+        self.line_index = 0
+        self.line_memory = None
+
+    def eval(self):
+        """Execute the last line."""
+        content=self.lines[-1].content
+        if len(content)>=1:
+            if content[0]=="marc":
+                content[0]+=" is awesome."
+            elif content[0]=="time":
+                content[0]="The time is "+time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())+"."
+            elif content[0]=="minecraft":
+                content[0]+="is the best game ever."
+            elif content[0][:6]=="print(":
+                self(eval(content[0][6:-1]))
+            elif content[0]=="refresh":
+                self.refresh()
+
+    def back(self):
+        """Set the line to an older one."""
+        if self.line_index==0:
+            self.line_memory=copy.deepcopy(self.line)
+        if self.line_index<len(self.lines)-1:
+            self.line_index+=1
+            self.line=copy.deepcopy(self.lines[-1-self.line_index])
+            self.line.refresh()
+
+    def forward(self):
+        """Set the line to a new one."""
+        if self.line_index>1:
+            self.line_index-=1
+            self.line=copy.deepcopy(self.lines[-1-self.line_index])
+        elif self.line_index==1:
+            self.line_index-=1
+            self.line=self.line_memory
+        self.line.refresh()
+
 
     def clear(self):
         """Clear the console by removing all the lines."""
         self.lines = []
+
+    def refresh(self):
+        """Refresh the console by showing its previous messages."""
+        for line in self.lines:
+            line.time=time.time()
 
     def __getitem__(self, i):
         """Return the i-th line."""
@@ -295,6 +337,27 @@ class Console:
             self.lines.append(l)
         if show:
             self.show()
+
+
+    def nextArg(self):
+        """Create a new argument."""
+        self.lines[-1].content.append("")
+
+    def nextLine(self):
+        """Create a new line."""
+        self("")
+
+    def setLine(self,line):
+        self.lines[-1]=line
+
+    def getLine(self):
+        return self.lines[-1]
+
+    def delLine(self):
+        del self.lines[-1]
+
+    line=property(getLine,setLine,delLine)
+
 
     def show(self):
         """Show the console without adding a text."""
@@ -352,7 +415,6 @@ class Context(Rect):
         self.print = self.draw.print
         self.update = self.draw.window.update
         self.switch = self.draw.window.switch
-        self.append = self.console.append
         self.count = self.draw.window.count
         self.alert = self.draw.window.alert
         self.scale = self.draw.window.scale

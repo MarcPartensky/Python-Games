@@ -9,17 +9,21 @@ class Physics(Material): #,Rotational?
 
     #Should a physical object possess a mass????????
 
-    def createFromNumber(n):
+    @classmethod
+    def createFromNumber(cls,n,nm=3,d=2):
         """Create n motions."""
-        return Physics([Motion() for i in range(n)])
+        return cls([Motion.null(n=nm,d=d) for i in range(n)])
 
-    def random(n=2):
+    @classmethod
+    def random(cls,n=2,nm=2,d=2):
         """Create n random physical objects."""
-        return Physics([Motion.random() for i in range(n)])
+        return cls([Motion.random(n=nm,d=d) for i in range(n)])
 
-    def __init__(self, motions=[Motion(n=3, d=2), Motion(n=3, d=1)], mass = 1):
+    def __init__(self, motions=[Motion.null(n=3, d=2), Motion.null(n=2, d=1)], mass = 1):
         """Create a physical object using its motions, by default a physical
-        has 2 motions but it can have more."""
+        has 2 motions but it can have more.
+        By default a physical object has a motion and a moment that are both
+        nulls and 2 dimensionals."""
         self.motions = motions
         self.mass = mass
 

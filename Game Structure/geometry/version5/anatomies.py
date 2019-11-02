@@ -51,11 +51,11 @@ class TrajectoryAnatomy(Trajectory):
             point.rotate(angle,c)
 
 
-#ta=TrajectoryAnatomy.random()
-#print(type(ta))
-#b=Body.createFromRandomMotions(ta)
+ta=TrajectoryAnatomy.random()
+print(type(ta))
+b=Body.createFromRandomMotions(ta)
 
 
 if __name__=="__main__":
-    #m=BodyManager([b])
-    #m()
+    m=BodyManager([b])
+    m()

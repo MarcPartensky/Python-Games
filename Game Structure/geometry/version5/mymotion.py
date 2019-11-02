@@ -1,7 +1,8 @@
-from myabstract import Vector
+from myabstract import Vector, Point
 
 import mycolors
 import copy
+import math
 
 class Motion:
     #Class functions
@@ -29,36 +30,49 @@ class Motion:
 
     #Random
     @classmethod
-    def random(cls,corners=[-1,-1,1,1],n=3,d=2,colors=None):
+    def random(cls,n=3,d=2,borns=[-1,1],**kwargs):
         """Create a random motion using optional minimum and maximum."""
-        colors=[mycolors.GREEN,mycolors.BLUE,mycolors.RED]+[mycolors.random() for i in range(n-3)]
-        return cls([Vector.random(corners,color=colors[i]) for i in range(n)])
+        vectors=[Vector.random(d=d,borns=borns,**kwargs) for i in range(n)]
+        return cls(*vectors)
 
     #Object functions
     #Initializing
 
-    def __init__(self,*vectors,n=3,d=2):
+    def __init__(self,*vectors):
         """Create a motion using vectors."""
-        if vectors:
+        if len(vectors)>0:
             if isinstance(vectors[0],list):
                 vectors=vectors[0]
         self.vectors=list(vectors)
-        self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
         if len(self.vectors)>=1: self.position.color     = mycolors.GREEN
         if len(self.vectors)>=2: self.velocity.color     = mycolors.BLUE
         if len(self.vectors)>=3: self.acceleration.color = mycolors.RED
 
-    #Showing
-    def show(self,context):
+    #Set
+    def set(self,other):
+        """Set the components of the motion to the components of another motion
+        without affecting its colors."""
+        for i in range(len(self.vectors)):
+            self.vectors[i].set(other.vectors[i])
+
+    def showEach(self,context):
         """Show the motion on the screen from the origin of the plane."""
         for vector in self.vectors:
             vector.show(context)
 
+    #Showing
+    def show(self,context):
+        """Show the vectors from the position."""
+        for vector in self.vectors[1:]:
+            vector.show(context,self.position)
+
     #Updating the motion
     def update(self,dt=1):
         """Update the motion according to physics."""
-        for i in range(len(self.vectors)-1):
-            self.vectors[i]+=self.vectors[i+1]*dt
+        l=len(self.vectors)
+        for i in range(1,l):
+            self.vectors[-i-1]+=self.vectors[-i]*dt
+
 
     #Representation
     def __str__(self):
@@ -164,27 +178,27 @@ class Motion:
 
     def __iadd__(self,other):
         """Add the other motion to the motion."""
-        self.vectors=[v1+v2 for (v1,v2) in zip(self.vectors,other.vectors)]
+        self.set(self+other)
         return self
 
     def __isub__(self,other):
         """Substract the other motion to the motion."""
-        self.vectors=[v1-v2 for (v1,v2) in zip(self.vectors,other.vectors)]
+        self.set(self-other)
         return self
 
     def __imul__(self,other):
         """Multiply a motion by a scalar."""
-        self.vectors=[v*other for v in self.vectors]
+        self.set(self*other)
         return self
 
     def __itruediv__(self,other):
         """Divide a motion by a scalar."""
-        self.vectors=[v/other for v in self.vectors]
+        self.set(self/other)
         return self
 
     def __ifloordiv__(self,other):
         """Divide motion by a scalar according to euclidian division."""
-        self.vectors=[v//other for v in self.vectors]
+        self.set(self//other)
         return self
 
 
@@ -203,22 +217,14 @@ class Moment(Motion):
     The only difference here are the default parameters such as the dimensions,
     the number of vectors and the colors."""
 
-    #Random
-    @classmethod
-    def random(cls,corners=[-1,-1,1,1],n=2,d=1,colors=None):
-        """Create a random motion using optional minimum and maximum."""
-        colors=[mycolors.PURPLE,mycolors.ORANGE,mycolors.YELLOW]+[mycolors.random() for i in range(n-3)]
-        return cls(*[Vector.random(corners,color=colors[i]) for i in range(n)])
-
     #Object functions
     #Initializing
     def __init__(self,*vectors,n=2,d=1):
         """Create a motion using vectors."""
-        if vectors!=():
-            if type(vectors[0])==list:
+        if len(vectors)>0:
+            if isinstance(vectors[0],list):
                 vectors=vectors[0]
         self.vectors=list(vectors)
-        self.vectors+=[Vector.neutral(d=d) for i in range(n-len(self.vectors))]
         if len(self.vectors)>=1: self.position.color     = mycolors.PURPLE
         if len(self.vectors)>=2: self.velocity.color     = mycolors.ORANGE
         if len(self.vectors)>=3: self.acceleration.color = mycolors.YELLOW
@@ -227,6 +233,30 @@ class Moment(Motion):
     def __str__(self):
         """Return the str representation of the moment."""
         return "Moment("+",".join([str(v) for v in self.vectors])+")"
+
+    #Showing
+    def show(self, context,point=Point(0,0),angle=0):
+        """Show the moment."""
+        if len(self)>=1:
+            mp=self.position
+            v=Vector.createFromPolarCoordonnates(mp.norm,angle)
+            v.color=mp.color
+            v.show(context,point)
+        if len(self)>=2:
+            angle+=math.pi/2
+            mv=self.velocity
+            v=Vector.createFromPolarCoordonnates(mv.norm,angle)
+            v.color=mv.color
+            v.show(context,point)
+        if len(self)>=3:
+            angle+=math.pi/2
+            ma=self.acceleration
+            a=Vector.createFromPolarCoordonnates(ma.norm,angle)
+            a.color=ma.color
+            a.show(context,point)
+
+
+
 
 if __name__=="__main__":
     from mycontext import Context
@@ -243,4 +273,5 @@ if __name__=="__main__":
         context.clear()
         context.show()
         motion.show(context)
+        moment.show(context)
         context.flip()

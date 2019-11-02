@@ -29,12 +29,10 @@ class Point:
     null=neutral=zero=origin
 
     @classmethod
-    def random(cls,corners=[-1,-1,1,1],radius=0.02,fill=False,color=mycolors.WHITE):
+    def random(cls,d=2,borns=[-1,1],radius=0.02,fill=False,color=mycolors.WHITE):
         """Create a random point using optional minimum and maximum."""
-        xmin,ymin,xmax,ymax=corners
-        x=random.uniform(xmin,xmax)
-        y=random.uniform(ymin,ymax)
-        return cls(x,y,radius=radius,fill=fill,color=color)
+        components=[random.uniform(*borns) for i in range(d)]
+        return cls(*components,radius=radius,fill=fill,color=color)
 
     def distance(p1,p2):
         """Return the distance between the two points."""
@@ -68,6 +66,10 @@ class Point:
         self.fill=fill
         self.color=color
         self.conversion=conversion
+
+    def __hash__(self):
+        """Return a single number using the hash of its attributes."""
+        hash(self.components)
 
     def set(self,point):
         """Set the components of the point to the components of an other given point."""
@@ -221,6 +223,7 @@ class Point:
     def __isub__(self,other):
         """Add a point to the actual point."""
         self.components=[c1-c2 for (c1,c2) in zip(self.components,other.components)]
+        return self
 
     __rsub__=__sub__
 
@@ -296,29 +299,31 @@ class Direction:
         pass
 
 class Vector:
-    def null(d=2):
+    @classmethod
+    def null(cls,d=2):
         """Return the null vector."""
-        return Vector([0 for i in range(d)])
+        return cls(*[0 for i in range(d)])
 
     neutral=zero=null
 
-    def random(corners=[-1,-1,1,1],color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+    @classmethod
+    def random(cls,d=2,borns=[-1,1],**kwargs):
         """Create a random vector using optional min and max."""
-        xmin,ymin,xmax,ymax=corners
-        x=random.uniform(xmin,xmax)
-        y=random.uniform(ymin,ymax)
-        return Vector(x,y,color=color,width=width,arrow=arrow)
+        components=[random.uniform(*borns) for i in range(d)]
+        return cls(*components,**kwargs)
 
-    def sum(vectors):
+    @classmethod
+    def sum(cls,vectors):
         """Return the vector that correspond to the sum of all the vectors."""
-        result=Vector.null()
+        result=cls.null()
         for vector in vectors:
             result+=vector
         return result
 
-    def average(vectors):
+    @classmethod
+    def average(cls,vectors):
         """Return the vector that correspond to the mean of all the vectors."""
-        return Vector.sum(vectors)/len(vectors)
+        return cls.sum(vectors)/len(vectors)
 
     mean=average
 
@@ -390,10 +395,12 @@ class Vector:
         """Return the cartesian position [x,y] using polar position [norm,angle]."""
         return [position[0]*cos(position[1]),position[0]*sin(position[1])]
 
-    def __init__(self,*args,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+    def __init__(self,*components,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector."""
-        if len(args)==1: args=args[0]
-        self.components=list(args)
+        if components:
+            if isinstance(components[0],list):
+                components=components[0]
+        self.components=list(components)
         self.color=color
         self.width=width
         self.arrow=arrow
@@ -447,9 +454,9 @@ class Vector:
         self.setAngle(0)
 
     #Norm
-    def getNorm(self):
-        """Return the angle of a vector with the [1,0] direction in cartesian coordonnates."""
-        return Vector.polar(self.components)[0]
+    def getNorm(self,norm=lambda l:(sum(map(lambda x:x**2,l)))**(1/2)):
+        """Return the euclidian norm of the vector by default."""
+        return norm(self.components)
 
     def setNorm(self,value):
         """Change the angle of the points without changing its norm."""
@@ -474,6 +481,11 @@ class Vector:
     norm=property(getNorm,setNorm,doc="Allow the user to manipulate the norm of the vector easily.")
     angle=property(getAngle,setAngle,doc="Allow the user to manipulate the angle of the vector easily.")
     position=property(getPosition,setPosition,doc="Same as components.")
+
+    def limit(self,n):
+        """Limit the norm of the vector by n."""
+        if self.norm>n:
+            self.norm=n
 
     def show(self,context,p=Point.neutral(),color=None,width=None):
         """Show the vector."""
@@ -554,6 +566,11 @@ class Vector:
         else:
             return Vector([c/factor for c in self.components])
 
+    def __itruediv__(self,factor):
+        """Divide the components of a vector by a given factor."""
+        self.components=[c/factor for c in self.components]
+        return self
+
     def __add__(self,other):
         """Add two vector together."""
         return Vector([c1+c2 for (c1,c2) in zip(self.components,other.components)])
@@ -570,6 +587,7 @@ class Vector:
     def __isub__(self,other):
         """Substract a vector to another."""
         self.components=[c1-c2 for (c1,c2) in zip(self.components,other.components)]
+        print("comps:",self.components)
         return self
 
     __radd__=__add__
@@ -647,10 +665,10 @@ class Segment(Direction):
         return cls([Point.origin() for i in range(2)])
 
     @classmethod
-    def random(cls,corners=[-1,-1,1,1],width=1,color=mycolors.WHITE):
+    def random(cls,d=2,borns=[-1,1],width=1,color=mycolors.WHITE):
         """Create a random segment."""
-        p1=Point.random(corners)
-        p2=Point.random(corners)
+        p1=Point.random(d,borns)
+        p2=Point.random(d,borns)
         return cls([p1,p2],width=width,color=color)
 
 
@@ -1299,9 +1317,10 @@ class HalfLine(Line):
 
 class Form:
     @classmethod
-    def random(cls,corners=[-1,-1,1,1],n=random.randint(1,10),**kwargs):
-        """Create a random form using the point_number, the minimum and maximum position for x and y components and optional arguments."""
-        points=[Point.random(corners) for i in range(n)]
+    def random(cls,n=random.randint(5,10),d=2,borns=[-1,1],**kwargs):
+        """Create a random form using the number of points 'n', the dimension
+        of the points 'p' and their borns with optional arguments."""
+        points=[Point.random(d=d,borns=borns) for i in range(n)]
         form=cls(points,**kwargs)
         form.makeSparse()
         return form

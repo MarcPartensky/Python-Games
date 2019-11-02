@@ -2,7 +2,7 @@ from collections import namedtuple
 import random as rd
 import math
 
-Color=namedtuple('Color',['red','green','blue'])
+Color=namedtuple('Color',['r','g','b'])
 
 BLUE       = Color(  0,  0,255)
 RED        = Color(255,  0,  0)
@@ -96,4 +96,5 @@ if __name__=="__main__":
     print(increase(LIGHTBROWN))
     print(nuance(YELLOW,RED,10))
     print("colorRange(0.5):",colorRange(0.1))
+    print(BLUE.r)
     print("mycolors imported")
