@@ -14,29 +14,30 @@ digits=2 #Number of digits of precision of the objects when displayed
 class Point:
     """Representation of a point that can be displayed on screen."""
     @classmethod
-    def sum(cls,points):
+    def sum(cls,points,**kwargs):
         """Return the points which components are the respectives sums of the
         components of the given points."""
-        p=Point.null()
+        p=Point.null(**kwargs)
         for point in points:
             p+=point
         return p
 
-    def origin(d=2):
+    @classmethod
+    def origin(cls,d=2,**kwargs):
         """Return the origin."""
-        return Point([0 for i in range(d)])
+        return cls([0 for i in range(d)],**kwargs)
 
     null=neutral=zero=origin
 
     @classmethod
-    def random(cls,d=2,borns=[-1,1],radius=0.02,fill=False,color=mycolors.WHITE):
+    def random(cls,d=2,borns=[-1,1],**kwargs):
         """Create a random point using optional minimum and maximum."""
         components=[random.uniform(*borns) for i in range(d)]
-        return cls(*components,radius=radius,fill=fill,color=color)
+        return cls(*components,**kwargs)
 
     def distance(p1,p2):
         """Return the distance between the two points."""
-        return math.sqrt(sum([(c1-c2)**2 for (c1,c2) in zip(p1.components,p2.components)]))
+        return math.sqrt(sum([(c1-c2)**2 for (c1,c2) in zip(p1,p2)]))
 
     def turnPoints(angles,points):
         """Turn the points around themselves."""
@@ -49,9 +50,10 @@ class Point:
         for point in points:
             point.show(surface)
 
-    def createFromVector(vector):
+    @classmethod
+    def createFromVector(cls,vector):
         """Create a point from a vector."""
-        return Point(vector.x,vector.y)
+        return cls(vector.x,vector.y)
 
     def __init__(self,*components,mode=0,size=[0.1,0.1],width=1,radius=0.02,fill=False,color=mycolors.WHITE,conversion=True):
         """Create a point using its components and optional radius, fill, color and conversion."""
@@ -371,7 +373,7 @@ class Vector:
 
     def createFromTwoPoints(point1,point2,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector from 2 points."""
-        return Vector([c2-c1 for (c1,c2) in zip(point1.components,point2.components)],color=color,width=width,arrow=arrow)
+        return Vector([c2-c1 for (c1,c2) in zip(point1,point2)],color=color,width=width,arrow=arrow)
 
     def createFromTwoTuples(tuple1,tuple2,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector from 2 tuples."""
@@ -622,7 +624,7 @@ class Vector:
             if type(points[0])==list:
                 points=points[0]
         if len(points)==0:
-            raise Exception("A vector can only be applied to a point of a list of points.")
+            raise Exception("A vector can only be applied to a point or a list of points.")
         elif len(points)==1:
             return points[0]+self
         else:
@@ -662,14 +664,14 @@ class Segment(Direction):
     @classmethod
     def null(cls):
         """Return the segment whoose points are both the origin."""
-        return cls([Point.origin() for i in range(2)])
+        return cls(*[Point.origin() for i in range(2)])
 
     @classmethod
-    def random(cls,d=2,borns=[-1,1],width=1,color=mycolors.WHITE):
+    def random(cls,d=2,borns=[-1,1],**kwargs):
         """Create a random segment."""
         p1=Point.random(d,borns)
         p2=Point.random(d,borns)
-        return cls([p1,p2],width=width,color=color)
+        return cls(*[p1,p2],**kwargs)
 
 
     @classmethod
@@ -680,7 +682,7 @@ class Segment(Direction):
 
     def __init__(self,*points,width=1,color=mycolors.WHITE):
         """Create the segment using 2 points, width and color."""
-        if points!=(): #Extracting the points arguments under the same list format
+        if len(points)>0: #Extracting the points arguments under the same list format
             if type(points[0])==list:
                 points=points[0]
         if len(points)==1: points=points[0]
@@ -795,9 +797,9 @@ class Segment(Direction):
         """Change the value the point corresponding value and index given."""
         self.points[index]=value
 
-    def getLine(self,correct=True):
+    def getLine(self,**kwargs):
         """Return the line through the end points of the segment."""
-        return Line(self.p1,self.angle,self.width,self.color,correct=correct)
+        return Line(self.p1,self.angle,**kwargs)
 
     def getVector(self):
         """Return the vector that goes from p1 to p2."""
@@ -906,22 +908,27 @@ class Segment(Direction):
     vector=property(getVector,setVector,"Representation of the vector of the segment.")
     angle=property(getAngle,setAngle,"Representation of the angle of the segment.")
     length=property(getLength,setLength,"Representation of the length of the segment.")
+    line=property(getLine)
 
 class Line(Direction):
-    def random(min=-1,max=1,width=1,color=mycolors.WHITE):
+    @classmethod
+    def random(cls,borns=[-1,1],angle_borns=[-math.pi,math.pi],**kwargs):
         """Return a random line."""
-        point=Point.random(min,max)
-        angle=random.uniform(min,max)
-        return Line(point,angle,width,color)
+        point=Point.random(borns=borns)
+        angle=random.uniform(*angle_borns)
+        print(point)
+        return cls(point,angle,**kwargs)
 
-    def createFromPointAndVector(point,vector,width=1,color=mycolors.WHITE):
+    @classmethod
+    def createFromPointAndVector(cls,point,vector,**kwargs):
         """Create a line using a point and a vector with optional features."""
-        return Line(point,vector.angle,width=1,color=color)
+        return cls(point,vector.angle,**kwargs)
 
-    def createFromTwoPoints(point1,point2,width=1,color=mycolors.WHITE):
+    @classmethod
+    def createFromTwoPoints(cls,point1,point2,**kwargs):
         """Create a line using two points with optional features."""
         vector=Vector.createFromTwoPoints(point1,point2)
-        return Line(point1,vector.angle,width=1,color=color)
+        return cls(point1,vector.angle,**kwargs)
 
     def __init__(self,point,angle,width=1,color=mycolors.WHITE,correct=True):
         """Create the line using a point and a vector with optional width and color.
@@ -934,6 +941,11 @@ class Line(Direction):
         self.width=width
         self.color=color
         if correct: self.correct()
+
+    def __str__(self,precision=2):
+        """Return a string representation of the line."""
+        return "l(a="+str(round(self.slope,precision))+ \
+                    ",b="+str(round(self.ordinate,precision))+")"
 
     def __eq__(self,l):
         """Determine if two lines are the same."""
@@ -1027,7 +1039,7 @@ class Line(Direction):
 
     def getSlope(self):
         """Return the slope of the line."""
-        return math.tan(angle)
+        return math.tan(self.angle)
 
     def setSlope(self,slope):
         """Set the slope of the line by changing its angle and point."""
@@ -1088,15 +1100,24 @@ class Line(Direction):
 
 
     def crossLine(self,other):
-        """Return the point of intersection between two lines with vectors calculation."""
+        """Return the point of intersection between two lines with vectors
+        calculation. Works in all cases even with vertical lines."""
         a,b=self.point
         c,d=other.point
         m,n=self.vector
         o,p=other.vector
-        if n*o==m*p: return None #The lines are parallels
-        x=(a*n*o-b*m*o-c*m*p+d*m*o)/(n*o-m*p)
-        y=(x-a)*n/m+b
-        return Point(x,y)
+        if n*o==m*p: #The lines are parallels
+            return None
+        elif self.angle==-math.pi/2:
+            return Point(a,d)
+        elif other.angle==-math.pi/2:
+            return Point(b,c)
+        else:
+            x=(a*n*o-b*m*o-c*m*p+d*m*o)/(n*o-m*p)
+            y=(x-a)*n/m+b
+            return Point(x,y)
+
+
 
     def parallel(self,other):
         """Determine if the line is parallel to another object (line or segment)."""
@@ -1802,11 +1823,6 @@ class Form:
 
     __remove__=removePoint
 
-    def update(self,keys):
-        """Update the points."""
-        for point in self.points:
-            point.update(keys)
-
     def __getitem__(self,index):
         """Return the point of index index."""
         return self.points[index]
@@ -1884,18 +1900,6 @@ class Form:
         for point in self.points:
             self.fill=fill
 
-    def setPointKey(self,key,value):
-        """Set the value of the points with the key and the value."""
-        for point in self.points:
-            point.__dict__[key]=value
-
-    def setPointKeys(self,keys,values):
-        """Set the values of the points with the keys and the values."""
-        l=min(len(keys),len(values))
-        for i in range(l):
-            for point in self.points:
-                point.__dict__[keys[i]]=values[i]
-
     getCrossPoints=crossSelf
 
 
@@ -1915,15 +1919,18 @@ class Form:
     #segment_width=  property(getSegmentWidth,setSegmentWith,delSegmentWidth,"Represents the width of the segments.")
 
 class Circle:
-    def random(min=-1,max=1,fill=0,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
+    @classmethod
+    def random(cls,borns=[-1,1],radius_borns=[0,1],**kwargs):
         """Create a random circle."""
-        point=Point.random(min,max)
-        radius=1
-        return Circle.createFromPointAndRadius(point,radius,color,fill)
+        x=random.uniform(*borns)
+        y=random.uniform(*borns)
+        r=random.uniform(*radius_borns)
+        return cls(x,y,radius=r,**kwargs)
 
-    def createFromPointAndRadius(point,radius,**kwargs):
+    @classmethod
+    def createFromPointAndRadius(cls,point,radius,**kwargs):
         """Create a circle from point."""
-        return Circle(*point,radius=radius,**kwargs)
+        return cls(*point,radius=radius,**kwargs)
 
     def __init__(self,*args,radius,fill=False,color=mycolors.WHITE,border_color=None,area_color=None,center_color=None,radius_color=None,radius_width=1,text_color=None,text_size=20):
         """Create a circle object using x, y and radius and optional color and width."""
@@ -1946,7 +1953,11 @@ class Circle:
 
     def __str__(self):
         """Str representation of a circle."""
-        return "cir(pos:"+str(self.position)+",rad:"+str(self.radius)+")"
+        return "c(pos:"+str(self.position)+",rad:"+str(self.radius)+")"
+
+    def __contains__(self,position):
+        """Determine if a point is in a circle."""
+        return sum([(c1-c2)**2 for (c1,c2) in zip(self.position,position)])<=self.radius
 
     def getX(self):
         """Return the x component of the circle."""
@@ -1972,8 +1983,17 @@ class Circle:
         """Set the center point of the circle by changing the position of the circle."""
         self.position=point.position
 
+    def getR(self):
+        """Return the radius."""
+        return self.radius
+
+    def setR(self,radius):
+        """Set the radius to the given radius."""
+        self.radius=radius
+
     x=property(getX,setX,"Allow the user to manipulate the x component easily.")
     y=property(getY,setY,"Allow the user to manipulate the y component easily.")
+    r=property(getR,setR,"Abbreviation of the radius")
     center=point=property(getPoint,setPoint,"Allow the user to manipulate the point easily.")
 
     def show(self,window,color=None,border_color=None,area_color=None,fill=None):
@@ -1984,7 +2004,7 @@ class Circle:
         if not border_color: border_color=self.border_color
         if not area_color: area_color=self.area_color
         if not fill: fill=self.fill
-        window.draw.circle(window.screen,area_color,self.position,self.radius,fill)
+        window.draw.circle(window.screen,border_color,self.position,self.radius,fill)
 
     def showCenter(self,window,color=None,mode=None):
         """Show the center of the screen."""

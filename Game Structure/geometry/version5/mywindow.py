@@ -70,6 +70,10 @@ class Window:
         self.flip()
         self.pause(duration)
 
+    def __bool__(self):
+        """Determine if the window is open or not."""
+        return self.open
+
     def clear(self,color=None):
         """Clear to background color."""
         if color is None:
@@ -364,7 +368,7 @@ class Window:
 
     def log(self,message):
         """Print message with window mention."""
-        text="["+self.name+"] "+message
+        text="["+str(self.name)+"] "+str(message)
         print(text)
 
 

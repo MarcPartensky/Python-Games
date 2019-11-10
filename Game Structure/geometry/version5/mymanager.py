@@ -164,14 +164,18 @@ class Manager:
     def eventsLoop(self):
         """Deal with the events in the loop."""
         for event in pygame.event.get():
-            if event.type == QUIT:
-                self.switchQuit()
-            if event.type == KEYDOWN:
-                self.reactKeyDown(event.key)
-            if event.type == MOUSEBUTTONDOWN:
-                self.reactMouseButtonDown(event.button)
-            if event.type == MOUSEMOTION:
-                self.reactMouseMotion(event)
+            self.react(event)
+
+    def react(self,event):
+        """React to the pygame events."""
+        if event.type == QUIT:
+            self.switchQuit()
+        elif event.type == KEYDOWN:
+            self.reactKeyDown(event.key)
+        elif event.type == MOUSEBUTTONDOWN:
+            self.reactMouseButtonDown(event)
+        elif event.type == MOUSEMOTION:
+            self.reactMouseMotion(event)
 
     def switchQuit(self):
         """React to a quit event."""
@@ -369,11 +373,11 @@ class Manager:
         else:
             self.context.console("The fullscreen mode is unset.")
 
-    def reactMouseButtonDown(self, button):
+    def reactMouseButtonDown(self, event):
         """React to a mouse button down event."""
-        if button == 4:
+        if event.button == 4:
             self.context.draw.plane.zoom([1.1, 1.1])
-        if button == 5:
+        if event.button == 5:
             self.context.draw.plane.zoom([0.9, 0.9])
 
     def reactMouseMotion(self, event):

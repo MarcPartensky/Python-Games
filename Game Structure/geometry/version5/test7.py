@@ -1,23 +1,10 @@
-from mymotion import Motion
+from myabstract import Line,Point
+import math
 
-
-m=Motion.random()
-print(m)
-m*=10
-print(m)
-
-def f():
-    global a
-    a=1
-
-def g():
-    global a
-    a+=1
-
-
-f()
-print(a)
-
-g()
-
-print(a)
+l=Line(Point(1,0),math.pi/2)
+print(l.point,l.angle)
+print(l.angle==-math.pi/2)
+p=Point.random()
+print(p)
+i=l.projectPoint(p)
+print(i)

@@ -1,6 +1,6 @@
 from asteroid_game import AsteroidGame
 from myabstract import Point
-from mysurface import Context
+from mycontext import Context
 from pygame.locals import *
 import pickle
 import socket
@@ -41,7 +41,7 @@ class ClientAsteroid(AsteroidGame):
         except:
             return None
 
-    def makeMessage(self):
+    #def makeMessage(self):
 
     def sendMessage(self,dictionary,client_socket):
         """Send a message to a client."""
@@ -131,6 +131,6 @@ class ClientAsteroid(AsteroidGame):
         return (cursor,shooting,spawn)
 
 if __name__=="__main__":
-    game=ClientAsteroid(IP,PORT,max_duration=20)
+    game=ClientAsteroid(IP,PORT,max_duration=5)
     game.main()
     print("The client is done running.")

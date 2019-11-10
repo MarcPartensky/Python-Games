@@ -21,7 +21,7 @@ class Entity(Body):
         """Respawn an entity by simply spawning it."""
         self.spawn()
 
-    def kill(self):
+    def die(self):
         """Kill the entity by setting alive status to false."""
         self.alive=False
 
@@ -56,7 +56,6 @@ class SpaceShip(FrictionBody):
         super().__init__(anatomy, motion)
 
 
-
 class TriangleSpaceShip(SpaceShip):
     @classmethod
     def random(cls, sparse=100, **kwargs):
@@ -89,8 +88,18 @@ class Missile(Entity):
         super().__init__(anatomy,motion,**kwargs)
         self.target=target
 
+class ShortMissile(Missile):
+    """Missile with a limited life expectancy."""
+    def __init__(self,*args,life_expectancy=3,**kwargs):
+        """Create a missile with a limited life expectancy."""
+        super().__init__(*args,**kwargs)
+        self.life_expectancy=life_expectancy
 
-class SegmentMissile(Missile):
+    def update(self,dt):
+        """Update a short missile."""
+        super().update(dt)
+
+class SegmentMissile(ShortMissile):
     """Base class of any missile."""
     @classmethod
     def random(cls):
@@ -105,27 +114,28 @@ class SegmentMissile(Missile):
 
 
 
-
 class Shooter(SpaceShip):
     def __init__(self,jadskfjlkas,**kwargs):
         """Space ship that can shoot."""
         super().__init__(*args,**kwargs)
         self.shooting=False
 
-    def update(self):
-        pass
-
-    def react(self,event):
-        if event==K_SPACE:
+    def reactKeyDown(self,key):
+        """React to a key down event."""
+        if key==K_SPACE:
             self.shooting=True
 
     def shoot(self):
+        """Return a missile with the same motion."""
         return SegmentMissile(*self.motion)
 
     def show(self):
         pass
 
-class EntityGroup:
+class Group:
+    pass
+
+class EntityGroup(Group):
     """Group of entities that handle themselves."""
 
     @classmethod
@@ -156,6 +166,10 @@ class EntityGroup:
         for entity in self.entities.values():
             entity.spawn()
         self.alives=self.entities.keys()
+
+    def update(self,dt):
+        """Update the group."""
+        pass
 
     def updateEach(self,dt):
         """Update each entity alive."""
@@ -194,8 +208,8 @@ class EntityGroup:
 
     def kill(self,collided):
         """Kill entities with their ids."""
-        for entity in collided:
-            entity.kill()
+        for entity in collided.values():
+            entity.die()
 
     def spread(self,n=10):
         """Spread randomly the entities."""
@@ -232,6 +246,37 @@ class EntityGroup:
                     if e1.cross(e2):
                         collisions.append((id1,id2))
         return collisions
+
+    @property
+    def alive(self):
+        """Return true if any of the entity is alive."""
+        return len(self.alives)!=0
+
+    @property
+    def dead(self):
+        """Return true if all entities are dead."""
+        return len(self.alives)==0
+
+class SpaceshipGameGroup(Group):
+    """Group of groups."""
+    @classmethod
+    def random(cls,nmissiles,nspaceships):
+        """Return a random group."""
+        missiles=MissileGroup.random(nmissiles)
+        spaceships=SpaceShipGroup.random(nspaceships)
+        #spaceships=SpaceShipGroup.random(n)
+        return cls()
+    def __init__(self,groups):
+        """Create a super group using the groups."""
+        super().__init__(**kwargs)
+        self.groups=groups
+
+
+
+class MissileGroup:
+    def updateAlives(self,dt):
+        """Update alived missiles by kill."""
+        self.updateEach(dt)
 
 
 class SegmentMissilesGroup(EntityGroup):
@@ -310,8 +355,9 @@ class GroupTester(GroupManager):
     def updateWithCollisions(self):
         """Update the group."""
         self.group.followEach(self.context.point())
-        #collisions=self.group.getCollisionsWithCircles()
-        collisions=[]
+        collisions=self.group.getCollisionsWithCircles()
+        if len(collisions)>0:
+            self.context.console.append(collisions)
         collided=self.group.getCollided(collisions)
         if len(collided)!=0:
             self.group.kill(collided)

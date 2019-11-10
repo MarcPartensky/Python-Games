@@ -198,7 +198,7 @@ class Line:
     """Representation of a line in the console.
     This might be used for visual debugging but also for typing commands."""
 
-    def __init__(self, *content, time=None, separator=" "):
+    def __init__(self, *content, time, separator=" "):
         """Object of line created using the text and optional time."""
         self.content = list(content)
         self.time = time
@@ -332,11 +332,10 @@ class Console:
     def __call__(self, *args, show=True):
         """Display a message on the context as a console would do."""
         if len(args) > 0:
-            l = Line(*args, time=time.time())
+            l = Line(*args,time=time.time())
             self.lines.append(l)
         if show:
             self.show()
-
 
     def nextArg(self):
         """Create a new argument."""
@@ -513,16 +512,21 @@ class Context(Rect):
         self.draw.plane.controlPosition(self.draw.window)
 
     def getFromScreen(self, position):
-        """Behave like the get from screen of the plan without having to put the window in parameter."""
+        """Behave like the get from screen of the plan without having to put
+        the window in parameter."""
         return self.draw.plane.getFromScreen(position, self.draw.window)
 
-    def blit(self, image, position):
-        """Blit a given image to a given position."""
-        sx, sy = self.image.size()
+    def getToScreen(self, position):
+        """Behave like the get to screen of the plan without having to put
+        the window in parameter."""
+        return self.draw.plane.getToScreen(position, self.draw.window)
 
-    def transform(self, image, size):
-        """Change the size of an image."""
-        return self.draw.window.transform(image, size)
+    def blit(self, surface, position):
+        """Blit a given surface to a given position."""
+        size = surface.get_size()
+        position=self.draw.plane.getToScreen(position,self.window)
+        self.draw.window.screen.blit(surface,position)
+
 
     def getOpen(self):
         return self.draw.window.open

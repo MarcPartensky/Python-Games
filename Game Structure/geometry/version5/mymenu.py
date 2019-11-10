@@ -1,32 +1,35 @@
 from pygame.locals import *
+from myrect import Rect
 
-import pygame
 import mycolors
+import pygame
 
 class Button(Rect):
     """Button using pygame and mycolors."""
     def __init__(self,
                 text="button",
-                position=(0,0),
-                size=(300,50),
+                position=[0,0],
+                size=[300,50],
 
                 police="monospace",
                 text_size=50,
                 bold=False,
                 italic=False,
 
-                default_background=mycolors.WHITE,
-                hovered_background=mycolors.GREEN,
-                focused_background=mycolors.BLUE,
-                clicked_background=mycolors.RED,
+                default_background_style=mycolors.WHITE,
+                hovered_background_style=mycolors.GREEN,
+                focused_background_style=mycolors.BLUE,
+                clicked_background_style=mycolors.RED,
 
-                default_color=mycolors.BLACK,
-                hovered_color=None,
-                focused_color=None,
-                clicked_color=None,
+                default_text_style=mycolors.BLACK,
+                hovered_text_style=mycolors.BLACK,
+                focused_text_style=mycolors.BLACK,
+                clicked_text_style=mycolors.BLACK,
 
-                action=None):
+                build=True):
         """Create a button."""
+        super().__init__(position,size)
+
         self.text = text
 
         self.police = police
@@ -34,83 +37,76 @@ class Button(Rect):
         self.bold = bold
         self.italic = italic
 
-        self.default_background = default_background
-        self.hovered_background = hovered_background
-        self.focused_background = focused_background
-        self.clicked_background = clicked_background
+        self.default_background_style = default_background_style
+        self.hovered_background_style = hovered_background_style
+        self.focused_background_style = focused_background_style
+        self.clicked_background_style = clicked_background_style
 
-        self.default_color = default_color
-        self.hovered_color = hovered_color
-        self.focused_color = focused_color
-        self.clicked_color = clicked_color
+        self.default_text_style = default_text_style
+        self.hovered_text_style = hovered_text_style
+        self.focused_text_style = focused_text_style
+        self.clicked_text_style = clicked_text_style
 
         self.hovered = False
         self.focused = False
         self.clicked = False
 
-        super().__init__(position,size)
+        self.updateBackgroundSizes()
+        if build: self.build()
 
-    def __contains__(self,position):
-        """Determine if a point is within the button."""
-        return self.collidepoint(position)
+    def build(self):
+        """Buid a new surface."""
+        self.surface=pygame.Surface(self.size)
+        self.updateSurface()
 
     def getFont(self):
         """Return a font."""
         return pygame.font.SysFont(self.police,self.text_size,self.bold,self.italic)
 
-    def getColor(self):
-        """Return the color."""
-        if self.clicked and (self.clicked_color is not None):
-            return self.clicked_color
-        elif self.focused and (self.focused_color is not None):
-            return self.focused_color
-        elif self.hovered and (self.hovered_color is not None):
-            return self.hovered_color
+    def getTextStyle(self):
+        """Return the style of the text."""
+        if self.clicked:
+            return self.clicked_text_style
+        elif self.focused:
+            return self.focused_text_style
+        elif self.hovered:
+            return self.hovered_text_style
         else:
-            return self.default_color
+            return self.default_text_style
 
-    def getBackground(self):
-        """Return the background."""
-        if self.clicked and (self.clicked_background is not None):
-            return self.clicked_background
-        elif self.focused and (self.focused_background is not None):
-            return self.focused_background
-        elif self.hovered and (self.hovered_background is not None):
-            return self.hovered_background
+    def getBackgroundStyle(self):
+        """Return the style of the background."""
+        if self.clicked:
+            return self.clicked_background_style
+        elif self.focused:
+            return self.focused_background_style
+        elif self.hovered:
+            return self.hovered_background_style
         else:
-            return self.default_background
+            return self.default_background_style
 
-    def getSurface(self):
-        """Return a surface."""
-        fsurface=self.font.render(self.text,True,self.color)
-        surface=pygame.Surface(self.size)
-        sx,sy=surface.get_size()
-        sfx,sfy=fsurface.get_size()
-        background=self.background
-        if background is not None:
-            if self.isColor(background):
-                surface.fill(background)
-            else:
-                background=pygame.transform.scale(background,surface.get_size())
-                surface.blit(background)
-        surface.blit(fsurface,((sx-sfx)//2,(sy-sfy)//2))
-        return surface
+    def updateBackgroundSizes(self):
+        """Set the sizes of the background surfaces if they exist."""
+        if isinstance(self.clicked_background_style,pygame.Surface):
+            pygame.transform.scale(self.clicked_background_style,self.size)
+        if isinstance(self.focused_background_style,pygame.Surface):
+            pygame.transform.scale(self.focused_background_style,self.size)
+        if isinstance(self.hovered_background_style,pygame.Surface):
+            pygame.transform.scale(self.hovered_background_style,self.size)
+        if isinstance(self.default_background_style,pygame.Surface):
+            pygame.transform.scale(self.default_background_style,self.size)
 
-    def getPosition(self):
-        """Return the position of the button."""
-        return (self.left,self.top)
-
-    def setPosition(self,position):
-        """Set the position of the button."""
-        x,y=position
+    def updateSurface(self):
+        """Return the surface of the button."""
         sx,sy=self.size
-        self.center=x+sx//2
-        self.center=y+sy//2
-
-    def onClick(self):
-        """Execute an action."""
-        if self.action is not None:
-            self.action()
+        font_surface=self.font.render(self.text,True,self.text_style)
+        sfx,sfy=font_surface.get_size()
+        background_style=self.getBackgroundStyle()
+        if isinstance(background_style,pygame.Surface):
+            self.surface.blit(background_style)
+        else:
+            self.surface.fill(background_style)
+        self.surface.blit(font_surface,((sx-sfx)//2,(sy-sfy)//2))
 
     def reset(self):
         """Reset the button."""
@@ -118,8 +114,13 @@ class Button(Rect):
         self.focused=False
         self.clicked=False
 
-    def update(self,position,click,focus,select):
-        """Update a button."""
+    def update(self,*args):
+        """Update the button."""
+        self.updateStates(*args)
+        self.updateSurface()
+
+    def updateStates(self,position,click,focus,select):
+        """Update the states of the button."""
         self.focused=focus
         if position in self:
             self.hovered=True
@@ -134,8 +135,7 @@ class Button(Rect):
             if focus:
                 self.clicked=True
 
-
-    def isColor(self,object):
+    def isColorStyle(self,object):
         """Determine if an object is a color."""
         if type(object)==tuple:
             if len(object)==3:
@@ -150,20 +150,19 @@ class Button(Rect):
 
 
     font=property(getFont)
-    surface=property(getSurface)
-    position=property(getPosition,setPosition)
-    color=property(getColor)
-    background=property(getBackground)
+    text_style=property(getTextStyle)
+    background_style=property(getBackgroundStyle)
 
 class Page(Rect):
     """Page using pygame, mycolors and window."""
-    def __init__(self,size,buttons=[],position=(0,0),background=None):
+    def __init__(self,rect,buttons=[],background=None):
         """Create a page."""
         self.buttons=buttons
         self.focus=None
         self.select=False
         self.background=background
-        super().__init__(position,size)
+        cdn=Rect.getCoordinatesFromRect(rect)
+        super().__init__(cdn[:2],cdn[2:])
         self.spreadVerticalButtons()
 
     def isColor(self,object):
@@ -197,16 +196,14 @@ class Page(Rect):
         for i in range(l):
             self.buttons[i].center=(ux*(i+1/2),my)
 
-
     def showButtons(self):
         """Show the buttons on the surface."""
         for button in self.buttons:
             self.surface.blit(button.surface,button.position)
 
-
     def __call__(self,window):
         """Execute the main loop with the window."""
-        while window.open:
+        while window:
             self.events(window)
             self.update(window)
             self.show(window)
@@ -242,9 +239,13 @@ class Page(Rect):
             else:
                 self.motion = False
 
-
     def update(self,window):
         """Update the page."""
+        self.updateStates(window)
+        self.updateSurface()
+
+    def updateStates(self,window):
+        """Update the state of the page."""
         self.cursor = window.point()
         self.click = window.click()
         keys = window.press()
@@ -275,16 +276,15 @@ class Page(Rect):
         """Show the page by showing its components."""
         self.showSurface(window)
         self.showButtons(window)
-        window.flip()
 
     def showSurface(self,window):
         """Show the surface."""
-        window.screen.blit(self.surface,self.position)
+        window.screen.blit(self.surface,(self.xmin,self.ymin))
 
-    def showButtons(self,window):
+    def showButtons(self,context):
         """Show the buttons of the page."""
         for i in range(len(self.buttons)):
-            window.screen.blit(self.buttons[i].surface,self.buttons[i].position)
+            context.screen.blit(self.buttons[i].surface,self.buttons[i].position)
 
     def getSurface(self):
         """Return the surface of the page."""
@@ -297,19 +297,8 @@ class Page(Rect):
                 surface.blit(background)
         return surface
 
-    def getPosition(self):
-        """Return the position of the button."""
-        return (self.left,self.top)
 
-    def setPosition(self,position):
-        """Set the position of the button."""
-        x, y = position
-        sx, sy = self.size
-        self.center = x + sx//2
-        self.center = y + sy//2
-
-    surface  = property(getSurface)
-    position = property(getPosition)
+    surface=property(getSurface)
 
 
 

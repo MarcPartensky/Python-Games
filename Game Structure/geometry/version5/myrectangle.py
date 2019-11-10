@@ -3,14 +3,51 @@ from myrect import Rect
 import mycolors
 
 
-class Rectangle(Form,Rect):
+class Rectangle(Rect,Form):
     """Uses multiple inheritance in order to be a rectangle that can be displayed."""
-    def createFromRect(rect,**kwargs):
-        """Create a rectangle using a rect."""
-        return Rectangle(rect.position,rect.size,**kwargs)
 
-    def __init__(self,position,size,fill=False,point_mode=0,point_size=[0.01,0.01],point_radius=0.01,point_width=1,point_fill=False,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE,cross_point_color=mycolors.WHITE,cross_point_radius=0.01,cross_point_mode=0,cross_point_width=1,cross_point_size=[0.1,0.1],point_show=True,side_show=True,area_show=False):
-        """Create an abstract rectangle with coordonnates."""
+    @classmethod
+    def cross(cls,r1,r2):
+        """Return Rectangle of the intersection of the rectangles r1 and r2."""
+        if isinstance(r1,cls) and isinstance(r2,cls):
+            r=Rect.cross(r1,r2)
+            if r: return cls.createFromRect(r)
+        elif isinstance(r1,Form) and isinstance(r2,Form):
+            return Form.cross(r1,r2)
+
+    @classmethod
+    def random(cls,borns=[-1,1],size_borns=[0,1],**kwargs):
+        """Create a random rectangle."""
+        rect=Rect.random(borns,size_borns)
+        return cls.createFromRect(rect,**kwargs)
+
+    @classmethod
+    def createFromRect(cls,rect,**kwargs):
+        """Create a rectangle using a rect."""
+        return cls(rect.position,rect.size,**kwargs)
+
+    def __init__(self,position,
+                    size,
+                    fill=False,
+                    point_mode=0,
+                    point_size=[0.01,0.01],
+                    point_radius=0.01,
+                    point_width=1,
+                    point_fill=False,
+                    side_width=1,
+                    color=None,
+                    point_color=mycolors.WHITE,
+                    side_color=mycolors.WHITE,
+                    area_color=mycolors.WHITE,
+                    cross_point_color=mycolors.WHITE,
+                    cross_point_radius=0.01,
+                    cross_point_mode=0,
+                    cross_point_width=1,
+                    cross_point_size=[0.1,0.1],
+                    point_show=True,
+                    side_show=True,
+                    area_show=False):
+        """Create an abstract rectangle with coordinates."""
         Rect.__init__(self,position,size)
 
         self.point_mode=point_mode
@@ -34,10 +71,9 @@ class Rectangle(Form,Rect):
         self.cross_point_width=cross_point_width
         self.cross_point_size=cross_point_size
 
-
     def getPoints(self):
         """Return the points that correspond to the extremities of the rectangle."""
-        xmin,ymin,xmax,ymax=self.getCorners()
+        xmin,ymin,xmax,ymax=self.corners
         p1=Point(xmin,ymin)
         p2=Point(xmax,ymin)
         p3=Point(xmax,ymax)
@@ -50,30 +86,36 @@ class Rectangle(Form,Rect):
         xmax=max([p.x for p in points])
         ymin=min([p.y for p in points])
         ymax=max([p.y for p in points])
-        corners=[xmin,ymin,xmax,ymax]
-        coordonnates=self.getCoordonnatesFromCorners(corners)
-        self.position=coordonnates[:2]
-        self.size=coordonnates[2:]
+        self.corners=[xmin,ymin,xmax,ymax]
 
     points=property(getPoints,setPoints,"Allow the user to manipulate the points of the rectangle.")
 
+
 if __name__=="__main__":
-    from mycontext import Surface
-    surface=Surface(name="Rectangle Test")
+    from mycontext import Context
+    from myabstract import Point
+    context=Context(name="Rectangle Test")
+    p=Point.random(radius=0.5)
     r1=Rectangle([0,0],[3,2],side_width=3,side_color=mycolors.BLUE,area_color=mycolors.WHITE,area_show=True)
     r2=Rectangle([-1,-1],[2,1],side_width=3,side_color=mycolors.BLUE,area_color=mycolors.WHITE,area_show=True)
-    print(r1.size)
-    while surface.open:
-        surface.check()
-        surface.control()
-        surface.clear()
-        surface.show()
-        r1.position=surface.point()
-        r1.show(surface)
-        r2.show(surface)
-        r1.center.show(surface,color=mycolors.RED,mode="cross")
-        r=r1.crossRect(r2)
+    while context:
+        context.check()
+        context.control()
+        context.clear()
+        context.show()
+        r1.position=context.point()
+        if p in r1:
+            r1.side_color=mycolors.YELLOW
+        else:
+            r1.side_color=mycolors.WHITE
+        r1.show(context)
+        r2.show(context)
+        r1.center.show(context,color=mycolors.RED,mode="cross")
+        r=Rectangle.cross(r1,r2)
         if r:
             r=Rectangle.createFromRect(r,area_color=mycolors.GREEN,area_show=True,side_width=2,side_color=mycolors.RED)
-            r.show(surface)
-        surface.flip()
+            r.show(context)
+        if p in r1:
+            p.show(context)
+            context.console("inside")
+        context.flip()
