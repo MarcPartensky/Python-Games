@@ -8,14 +8,13 @@ def getIP():
 IP = getIP()
 PORT = 1235
 
-
 class Server:
     """Create a socket server that can receive requests and send results
     with socket."""
 
-    def __init__(self, port, max_sockets=10):
+    def __init__(self, ip, port, max_sockets=10):
         # We don't want people to access our ip, and we suppose the ip constant.
-        self._ip = socket.gethostname()
+        self._ip = ip
         self._port = port
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -23,6 +22,7 @@ class Server:
         self.connection.listen(max_sockets)
         self.clients = [self.connection]
         self.data = None
+        self.message = None
         self.requests = deque([])
         self.open = True
 
@@ -33,7 +33,7 @@ class Server:
     def update(self):
         read_clients, write_clients, exception_clients = select.select(self.clients, self.clients, self.clients)
         self.readEach(read_clients)
-        self.writeEach(write_clients, self.data)
+        self.writeEach(write_clients, self.message)
         self.checkEach(exception_clients)
 
     def readEach(self, clients):
@@ -49,6 +49,8 @@ class Server:
         if message is not None:
             for client in clients:
                 self.write(client, message)
+            self.message = None
+
 
     def checkEach(self, clients):
         """Check for any error for each client, and remove them from the list of clients if there is."""
@@ -63,7 +65,8 @@ class Server:
 
     def read(self, client):
         """"Receive a request sent by a client."""
-        self.requests.append(client.recv(1024).decode())
+        result = client.recv(1024).decode()
+        if result: self.requests.append(result)
 
     def write(self, client, message):
         """Send the result of the server to the socket of a client."""
@@ -115,6 +118,7 @@ class Client:
     def close(self):
         """Close the main connection with the server."""
         self.connection.close()
+
 
 
 if __name__ == "__main__":
