@@ -419,8 +419,6 @@ class WidgetTester:
                 for (i,letter) in enumerate("abcdefghijklmnopqrstuvwxyz")]
         return cls(sliders+buttons)
 
-
-
     @classmethod
     def createRandomSlidersAndButtons(cls,nsliders=5,nbuttons=5,sparse=10):
         """Create some sliders and some buttons."""
