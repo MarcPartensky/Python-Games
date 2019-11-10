@@ -1,6 +1,7 @@
 from collections import deque
 import socket
 import select
+import pickle
 
 def getIP():
     return socket.gethostname()
@@ -66,11 +67,12 @@ class Server:
     def read(self, client):
         """"Receive a request sent by a client."""
         result = client.recv(1024).decode()
+        result = pickle.loads(result)
         if result: self.requests.append(result)
 
     def write(self, client, message):
         """Send the result of the server to the socket of a client."""
-        client.send(bytes(message, "utf-8"))
+        client.send(pickle.dumps(message))
 
     def __del__(self):
         """Close all connections."""
@@ -103,12 +105,13 @@ class Client:
 
     def send(self, request):
         """Send the inputs of the server."""
-        self.connection.send(bytes(request, "utf-8"))
+        self.connection.send(pickle.dumps(request))
 
     def receive(self):
         """Receive the results of the requests."""
         result = self.connection.recv(1024).decode()
-        self.results.append(result)
+        result = pickle.loads(result)
+        if result: self.results.append(result)
 
     def __del__(self):
         """Close all connections."""
