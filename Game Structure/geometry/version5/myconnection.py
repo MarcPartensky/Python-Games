@@ -66,10 +66,10 @@ class Server:
 
     def read(self, client):
         """"Receive a request sent by a client."""
-        piece = self.connection.recv(1024)
+        piece = client.recv(1024)
         result = piece
         while piece:
-            piece = self.connection.recv(1024)
+            piece = client.recv(1024)
             result += piece
         if result:
             result = pickle.loads(result)
