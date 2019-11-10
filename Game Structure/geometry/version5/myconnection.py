@@ -66,7 +66,7 @@ class Server:
 
     def read(self, client):
         """"Receive a request sent by a client."""
-        result = client.recv(1024).decode()
+        result = client.recv(1024)
         result = pickle.loads(result)
         if result: self.requests.append(result)
 
@@ -109,7 +109,7 @@ class Client:
 
     def receive(self):
         """Receive the results of the requests."""
-        result = self.connection.recv(1024).decode()
+        result = self.connection.recv(1024)
         result = pickle.loads(result)
         if result: self.results.append(result)
 
