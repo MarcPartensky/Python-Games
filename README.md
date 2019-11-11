@@ -1,16 +1,16 @@
-### Python-Games
+# Python-Games
 
 ## Game structure Folder
 
-# Dependencies
+### Dependencies
 - pygame (For displaying the game and detect the events)
 - opencv (For recording video or screen)
 - numpy (Useful in some cases of optimization)
 
-# Introduction
+### Introduction
 This is where i post all my games made in python using pygame. Most of them are based on a self-made hierarchy to reinforce the abstraction and so-doing the efficiency of writing code.
 
-# Hierarchy (composition)
+### Hierarchy (composition)
 - Manager
   - Context
     - Draw
@@ -38,7 +38,7 @@ The manager allows the user to "control" the program. Most projects have main cl
 It deals with the main loop, it has an update, show and react method that can be overrided to create main classes fast.
 
 
-# Geometrical components
+### Geometrical components
 
 myabstract.py: Main geometrical shapes
 - Point
@@ -87,7 +87,7 @@ mygraph.py: Create a graphical graph, that could be used in the future.
 myinterpolation.py: Make polynomial or bezier interpolations of points using mathematics formulaes.
 
 
-# Physical components
+### Physical components
 
 myforce.py: Caracterize a force and directly unherits from Vector
 - Force
@@ -125,14 +125,14 @@ Deprecated:
 - mymaterialformcollider: detect collisions between material forms
 
 
-# Interconnected Tools
+### Interconnected Tools
 
 myconnection.py: Uses socket, select and pickle module to communicate between servers and clients computers.
 - Client
 - Server
 
 
-# Few projects description
+### Few projects description
 
 - mysierpinski.py
   Draw a sierpinski triangle from random points.
