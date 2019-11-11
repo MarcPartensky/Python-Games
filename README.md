@@ -1,5 +1,7 @@
 # Python-Games
 
+# Game structure Folder
+
 # Dependencies
 - pygame (For displaying the game and detect the events)
 - opencv (For recording video or screen)
@@ -175,7 +177,12 @@ myconnection.py: Uses socket, select and pickle module to communicate between se
   File for all space related classes: missiles, spaceships, triangle spaceships, spaceships groups, ...
   
  
- 
+# Everything else than game-structure
+
+Every project that isn't in the game structure file is a project that rely on its own versions of their librairies.
+Which means the version of the window class are fixed and thus deprecated.
+
+
 
   
   
