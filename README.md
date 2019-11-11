@@ -73,10 +73,15 @@ mywidgets.py: Useful widgets to interact with the program visually
 - Slider
 
 mycolors.py: Gives name to rgb colors and function to use them
+
 mygrapher.py: Show any function like matplotlib would do but using the environment
+
 mycomplexforms.py: Classes for more advanced forms
+
 myzone.py: Class for a limited plane (because the plane is infinite)
+
 mygraph.py: Create a graphical graph, that could be used in the future.
+
 myinterpolation.py: Make polynomial or bezier interpolations of points using mathematics formulaes.
 
 
