@@ -2,8 +2,10 @@ from myconnection import Server, getIP
 import time
 from mybody import Body
 
+
 print(getIP())
-IP = "172.16.0.39."
+IP = getIP()
+#IP = "172.16.0.39."
 
 t0 = time.time()
 duration = 10
@@ -14,7 +16,8 @@ s = Server(IP, PORT)
 
 while time.time() - t0 < duration:
     s.update()
-    print(s.requests)
-    print(time.time() - t0)
+    if s.requests:
+        print(s.requests)
+        del s.requests[0]
 
 del s

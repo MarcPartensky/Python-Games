@@ -1,12 +1,14 @@
-from mysurface import Surface
+from mycontext import Surface
+
 
 class Game:
     """Main class to use in future games."""
-    def __init__(self,context,levels):
+
+    def __init__(self, context, levels):
         """Create a game engine."""
-        self.context=context
-        self.levels=levels
-        self.stage=None
+        self.context = context
+        self.levels = levels
+        self.stage = None
 
     def play(self):
         """Main loop of the game engine."""
@@ -17,7 +19,7 @@ class Game:
 
     def events(self):
         """Update and keep all the keys."""
-        self.keys=self.context.press()
+        self.keys = self.context.press()
 
     def update(self):
         """Update all the entities."""
@@ -28,10 +30,11 @@ class Game:
         """Show the entities on screen."""
         self.system.show(self.context)
 
+
 class Level:
-    def __init__(self,system):
+    def __init__(self, system):
         """Create a level using a system of entities."""
-        self.system=system
+        self.system = system
 
     def play(self):
         """Main loop of the game engine."""
@@ -42,9 +45,9 @@ class Level:
 
     def events(self):
         """Update and keep all the keys."""
-        self.keys=self.context.press()
+        self.keys = self.context.press()
 
-    def set(self,keys):
+    def set(self, keys):
         """Save the actual keys to update later on."""
         self.system.set(keys)
 
@@ -53,20 +56,19 @@ class Level:
         self.system.update()
 
 
-
-
 class System:
     """Handles all the entities of the game, allow the client to control them
     without difficulty."""
-    def __init__(self,static=[],dynamic=[],fields=[]):
-        """Create a system using static and dynamic entities with force fields."""
-        self.static=static
-        self.dynamic=dynamic
-        self.fields=fields
 
-    def set(self,keys):
+    def __init__(self, static=[], dynamic=[], fields=[]):
+        """Create a system using static and dynamic entities with force fields."""
+        self.static = static
+        self.dynamic = dynamic
+        self.fields = fields
+
+    def set(self, keys):
         """Save the actual keys to update later on."""
-        self.keys=keys
+        self.keys = keys
 
     def update(self):
         """Update all the entities making sure they interact with each others
@@ -86,15 +88,10 @@ class System:
                 if entity in field:
                     entity.subject(field)
 
-
     def updatePhysics(self):
         """Update all the objects according to physics rules."""
 
-
-
-
-
-    def show(self,context):
+    def show(self, context):
         """Show all the entities on the screen."""
         self.showStatic()
         self.showDynamic()
@@ -110,12 +107,7 @@ class System:
             entity.show(self.context)
 
 
-
-
-
-
-
-if __name__=="__main__":
-    context=Surface()
-    system=System()
-    game=GameEngine(context)
+if __name__ == "__main__":
+    context = Surface()
+    system = System()
+    game = GameEngine(context)

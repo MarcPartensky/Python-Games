@@ -10,13 +10,6 @@ class ComplexForm(Form):
     specific methods of forms which make sense in a complex form but cannot work.
     This choice was made out of pure lazyness."""
 
-    def random(corners=[-1,-1,1,1],number=random.randint(3,10),**kwargs):
-        """Create a random form using optional corners, number of points and other optional arguments."""
-        points=[Point.random(corners) for i in range(number)]
-        form=ComplexForm(points,**kwargs)
-        form.makeSparse()
-        return form
-
     def __init__(self,*args,**kwargs):
         """Create a complex form."""
         super().__init__(*args,**kwargs)
@@ -99,12 +92,17 @@ class ComplexForm(Form):
 
 
 if __name__=="__main__":
-    from mysurface import Surface
+    from mycontext import Surface
     from myplane import Plane
-    p=Plane(theme={"grid nscale":2})
-    surface=Surface(name="Complex Form",plane=p)
-    arguments={"number":5,"cross_point_color":mycolors.GREEN,"cross_point_mode":1,"cross_point_size":(0.01,0.01),"cross_point_width":2}
-    f=ComplexForm.random(**arguments)
+    p = Plane(theme={"grid nscale": 2})
+    surface = Surface(name="Complex Form", plane=p)
+    arguments = {
+        "n": 5,
+        "cross_point_color": mycolors.GREEN,
+        "cross_point_mode": 1,
+        "cross_point_size": (0.01, 0.01),
+        "cross_point_width": 2
+    }
     while surface.open:
         surface.check()
         surface.control()

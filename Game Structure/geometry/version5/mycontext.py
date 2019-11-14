@@ -398,7 +398,6 @@ class Context(Rect):
         self.draw = draw
         self.console = console
         self.camera = camera
-        self.screen = self.draw.window.screen
         self.clear = self.draw.clear
         self.flip = self.draw.window.flip
         self.press = self.draw.window.press
@@ -407,7 +406,6 @@ class Context(Rect):
         self.__call__ = self.draw.window.__call__
         self.wait = self.draw.window.wait
         self.control = self.draw.control
-        self.events = self.draw.window.events
         self.checking = self.draw.window.checking
         self.loadImage = self.draw.window.loadImage
         self.print = self.draw.print
@@ -416,6 +414,14 @@ class Context(Rect):
         self.count = self.draw.window.count
         self.alert = self.draw.window.alert
         self.scale = self.draw.window.scale
+
+    def getScreen(self):
+        return self.draw.window.screen
+
+    def setScreen(self,screen):
+        self.draw.window.screen=screen
+
+    screen=property(getScreen,setScreen)
 
     def getKeys(self):
         """Return the keys of the window."""

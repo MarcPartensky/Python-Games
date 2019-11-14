@@ -90,6 +90,12 @@ class Rectangle(Rect,Form):
 
     points=property(getPoints,setPoints,"Allow the user to manipulate the points of the rectangle.")
 
+class Square(Rectangle):
+    """Create a square that unherits from rectangle."""
+    def __init__(self,position,length,**kwargs):
+        size=(length,length)
+        super().__init__(position,size,**kwargs)
+
 
 if __name__=="__main__":
     from mycontext import Context
@@ -97,7 +103,7 @@ if __name__=="__main__":
     context=Context(name="Rectangle Test")
     p=Point.random(radius=0.5)
     r1=Rectangle([0,0],[3,2],side_width=3,side_color=mycolors.BLUE,area_color=mycolors.WHITE,area_show=True)
-    r2=Rectangle([-1,-1],[2,1],side_width=3,side_color=mycolors.BLUE,area_color=mycolors.WHITE,area_show=True)
+    r2=Square([-1,-1],2,side_width=3,side_color=mycolors.BLUE,area_color=mycolors.WHITE,area_show=True)
     while context:
         context.check()
         context.control()

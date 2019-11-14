@@ -6,6 +6,7 @@ import pickle
 def getIP():
     return socket.gethostname()
 
+# IP = "172.16.0.39."
 IP = getIP()
 PORT = 1235
 
@@ -14,6 +15,7 @@ class Server:
     with socket."""
 
     def __init__(self, ip, port, max_sockets=10):
+        """Create a server using the ip and port and otpional max_socket."""
         # We don't want people to access our ip, and we suppose the ip constant.
         self._ip = ip
         self._port = port
@@ -28,10 +30,12 @@ class Server:
         self.open = True
 
     def main(self):
+        """Main loop of the server which only updates it while it is open."""
         while self.open:
             self.update()
 
     def update(self):
+        """Update the server to receive, write and check the sockets of the clients."""
         read_clients, write_clients, exception_clients = select.select(self.clients, self.clients, self.clients)
         self.readEach(read_clients)
         self.writeEach(write_clients, self.message)
@@ -102,6 +106,7 @@ class Client:
 
     def __init__(self, ip, port):
         # We don't want people to access our ip, and we suppose the ip constant.
+        """Create a client which connects to a server using its ip and port."""
         self._ip = ip
         self._port = port
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -137,7 +142,7 @@ class Client:
 
 
 if __name__ == "__main__":
-    s = Server(PORT)
+    s = Server(IP, PORT)
     c1 = Client(IP, PORT)
     c2 = Client(IP, PORT)
     s.update()

@@ -362,7 +362,7 @@ class Vector:
 
 
 
-    def createFromPolarCoordonnates(norm,angle,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
+    def createFromPolar(norm,angle,color=mycolors.WHITE,width=1,arrow=[0.1,0.5]):
         """Create a vector using norm and angle from polar coordonnates."""
         x,y=Vector.cartesian([norm,angle])
         return Vector(x,y,color=color,width=width,arrow=arrow)
@@ -1021,7 +1021,7 @@ class Line(Direction):
 
     def getUnitVector(self):
         """Return the unit vector of the line."""
-        return Vector.createFromPolarCoordonnates(1,self.angle)
+        return Vector.createFromPolar(1,self.angle)
 
     def setUnitVector(self,vector):
         """Set the unit vector of the line."""
@@ -1376,7 +1376,6 @@ class Form:
                 points.extend(forms[i].crossForm(forms[j]))
         return points
 
-
     @classmethod
     def intersectionTwoForms(cls,form1,form2):
         """Return the form which is the intersection of two forms."""
@@ -1403,7 +1402,6 @@ class Form:
             result=cls.intersectionTwoForms(result,form)
         return result
 
-
     @classmethod
     def unionTwoForms(cls,form1,form2):
         """Return the union of two forms."""
@@ -1429,7 +1427,6 @@ class Form:
             result.extend(cls.union(form,result))
         return result
 
-
     @classmethod
     def createFromTuples(cls,tps,conversion=True,radius=0.01,**kwargs):
         """Create a form from the tuples 'tps' and some optional arguments."""
@@ -1437,7 +1434,26 @@ class Form:
         return cls(pts,**kwargs)
 
 
-    def __init__(self,points,fill=False,point_mode=0,point_size=[0.01,0.01],point_radius=0.01,point_width=1,point_fill=False,side_width=1,color=None,point_color=mycolors.WHITE,side_color=mycolors.WHITE,area_color=mycolors.WHITE,cross_point_color=mycolors.WHITE,cross_point_radius=0.01,cross_point_mode=0,cross_point_width=1,cross_point_size=[0.1,0.1],point_show=True,side_show=True,area_show=False):
+    def __init__(self,points,
+                fill=False,
+                point_mode=0,
+                point_size=[0.01,0.01],
+                point_radius=0.01,
+                point_width=1,
+                point_fill=False,
+                side_width=1,
+                color=None,
+                point_color=mycolors.WHITE,
+                side_color=mycolors.WHITE,
+                area_color=mycolors.WHITE,
+                cross_point_color=mycolors.WHITE,
+                cross_point_radius=0.01,
+                cross_point_mode=0,
+                cross_point_width=1,
+                cross_point_size=[0.1,0.1],
+                point_show=True,
+                side_show=True,
+                area_show=False):
         """Create the form object using points."""
         self.points=points
 
@@ -1561,10 +1577,23 @@ class Form:
         """Recenter a form using the new center point."""
         self.center=Point(*point)
 
+    def enlarge(self,n=2):
+        """Enlarge the form by a factor of n."""
+        c=self.center
+        for i in range(len(self.points)):
+            v=Vector.createFromTwoPoints(c,self.points[i])
+            self.points[i].set((n*v)(c))
+
+    def spread(self,n=2):
+        """Take away the form by a factor of n."""
+        for point in self.points:
+            point*=n
+
     def getSegments(self):
         """"Return the list of the form sides."""
         l=len(self.points)
-        return [Segment(self.points[i%l],self.points[(i+1)%l],color=self.side_color,width=self.side_width) for i in range(l)]
+        return [Segment(self.points[i%l],self.points[(i+1)%l], \
+        color=self.side_color,width=self.side_width) for i in range(l)]
 
     def setSegments(self,segments):
         """Set the segments of the form by setting its points to new values."""
@@ -2022,7 +2051,7 @@ class Circle:
         """Show the radius of the circle."""
         if not color: color=self.radius_color
         if not width: width=self.radius_width
-        vector=Vector.createFromPolarCoordonnates(self.radius,0,color=color)
+        vector=Vector.createFromPolar(self.radius,0,color=color)
         vector.show(window,self.center,width=width)
         vector.showText(surface,self.center,"radius",size=20)
 
@@ -2043,8 +2072,8 @@ class Circle:
             m=s.middle
             n=math.sqrt(self.radius**2-(s.norm/2)**2)
             a=s.angle+math.pi/2
-            v1=Vector.createFromPolarCoordonnates(n,a)
-            v2=Vector.createFromPolarCoordonnates(n,-a)
+            v1=Vector.createFromPolar(n,a)
+            v2=Vector.createFromPolar(n,-a)
             p1=v1(m)
             p2=v2(m)
             return [p1,p2]

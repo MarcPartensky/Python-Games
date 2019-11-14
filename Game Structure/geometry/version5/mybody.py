@@ -78,10 +78,11 @@ class Body(Physics):
         """Create body using its anatomy, its motion and its angular moment."""
         self.anatomy = anatomy
         self.motions = list(motions)
+        self.updateBorn()
 
     def __str__(self):
         """Return the string representation of the body."""
-        return "b(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
+        return type(self).__name__[0].lower()+"(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
 
     def show(self, context):
         """Show the form on the window."""
@@ -167,20 +168,15 @@ class Body(Physics):
         """Determine if the body is crossing with the other body."""
         return self.form.cross(other.form)
 
-    def getBorn(self):
+    def updateBorn(self):
         """Return the born of the body."""
         c = self.anatomy.center
         lengths = [Segment(c, p).length for p in self.anatomy.points]
-        return max(lengths)
+        self._born = max(lengths)
 
-    def setBorn(self, born):
-        """Set the born of the body."""
-        c = self.anatomy.center
-        f = born / self.born
-        for point in self.points:
-            point *= f
-
-    born = property(getBorn, setBorn)
+    @property
+    def born(self):
+        return self._born
 
     def getPoints(self):
         """Return the points of the form of the body."""
@@ -195,6 +191,24 @@ class Body(Physics):
     def getCircle(self):
         """Return the circle that borns the body."""
         return Circle(*self.position, self.born)
+
+
+class FrictionBody(Body):
+    """Add some friction to a body."""
+
+    def __init__(self, *args, friction=0.1):
+        """Create a body with friction."""
+        super().__init__(*args)
+        self.friction = friction
+
+    def update(self, dt):
+        """Update the spaceship."""
+        super().update(dt)
+        self.updateFriction()
+
+    def updateFriction(self):
+        """Add some friction."""
+        self.velocity.norm *= (1 - self.friction)
 
 
 class MaterialBody(Material):
@@ -276,6 +290,8 @@ class MaterialBody(Material):
         return anatomy
 
     absolute = property(getAbsolute)
+
+
 
 
 if __name__ == "__main__":

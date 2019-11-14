@@ -7,14 +7,17 @@ p=2 #Number of digits of precision of the objects when displayed
 
 
 class Force(Vector):
-    def null(d=2):
+    @classmethod
+    def null(cls,d=2):
         """Return the null force."""
-        return Force([0 for i in range(d)])
+        return cls([0 for i in range(d)])
+
     neutral=zero=null
 
-    def sum(forces,d=2):
+    @classmethod
+    def sum(cls,forces,d=2):
         """Return the sum of the forces."""
-        result=Force.null(d)
+        result=cls.null(d)
         for force in forces:
             result+=force
         return result

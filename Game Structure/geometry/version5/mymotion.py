@@ -5,7 +5,7 @@ import copy
 import math
 
 class Motion:
-    #Class functions
+    #Class methods
     #Operations
     @classmethod
     def null(cls,n=3,d=2):
@@ -49,10 +49,11 @@ class Motion:
         if len(self.vectors)>=3: self.acceleration.color = mycolors.RED
 
     #Set
-    def set(self,other):
+    def set(self,other,n=None):
         """Set the components of the motion to the components of another motion
         without affecting its colors."""
-        for i in range(len(self.vectors)):
+        if n is None: n=len(self.vectors)
+        for i in range(n):
             self.vectors[i].set(other.vectors[i])
 
     def showEach(self,context):
@@ -77,7 +78,7 @@ class Motion:
     #Representation
     def __str__(self):
         """Return the str representation of the motion."""
-        return "Motion("+",".join([str(v) for v in self.vectors])+")"
+        return "mt("+",".join(map(str,self.vectors))+")"
 
     #Iterations
     def __iter__(self):
@@ -232,10 +233,10 @@ class Moment(Motion):
     #Representation
     def __str__(self):
         """Return the str representation of the moment."""
-        return "Moment("+",".join([str(v) for v in self.vectors])+")"
+        return "mm("+",".join(map(str,self.vectors))+")"
 
     #Showing
-    def show(self, context,point=Point(0,0),angle=0):
+    def show(self, context, point=Point(0,0), angle=0):
         """Show the moment."""
         if len(self)>=1:
             mp=self.position

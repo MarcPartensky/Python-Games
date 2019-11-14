@@ -141,6 +141,10 @@ class Manager:
         self.capslock = False
         self.altlock = False
 
+    def __str__(self):
+        """Return the string representation of the manager."""
+        return type(self).__name__+"(\n{}\n)".format("\n".join(map(lambda x:":".join(map(str,x)),self.__dict__.items())))
+
     def __call__(self):
         """Call the main loop, this method is to be overloaded."""
         self.main()
@@ -173,9 +177,9 @@ class Manager:
         elif event.type == KEYDOWN:
             self.reactKeyDown(event.key)
         elif event.type == MOUSEBUTTONDOWN:
-            self.reactMouseButtonDown(event)
+            self.reactMouseButtonDown(event.button, event.pos)
         elif event.type == MOUSEMOTION:
-            self.reactMouseMotion(event)
+            self.reactMouseMotion(event.pos)
 
     def switchQuit(self):
         """React to a quit event."""
@@ -315,7 +319,7 @@ class Manager:
             self.switchCaptureWriting()
         if key == K_3:
             self.switchScreenWriting()
-        if key == K_SPACE:
+        if key == K_LALT:
             self.switchPause()
 
     def switchTyping(self):
@@ -328,7 +332,7 @@ class Manager:
             self.context.console("Typing deactivated.")
 
     def switchScreenWriting(self):
-        """Swtich the screen writing mode."""
+        """Switch the screen writing mode."""
         if self.context.camera.screen_writing:
             self.context.camera.screen_writer.release()
         self.context.camera.switchScreenWriting()
@@ -351,7 +355,7 @@ class Manager:
 
     def switchPause(self):
         """React to a pause event."""
-        self.pause = not(self.pause)
+        self.pause = not self.pause
         if self.pause:
             self.context.console('The system is paused.')
         else:
@@ -373,14 +377,14 @@ class Manager:
         else:
             self.context.console("The fullscreen mode is unset.")
 
-    def reactMouseButtonDown(self, event):
+    def reactMouseButtonDown(self, button, position):
         """React to a mouse button down event."""
-        if event.button == 4:
+        if button == 4:
             self.context.draw.plane.zoom([1.1, 1.1])
-        if event.button == 5:
+        if button == 5:
             self.context.draw.plane.zoom([0.9, 0.9])
 
-    def reactMouseMotion(self, event):
+    def reactMouseMotion(self, position):
         """React to a mouse motion event."""
         pass
 
@@ -440,7 +444,7 @@ class BodyManager(Manager):
         bodies = [t.random() for i in range(n)]
         return cls(bodies, **kwargs)
 
-    def __init__(self, bodies, following=False, **kwargs):
+    def __init__(self, *bodies, following=False, **kwargs):
         """Create a body manager using its bodies and optional arguments for the context."""
         super().__init__(**kwargs)
         self.bodies = bodies
@@ -474,11 +478,68 @@ class BodyManager(Manager):
             body.show(self.context)
 
 
+class EntityManager(Manager):
+    """Create a manager that deals with entities."""
+    @classmethod
+    def random(cls,n=10,**kwargs):
+        """Create an entity manager with 'n' random entities."""
+        entities=[Entity.random() for i in range(n)]
+        return cls(*entities,**kwargs)
+
+    def __init__(self,*entities,dt=0.1,friction=0.1,**kwargs):
+        """Create an entity manager using the list of entities and optional
+        arguments for the manager."""
+        super().__init__(**kwargs)
+        self.entities=list(entities)
+        self.dt=dt
+        self.friction=friction
+
+    def update(self):
+        """Update all entities."""
+        for entity in self.entities:
+            entity.update(self.dt)
+
+    def show(self):
+        """Show all entities."""
+        for entity in self.entities:
+            entity.show(self.context)
+
+    def reactKeyDown(self,key):
+        """Make all entities react to the keydown event."""
+        super().reactKeyDown(key)
+        for entity in self.entities:
+            entity.reactKeyDown(key)
+
+    def reactMouseMotion(self,position):
+        """Make all entities react to the mouse motion."""
+        position = self.context.getFromScreen(tuple(position))
+        for entity in self.entities:
+            entity.reactMouseMotion(position)
+
+    def reactMouseButtonDown(self,button,position):
+        """Make all entities react to the mouse button down event."""
+        position = self.context.getFromScreen(tuple(position))
+        for entity in self.entities:
+            entity.reactMouseButtonDown(button, position)
+
+    def spread(self, n=10):
+        """Spread randomly the bodies."""
+        for entity in self.entities:
+            entity.motion *= n
+
+    def setFriction(self,friction):
+        """Set the friction of all entities to the given friction."""
+        for entity in self.entities:
+            entity.setFriction(friction)
+
+
 class BlindManager(Manager):
     """Ugly way to make a manager without camera."""
     def __init__(self,camera=False,**kwargs):
         super().__init__(camera=camera,**kwargs)
 
 if __name__ == "__main__":
-    cm = Manager()
-    cm()
+    from myentity import Entity
+    m = EntityManager.random(build=False)
+    print(m)
+    #cm()
