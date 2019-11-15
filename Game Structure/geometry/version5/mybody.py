@@ -12,6 +12,7 @@ import mycolors
 import random
 import math
 
+
 # Interface Anatomy
 # - show(context)   //an anatomy must be responsible for drawing itself
 # - __str__()           //an anatomy must be able to give a string representation
@@ -82,7 +83,7 @@ class Body(Physics):
 
     def __str__(self):
         """Return the string representation of the body."""
-        return type(self).__name__[0].lower()+"(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
+        return type(self).__name__[0].lower() + "(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
 
     def show(self, context):
         """Show the form on the window."""
@@ -112,10 +113,10 @@ class Body(Physics):
         for motion in self.motions:
             motion.update(dt)
 
-    def updateFriction(self,friction=0.1):
+    def updateFriction(self, friction=0.1):
         """Update the frictions of the body using the 'friction'."""
         for motion in self.motions:
-            motion.velocity.norm*=(1-friction)
+            motion.velocity.norm *= (1 - friction)
 
     def recenter(self):
         """Set the center of the relative anatomy on the origin."""
@@ -168,8 +169,13 @@ class Body(Physics):
         """Determine if the body is crossing with the other body."""
         return self.form.cross(other.form)
 
+    def __xor__(self, other):
+        """Determine if the body is crossing with the other body using xor method."""
+        return self.form | other.form
+
     def updateBorn(self):
         """Return the born of the body."""
+        print(self.anatomy)
         c = self.anatomy.center
         lengths = [Segment(c, p).length for p in self.anatomy.points]
         self._born = max(lengths)
@@ -231,7 +237,7 @@ class MaterialBody(Material):
         anatomy = Form.random(n=5)
         return cls(anatomy, motion)
 
-    def __init__(self,  anatomy, motion):
+    def __init__(self, anatomy, motion):
         """Create a simple body."""
         self.motion = motion
         self.anatomy = anatomy
@@ -292,10 +298,9 @@ class MaterialBody(Material):
     absolute = property(getAbsolute)
 
 
-
-
 if __name__ == "__main__":
     from mymanager import Manager
+
 
     class BodyTester(Manager):
         def __init__(self):
@@ -312,5 +317,7 @@ if __name__ == "__main__":
             for body in self.bodies.values():
                 body.showAll(self.context)
                 body.center.show(self.context)
+
+
     m = BodyTester()
     m()

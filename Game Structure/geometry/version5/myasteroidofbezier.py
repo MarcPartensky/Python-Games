@@ -23,6 +23,6 @@ if __name__=="__main__":
         def update(self):
             self.anatomy.rotate(0.1)
 
-    caa= CurvedAsteroidAnatomy.random(,
+    caa= CurvedAsteroidAnatomy.random()
     t=AnatomyTester(caa)
     t()

@@ -1,40 +1,46 @@
-from myspaceship import Shooter, PlayableSpaceShip, TriangleSpaceShip, \
-        MaxSpeedSpaceShip, Asteroid, Hunter
+from myspaceship import Shooter, PlayableShooter, TriangleSpaceShip, Asteroid, Hunter, SpiderBase, ShowMotionSpaceShip
 from myentitygroup import BasicEntityGroup
 from mymanager import EntityManager
 from myasteroidofperlin import PerlinAsteroidEntity
 from myasteroidofbezier import BezierAsteroid
-
 from myrectangle import Rectangle
 
+import mycolors
 
 
-class PlayableShooter(PlayableSpaceShip, Shooter, TriangleSpaceShip, MaxSpeedSpaceShip):
+class GamePlayer(PlayableShooter, TriangleSpaceShip, ShowMotionSpaceShip):
     pass
 
+class GameHunter(Hunter, TriangleSpaceShip):
+    pass
+
+class SpaceShipGroup(BasicEntityGroup):
+    pass
 
 class HunterGroup(BasicEntityGroup):
     """Group of hunters."""
+
     @classmethod
     def random(cls, n=10, **kwargs):
         """Create a group of n random hunters."""
-        hunters=[Hunter.random() for i in range(n)]
-        return cls(*hunters,**kwargs)
+        hunters = [Hunter.random() for i in range(n)]
+        return cls(*hunters, **kwargs)
 
 
 class AsteroidGroup(BasicEntityGroup):
     """Group of asteroids."""
+
     @classmethod
     def random(cls, n=10, size=10, sparse=10, **kwargs):
         """Create n random asteroids of given size."""
-        entities=[Asteroid.random() for i in range(n)]
-        g=cls(*entities, **kwargs)
+        entities = [Asteroid.random() for i in range(n)]
+        g = cls(*entities, **kwargs)
         g.enlarge(size)
         g.spread(sparse)
         return g
 
 
-class ShooterGroup(BasicEntityGroup):
+class ShooterGroup(SpaceShipGroup):
     """Group of shooter."""
 
     @classmethod
@@ -55,13 +61,26 @@ class ShooterGroup(BasicEntityGroup):
         super().reactMouseMotion(position)
 
 
-class GameSpaceShipGroup(ShooterGroup):
+class GameSpaceShipGroup(SpaceShipGroup):
     @classmethod
-    def random(cls, n=10, **kwargs):
+    def random(cls, nh=10, nb=2, **kwargs):
         """Create a random spaceship group."""
-        player = PlayableShooter.random()
-        entities = [Hunter.random(target=player) for i in range(n)]
-        return cls(player, *entities, **kwargs)
+        player = GamePlayer.random(side_color=mycolors.BLUE)
+        bases = [SpiderBase.random(color=mycolors.RED) for i in range(nb)]
+        for base in bases:
+            base.spread(10)
+        hunters = [GameHunter.random(target=player, side_color=mycolors.YELLOW) for i in range(nh)]
+        return cls(player, *bases, *hunters,  **kwargs)
+
+    def getShooted(self):
+        """Kind of careful shoot just to make it work. Non rigorous at all."""
+        shooted=[]
+        for entity in self.entities:
+            if isinstance(entity, Shooter):
+                if entity.shooting:
+                    shooted.append(entity.shoot())
+                    entity.shooting=False
+        return shooted
 
 
 class MissileGroup(BasicEntityGroup):
@@ -69,7 +88,7 @@ class MissileGroup(BasicEntityGroup):
     def random(cls, n, **kwargs):
         """Create a missile group of random missiles. This is rarely needed
         since missiles are shooted from spaceships in practice."""
-        missiles = [Missile.random(, for i in range(n)]
+        missiles = [Missile.random() for i in range(n)]
         return cls(*missiles, **kwargs)
 
 
@@ -87,8 +106,8 @@ class GameGroup(BasicEntityGroup):
         print(type(asteroids))
         return cls(spaceships, missiles, asteroids)
 
-    def __init__(self, nspaceships=1, nmissiles=0, nasteroids=20):
-        """Create a random game group."""
+    def __init__(self, nspaceships=10, nmissiles=0, nasteroids=20):
+        """Create a random game group using the optional number of entities of each group.."""
         spaceships = self.createSpaceShips(nspaceships)
         missiles = self.createMissiles(nmissiles)
         asteroids = self.createAsteroids(nasteroids)
@@ -105,10 +124,10 @@ class GameGroup(BasicEntityGroup):
     def createAsteroids(self, n, size=10, sparse=100):
         """Return a group of n random asteroids."""
         g = AsteroidGroup.random(n=n, active=False, size=size, sparse=sparse)
-        p = PerlinAsteroidEntity.random(active=False)
-        p.enlarge(size)
-        p.spread(sparse)
-        g.append(p)
+        # p = PerlinAsteroidEntity.random(active=False)
+        # p.enlarge(size)
+        # p.spread(sparse)
+        # g.append(p)
         return g
 
     def getSpaceShips(self):
@@ -119,6 +138,7 @@ class GameGroup(BasicEntityGroup):
 
     def delSpaceShips(self):
         del self.entities[0]
+
     spaceships = property(getSpaceShips, setSpaceShips, delSpaceShips)
 
     def getMissiles(self):
@@ -129,6 +149,7 @@ class GameGroup(BasicEntityGroup):
 
     def delMissiles(self):
         del self.entities[1]
+
     missiles = property(getMissiles, setMissiles, delMissiles)
 
     def getAsteroids(self):
@@ -139,6 +160,7 @@ class GameGroup(BasicEntityGroup):
 
     def delAsteroids(self):
         del self.entities[2]
+
     asteroids = property(getAsteroids, setAsteroids, delAsteroids)
 
     def update(self, dt):
@@ -159,7 +181,7 @@ class SpaceShipGame(EntityManager):
         g.spawn()
         # g.activate()
         self.entities = [g]
-        self.borns=Rectangle([0,0],[200,200])
+        self.borns = Rectangle([0, 0], [200, 200])
 
     def show(self):
         """Show the spaceship game."""

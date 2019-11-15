@@ -19,14 +19,15 @@ class BasicEntityGroup:
         for e1 in group1:
             for e2 in group2:
                 if (e1.position - e2.position).norm < e1.born + e2.born:
-                    e1.die()
-                    e2.die()
+                    if e1.cross(e2):
+                        e1.die()
+                        e2.die()
 
 
     @classmethod
     def randomOfType(cls, etype, n=10, **kwargs):
         """Create a group of n random entities of type 'etype'."""
-        entities = [etype.random(, for i in range(n)]
+        entities = [etype.random() for i in range(n)]
         return cls(*entities, **kwargs)
 
     @classmethod

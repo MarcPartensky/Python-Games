@@ -14,12 +14,14 @@ from mymanager import BodyManager
 
 class SpaceShip(LimitedEntity):
     """Base class of all spaceships."""
+
     @classmethod
     def random(cls, **kwargs):
         """Create a random spaceship."""
         motion = Motion.random()
         form = Form.random()
         return cls(form, motion, **kwargs)
+
 
 class SpaceBase(LimitedEntity):
     """SpaceBase of spaceships."""
@@ -49,15 +51,19 @@ class TriangleSpaceShip(SpaceShip):
 
     def __init__(self, motion, **kwargs):
         """Create a triangle spaceship."""
-        anatomy = Form.createFromTuples([(1, 0), (-1, -1), (-0.5, 0), (-1, 1)])
+        anatomy = Form.createFromTuples([(1, 0), (-1, -1), (-0.5, 0), (-1, 1)], **kwargs)
         anatomy.recenter()
-        super().__init__(anatomy, motion, **kwargs)
+        super().__init__(anatomy, motion)
 
     def getForm(self):
         """Return the form."""
         f = super().getForm()
         f.side_color = mycolors.YELLOW
         return f
+
+
+class ShowMotionSpaceShip(SpaceShip):
+    """SpaceShip that shows its motion."""
 
     def show(self, context):
         """Show the space ship and its motion."""
@@ -126,63 +132,6 @@ class Shooter(SpaceShip):
         return SegmentMissile(s, m)
 
 
-class PlayableShooter(Shooter):
-    """Shooter that can be played by a player and so reacts to a space key event."""
-    def reactKeyDown(self, key):
-        """React to a key down event."""
-        if key == K_SPACE:
-            self.shooting = True
-
-
-class Follower(LimitedEntity):
-    """Entity that follows a target. It can be used to make self-guided missiles, or hunters."""
-    def __init__(self,*args,**kwargs):
-        """Create a follower entity."""
-        if "target" in kwargs:
-            self.target = kwargs.pop("target")
-        else:
-            self.target = None
-        super().__init__(*args,**kwargs)
-
-    def update(self,dt):
-        """Update the entity and follow it."""
-        super().update(dt)
-        if self.target is not None:
-            self.acceleration.set(self.target.position-self.position)
-
-class Hunter(Shooter,Follower):
-    """Create a spaceship that hunts its targets."""
-
-    def __init__(self,*args,shooting_view=1,**kwargs):
-        """Create a hunter spaceship using spaceship arguments and view."""
-        if "shooting_view" in kwargs:
-            self.shooting_view = kwargs.pop("shooting_view")
-        else:
-            self.shooting_view = 1
-            super().__init__(*args,**kwargs)
-
-
-    def update(self,dt):
-        """Update the entity, follow it, and shoot at it when in range and in view."""
-        super().update(dt)
-        if self.target is not None:
-            self.hunt(dt)
-
-    def hunt(self,dt):
-        """Hunt the target supposing it exists."""
-        v1=self.target.position-self.position
-        v2=self.velocity
-        if abs(v1.angle-v2.angle) <= self.shooting_view:
-            distance = (self.position-self.target.position).norm
-            if distance <= self.getShootingRange(dt):
-                self.shooting = True
-
-    def getShootingRange(self,dt):
-        return self.velocity*dt
-
-
-
-
 class MaxSpeedSpaceShip(SpaceShip):
     """Spaceship with max speed."""
 
@@ -197,7 +146,7 @@ class MaxSpeedSpaceShip(SpaceShip):
         self.velocity.norm = min(self.velocity.norm, self.max_speed)
 
 
-class PlayableSpaceShip(SpaceShip):
+class PlayableSpaceShip(MaxSpeedSpaceShip):
     """Spaceship that can be controlled and played by the user."""
 
     def __init__(self, *args, **kwargs):
@@ -214,8 +163,66 @@ class PlayableSpaceShip(SpaceShip):
         self.showMotion(context)
 
 
+class PlayableShooter(PlayableSpaceShip, Shooter):
+    """Shooter that can be played by a player and so reacts to a space key event."""
+
+    def reactKeyDown(self, key):
+        """React to a key down event."""
+        if key == K_SPACE:
+            self.shooting = True
+
+
+class Follower(MaxSpeedSpaceShip):
+    """Entity that follows a target. It can be used to make self-guided missiles, or hunters."""
+
+    def __init__(self, *args, **kwargs):
+        """Create a follower entity."""
+        if "target" in kwargs:
+            self.target = kwargs.pop("target")
+        else:
+            self.target = None
+        super().__init__(*args, **kwargs)
+
+    def update(self, dt):
+        """Update the entity and follow it."""
+        super().update(dt)
+        if self.target is not None:
+            self.acceleration.set(self.target.position - self.position)
+
+
+class Hunter(Shooter, Follower):
+    """Create a spaceship that hunts its targets."""
+
+    def __init__(self, *args, shooting_view=1, **kwargs):
+        """Create a hunter spaceship using spaceship arguments and view."""
+        if "shooting_view" in kwargs:
+            self.shooting_view = kwargs.pop("shooting_view")
+        else:
+            self.shooting_view = 1
+            super().__init__(*args, **kwargs)
+
+    def update(self, dt):
+        """Update the entity, follow it, and shoot at it when in range and in view."""
+        super().update(dt)
+        if self.target is not None:
+            self.hunt(dt)
+
+    def hunt(self, dt):
+        """Hunt the target supposing it exists."""
+        v1 = self.target.position - self.position
+        v2 = self.velocity
+        if abs(v1.angle - v2.angle) <= self.shooting_view:
+            distance = (self.position - self.target.position).norm
+            if distance <= self.getShootingRange(dt):
+                self.shooting = True
+
+    def getShootingRange(self, dt):
+        return self.velocity.norm * dt
+
+
 class Asteroid(Entity):
     """Mother class of all asteroids."""
+
     @classmethod
     def random(cls, n=5, **kwargs):
         """Create a random asteroid."""
@@ -232,8 +239,8 @@ class SpaceshipGameGroup:
     def random(cls, nmissiles, nspaceships, **kwargs):
         """Return a random group."""
         missiles = MissileGroup.random(nmissiles)
-        spaceships = SpaceShipGroup.random(,
-        return cls(missiles, spaceships,**kwargs)
+        spaceships = SpaceShipGroup.random()
+        return cls(missiles, spaceships, **kwargs)
 
     def __init__(self, groups):
         """Create a super group using the groups."""
@@ -287,7 +294,7 @@ class SpaceShipTester(BodyManager):
     @classmethod
     def random(cls, n=20, **kwargs):
         """Create random bodies."""
-        bodies = [PlayableSpaceship.random(,]
+        bodies = [PlayableSpaceship.random()]
         bodies += [TriangleSpaceShip.random() for i in range(n)]
         bodies += [SegmentMissile.random()]
         return cls(bodies, **kwargs)
