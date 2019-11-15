@@ -9,7 +9,7 @@ class AsteroidDuoServer(Server):
         self.playing = False
         # self.player1 = deque({})
         # self.player2 = deque({})
-        self.ready = [False, False]
+        self.ready = [True, False, False]
 
     def distributeIds(self):
         """Send the id to all users."""
@@ -23,7 +23,7 @@ class AsteroidDuoServer(Server):
     def prepare(self):
         """Wait for all players to be ready."""
         print("Waiting for all players to be ready.")
-        while not (self.ready[0] and self.ready[1]):
+        while not (self.ready[1] and self.ready[2]):
             self.update()
             self.checkReady()
 

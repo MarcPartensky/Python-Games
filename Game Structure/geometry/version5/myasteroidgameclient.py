@@ -8,12 +8,9 @@ class AsteroidDuoClient(Client, Manager):
         Client.__init__(self, ip, port)
         Manager.__init__(self, **kwargs)
         self.game = AsteroidDuo()
-        self.ready = False
         self.id = None
 
     def prepare(self):
-        while not self.ready:
-            self.ready = str(input("ready (True/False): ")) == "True"
         self.send("ready")
         while self.id is None:
             self.receiveID()
@@ -30,13 +27,14 @@ class AsteroidDuoClient(Client, Manager):
             message = self.queue.popleft()
             if "id" in message:
                 self.id = message["id"]
+            self.context.console("Id:",self.id)
 
 
 if __name__ == "__main__":
     IP = "172.16.0.39."
     PORT = 1234
 
-    c = AsteroidDuoClient(IP, PORT, build=False)
+    c = AsteroidDuoClient(IP, PORT)
     c()
 
     del c
