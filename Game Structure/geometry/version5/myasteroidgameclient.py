@@ -4,9 +4,9 @@ from myasteroidgame import AsteroidDuo
 
 
 class AsteroidDuoClient(Client, Manager):
-    def __init__(self, ip, port, **kwargs):
+    def __init__(self, ip, port):
         Client.__init__(self, ip, port)
-        Manager.__init__(self, **kwargs)
+        Manager.__init__(self, build=False)
         self.game = AsteroidDuo()
         self.id = None
 
@@ -17,10 +17,16 @@ class AsteroidDuoClient(Client, Manager):
 
     def main(self):
         self.prepare()
+        self.build()
         super().main()
 
-    def updateGame(self):
-        self.game = self.queue.pop()
+    def update(self):
+        self.game = self.queue.popleft()
+
+    def show(self):
+        self.game.show(self.context)
+
+
 
     def receiveID(self):
         while len(self.queue) > 0:

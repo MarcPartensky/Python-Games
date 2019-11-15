@@ -93,43 +93,6 @@ class MissileGroup(BasicEntityGroup):
 
 
 class GameGroup(BasicEntityGroup):
-    @classmethod
-    def random(cls, nspaceships=10, nmissiles=0):
-        """Create a random game group."""
-        spaceships = GameSpaceShipGroup.random(nspaceships, active=True)
-        missiles = MissileGroup.random(nmissiles)
-        perlin_asteroids = AsteroidGroup.randomOfType(
-            PerlinAsteroidEntity, n=0, size=10)
-        bezier_asteroids = AsteroidGroup.randomOfType(
-            BezierAsteroid, n=2, size=10)
-        asteroids = perlin_asteroids + bezier_asteroids
-        print(type(asteroids))
-        return cls(spaceships, missiles, asteroids)
-
-    def __init__(self, nspaceships=10, nmissiles=0, nasteroids=20):
-        """Create a random game group using the optional number of entities of each group.."""
-        spaceships = self.createSpaceShips(nspaceships)
-        missiles = self.createMissiles(nmissiles)
-        asteroids = self.createAsteroids(nasteroids)
-        super().__init__(spaceships, missiles, asteroids)
-
-    def createSpaceShips(self, n):
-        """Return a group of n random spaceships."""
-        return GameSpaceShipGroup.random(n, active=True)
-
-    def createMissiles(self, n):
-        """Return a group of n random missiles."""
-        return MissileGroup.random(n, active=False)
-
-    def createAsteroids(self, n, size=10, sparse=100):
-        """Return a group of n random asteroids."""
-        g = AsteroidGroup.random(n=n, active=False, size=size, sparse=sparse)
-        # p = PerlinAsteroidEntity.random(active=False)
-        # p.enlarge(size)
-        # p.spread(sparse)
-        # g.append(p)
-        return g
-
     def getSpaceShips(self):
         return self.entities[0]
 
@@ -171,13 +134,53 @@ class GameGroup(BasicEntityGroup):
         self.clear()
         self.missiles.extend(self.spaceships.getShooted())
 
+class AsteroidGameGroup(GameGroup):
+    @classmethod
+    def random(cls, nspaceships=10, nmissiles=0):
+        """Create a random game group."""
+        spaceships = GameSpaceShipGroup.random(nspaceships, active=True)
+        missiles = MissileGroup.random(nmissiles)
+        perlin_asteroids = AsteroidGroup.randomOfType(
+            PerlinAsteroidEntity, n=0, size=10)
+        bezier_asteroids = AsteroidGroup.randomOfType(
+            BezierAsteroid, n=2, size=10)
+        asteroids = perlin_asteroids + bezier_asteroids
+        print(type(asteroids))
+        return cls(spaceships, missiles, asteroids)
 
-class SpaceShipGame(EntityManager):
+    def __init__(self, nspaceships=10, nmissiles=0, nasteroids=20):
+        """Create a random game group using the optional number of entities of each group.."""
+        spaceships = self.createSpaceShips(nspaceships)
+        missiles = self.createMissiles(nmissiles)
+        asteroids = self.createAsteroids(nasteroids)
+        super().__init__(spaceships, missiles, asteroids)
+
+    def createSpaceShips(self, n):
+        """Return a group of n random spaceships."""
+        return GameSpaceShipGroup.random(n, active=True)
+
+    def createMissiles(self, n):
+        """Return a group of n random missiles."""
+        return MissileGroup.random(n, active=False)
+
+    def createAsteroids(self, n, size=10, sparse=100):
+        """Return a group of n random asteroids."""
+        g = AsteroidGroup.random(n=n, active=False, size=size, sparse=sparse)
+        # p = PerlinAsteroidEntity.random(active=False)
+        # p.enlarge(size)
+        # p.spread(sparse)
+        # g.append(p)
+        return g
+
+
+
+
+class AsteroidGame(EntityManager):
     def __init__(self, **kwargs):
         """Create a spaceship game only using the optional arguments of the
         manager."""
         super().__init__(**kwargs)
-        g = GameGroup()
+        g = AsteroidGameGroup()
         g.spawn()
         # g.activate()
         self.entities = [g]
@@ -196,5 +199,5 @@ class SpaceShipGame(EntityManager):
 
 
 if __name__ == "__main__":
-    em = SpaceShipGame(dt=0.1, friction=0.1, build=True)
-    em()
+    game = AsteroidGame(dt=0.1, friction=0.1, build=True)
+    game()

@@ -1,20 +1,18 @@
 from myspaceshipgroup import SpaceShipGroup, GamePlayer
 
-class AsteroidDuo:
+
+class AsteroidDuo(SpaceShipGroup):
     def __init__(self):
         player1 = GamePlayer.random()
         player2 = GamePlayer.random()
-        self.group = SpaceShipGroup(player1, player2)
-        self.dt = 0.1
+        entities = [player1, player2]
+        super().__init__(entities)
 
-    def update(self):
-        self.group.update(self.dt)
-
-
-
-
-
-
+if __name__ == "__main__":
+    from mymanager import EntityManager
+    game = AsteroidDuo()
+    m = EntityManager(game)
+    m()
 
 
 

@@ -25,6 +25,12 @@ class Point:
         return p
 
     @classmethod
+    def average(cls, points):
+        """Return the point which position is the average of
+        the position of the given points"""
+        return Point.sum(points) / len(points)
+
+    @classmethod
     def origin(cls, d=2, **kwargs):
         """Return the origin."""
         return cls([0 for i in range(d)], **kwargs)
@@ -1539,12 +1545,8 @@ class Form:
             return Segment(*self.points).middle
         elif len(self.points) == 3:
             # Intersection point of 2 medians
-            p1, p2, p3 = self.points
-            s2 = Segment(p2, p3)
-            s3 = Segment(p3, p1)
-            m1 = Segment(p1, s2.middle)
-            m2 = Segment(p2, s3.middle)
-            return m1.crossSegment(m2)
+            return Point.average(self.points)
+
         else:
             # Geometric decomposition to compute centroids (wikipedia)
             n = len(self.points)  # n is the number of points
