@@ -1,56 +1,53 @@
 from myconnection import Server
-from myasteroidgame import AsteroidDuo
+from myasteroidgame import AsteroidGame
 
-
-class AsteroidDuoServer(Server):
+class AsteroidServer(Server):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.game = AsteroidDuo()
-        self.playing = False
-        # self.player1 = deque({})
-        # self.player2 = deque({})
-        self.ready = [True, False, False]
+        self.game = AsteroidGame()
+        print("Waiting for players to connect.")
 
-    def distributeIds(self):
-        """Send the id to all users."""
-        for user_id, user in enumerate(self.clients):
-            user.send({"id": user_id})
-
-    def main(self):
-        self.prepare()
-        self.loop()
-
-    def prepare(self):
-        """Wait for all players to be ready."""
-        print("Waiting for all players to be ready.")
-        while not (self.ready[1] and self.ready[2]):
-            self.update()
-            self.checkReady()
-
-    def checkReady(self):
-        """Update the list ready when a player is ready."""
-        while len(self.queue) > 0:
-            user_request = self.queue.popleft()
-            print(self.queue)
-            print(user_request)
-            for (user_id, user_message) in user_request.items():
-                if user_message == "ready":
-                    self.ready[user_id] = True
-                    print("user {} is ready".format(user_id))
-
-    def loop(self):
-        self.update()
+    def update(self):
+        super().update()
         self.game.update()
+        self.processAll()
+        self.sendAllForSure(self.game)
 
-    def areReady(self):
-        return not (False in self.ready)
+    def accept(self, client):
+        super().accept(client)
+        self.createPlayer(client)
+        print("Client: {} has been accepted by the server.".format(client))
+        print("client ip:", client.getsockname()[0])
+
+    def createPlayer(self, client):
+        self.game.players[client.getsockname()[0]] = self.game.level.newPlayer()
+
+    def processAll(self):
+        """Receive the events of the players and distribute them to their played entity. """
+        if len(self.queue) > 0:
+            transmission = self.queue.pop()
+            self.queue.clear()
+            self.process(*transmission)
+
+    def process(self, client, message):
+        """Process a message sent by a client."""
+        path, value = message
+        path = path.split("/")
+        if path[0] == "events":
+            if path[1] == "keydown":
+                self.game.players[client.getsockname()[0]].reactKeyDown(value)
+            elif path[1] == "mousemotion":
+                print(value)
+                self.game.players[client.getsockname()[0]].reactMouseMotion(value)
+            elif path[1] == "mousebuttondown":
+                self.game.players[client.getsockname()[0]].reactMouseButtonDown(*value)
 
 
 if __name__ == "__main__":
     IP = "172.16.0.39."
     PORT = 1234
 
-    s = AsteroidDuoServer(IP, PORT)
+    s = AsteroidServer(IP, PORT)
     s.main()
 
     del s

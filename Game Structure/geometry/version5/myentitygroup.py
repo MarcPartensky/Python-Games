@@ -1,9 +1,16 @@
 from mymanager import Manager
 from myentity import Entity
 from mymotion import Motion
+from mygroup import Group
 import numpy as np
 
-class BasicEntityGroup:
+import random
+
+
+class EntityGroup(Group):
+    """An entity group is a group of entities. Entity specific features are added."""
+
+    @staticmethod
     def getCollided(group1, group2):
         """Determine the collisions between 2 groups."""
         collisions = []
@@ -14,6 +21,7 @@ class BasicEntityGroup:
                         collisions.append((e1, e2))
         return collisions
 
+    @staticmethod
     def killOnCollision(group1, group2):
         """We suppose the entities of group1 and group2 alives."""
         for e1 in group1:
@@ -23,12 +31,20 @@ class BasicEntityGroup:
                         e1.die()
                         e2.die()
 
-
     @classmethod
-    def randomOfType(cls, etype, n=10, **kwargs):
+    def randomOfType(cls, etype, n=0, **kwargs):
         """Create a group of n random entities of type 'etype'."""
         entities = [etype.random() for i in range(n)]
         return cls(*entities, **kwargs)
+
+    @classmethod
+    def randomOfTypes(cls, *types, n=0, **kwargs):
+        """Create a group of n random entities of type a all of the given types."""
+
+        class etype(*types):
+            pass
+
+        return cls.randomOfType(etype, **kwargs)
 
     @classmethod
     def random(cls, n=10, **kwargs):
@@ -37,155 +53,133 @@ class BasicEntityGroup:
         return cls(*entities, **kwargs)
 
     @classmethod
-    def randomWithSizeSparse(self,n,size,sparse,**kwargs):
+    def randomWithSizeSparse(self, n, size, sparse, **kwargs):
         """Create a random group using the size and sparse parameters."""
-        g=super().random(n,**kwargs)
+        g = super().random(n, **kwargs)
         g.enlarge(size)
         g.spread(sparse)
         return g
 
-
     def __init__(self, *entities, alive=False, active=False):
-        """Create a basic entity group."""
-        self.entities = list(entities)
+        """Create a entity group."""
+        super().__init__(*entities)
         self.active = active
         self.alive = alive
-        if active: self.activate()
+        if active:
+            self.activate()
 
-    def append(self, entity):
-        """Add an entity to the list of entities."""
-        self.entities.append(entity)
+    # Binding the entities to the elements
+    entities = property(Group.getElements, Group.setElements, Group.delElements)
 
-    def extend(self, entities):
-        """Add a list of entities to the list of entities."""
-        self.entities.extend(entities)
-
-    def __iter__(self):
-        """Iterate though the entities."""
-        self.iterator = 0
-        return self
-
-    def __next__(self):
-        """Return the next entity."""
-        if self.iterator < len(self.entities):
-            self.iterator += 1
-            return self.entities[self.iterator - 1]
-        else:
-            raise StopIteration
-
-    def __len__(self):
-        """Return the number of entities of the group."""
-        return len(self.entities)
+    def randomEntity(self):
+        """Return a random entity of the group."""
+        chosen = []
+        for entity in self.entities:
+            if isinstance(entity, EntityGroup):
+                chosen.append(entity.randomEntity())
+            else:
+                chosen.append(entity)
+        return random.choice(chosen)
 
     def spawn(self):
         """Spawn each entity."""
-        self.alive=True
-        for entity in self.entities:
+        self.alive = True
+        for entity in self:
             entity.spawn()
 
     def updateActivation(self):
         """Determine if the group is active if any of the entities is active."""
         self.active = False
-        for entity in self.entities:
+        for entity in self:
             if entity.active:
                 self.active = True
 
     def activate(self):
         """Reactivate all entities."""
         self.active = True
-        for entity in self.entities:
+        for entity in self:
             entity.activate()
 
     def deactivate(self):
         """Deactivate all entities."""
         self.active = False
-        for entity in self.entities:
+        for entity in self:
             entity.deactivate()
 
     def reactKeyDown(self, key):
         """Make each entity react to the key down event."""
-        for entity in self.entities:
+        for entity in self:
             if entity.active:
                 entity.reactKeyDown(key)
 
     def reactMouseMotion(self, position):
         """Make each entity react to a mouse motion event."""
-        for entity in self.entities:
+        for entity in self:
             if entity.active:
                 entity.reactMouseMotion(position)
 
     def reactMouseButtonDown(self, button, position):
         """Make all entities react to a mouse button down event."""
-        for entity in self.entities:
+        for entity in self:
             if entity.active:
-                entity.reactMouseButtonDown(button, )
+                entity.reactMouseButtonDown(button, position)
 
-    def clear(self):
+    def respawn(self):
+        """Respawn all dead entities."""
+        for entity in self:
+            entity.respawn()
+
+    def clean(self):
         """Delete all dead entities."""
-        n = len(self.entities)
         i = 0
-        while i < n:
-            if self.entities[i].alive:
-                if isinstance(self.entities[i],BasicEntityGroup):
-                    self.entities[i].clear()
+        while i < len(self):
+            if self[i].alive:
+                if isinstance(self[i], EntityGroup):
+                    self[i].clean()
                 i += 1
             else:
-                del self.entities[i]
-                n -= 1
+                del self[i]
 
     def show(self, context):
         """Show all entities."""
-        for entity in self.entities:
+        for entity in self:
             entity.show(context)
 
-    def __str__(self):
+    def __str__(self, name=None):
         """Return the str of the types of the entities."""
-        return type(self).__name__+"[{}]".format(",".join(map(str,self.entities)))
+        if name is None:
+            name = type(self).__name__
+        return super().__str__(name)
 
-    def update(self,dt):
+    def update(self, dt):
         """Update all entities."""
-        for entity in self.entities:
+        for entity in self:
             entity.update(dt)
 
-    def setFriction(self,friction):
+    def setFriction(self, friction):
         """Set the friction of the entities to a given friction."""
-        for entity in self.entities:
-            self.setFriction(friction)
+        for entity in self:
+            entity.setFriction(friction)
 
-    def __getitem__(self,index):
-        """Return the entity of the given index."""
-        return self.entities[index]
-
-    def __setitem__(self,index,entity):
-        """Set the entity of the given index to a given entity."""
-        self.entities[index]=entity
-
-    def __add__(self,other):
-        """Add two groups together by concatenating the entities of each group
-        into a group of type their nearest common mother class."""
-        t1=type(self).__mro__
-        t2=type(other).__mro__
-        i=0
-        j=0
-        while i<len(t1) and j<len(t2) and t1[i]!=t2[j]:
-            if i<=j:
-                i+=1
-            else:
-                j+=1
-        return t1[i](*self.entities,*other.entities)
-
-    def enlarge(self,n):
+    def enlarge(self, n):
         """Enlarge the anatomies of the entities."""
-        for entity in self.entities:
+        for entity in self:
             entity.enlarge(n)
 
-    def spread(self,n):
+    def spread(self, n):
         """Spread the bodies of the entities."""
-        for entity in self.entities:
+        for entity in self:
             entity.spread(n)
 
+    def control(self, controller):
+        """Return the controlled entity using the controller."""
+        if len(controller) > 1:
+            return self[controller[0]].control(controller[1:])
+        else:
+            return self[controller[0]]
 
-class EntityGroup:
+
+class AliveEntityGroup:
     """Group of entities that handle themselves."""
 
     @classmethod
@@ -283,7 +277,7 @@ class EntityGroup:
         """Return the borns of all entities."""
         return self._max_born
 
-    def updateMaxBorn(self,):
+    def updateMaxBorn(self, ):
         """Set the max born of all the entities."""
         self._max_born = max([e.born for e in self.alives.values()])
 
@@ -369,9 +363,9 @@ if __name__ == "__main__":
     # gt = GroupTester.random(n=50)
     # print(gt.group.alives)
     # gt()
-    b1 = BasicEntityGroup.random()
-    b2 = BasicEntityGroup.random()
+    b1 = EntityGroup.random()
+    b2 = EntityGroup.random()
     b1.enlarge(100)
-    print(b1+b2)
+    print(b1 + b2)
 
-    #print(beg.reactMouseMotion((0, 0)))
+

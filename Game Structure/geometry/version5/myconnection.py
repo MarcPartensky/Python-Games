@@ -12,28 +12,31 @@ IP_CLIENT = "172.16.0.39."
 IP_SERVER = getIP()
 PORT = 1234
 
+HEADER_LENGTH = 10
+
 
 class Server:
     """Create a socket server that can receive requests and send results
     with socket."""
 
-    def __init__(self, ip, port, max_clients=10, header_length=10):
+    def __init__(self, ip, port, max_clients=10, header_length=HEADER_LENGTH):
         """Create a server using the ip and port and optional max_socket."""
         # We don't want people to access our ip, and we suppose the ip constant.
         self._ip = ip
         self._port = port
         self.header_length = header_length
+        self.data = None
+        self.message = None
+        self.queue = deque([])
+
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.connection.bind((self._ip, self._port))
         self.connection.listen(max_clients)
         self.clients = [self.connection]
-        self.data = None
-        self.message = None
-        self.queue = deque([])
         self.open = True
 
-    def loop(self):
+    def main(self):
         """Main loop of the server which only updates it while it is open."""
         while self.open:
             self.update()
@@ -41,9 +44,11 @@ class Server:
     def update(self):
         """Update the server to receive, write and check the sockets of the clients."""
         read_clients, write_clients, exception_clients = select.select(self.clients, self.clients, self.clients)
-        self.readEach(read_clients)
-        self.writeEach(write_clients, self.message)
-        self.checkEach(exception_clients)
+        try:
+            self.readEach(read_clients)
+            self.writeEach(write_clients, self.message)
+        except:
+            self.checkEach(exception_clients)
 
     def readEach(self, clients):
         """Read the request of the clients."""
@@ -65,6 +70,7 @@ class Server:
         for client in clients:
             self.clients.remove(client)
             del self.clients[client]
+        return len(clients) == 0
 
     def accept(self, client):
         """Accept a new client."""
@@ -73,27 +79,47 @@ class Server:
 
     def receive(self, client):
         """"Receive a request sent by a client."""
-        message_length = int(client.recv(self.header_length).decode("utf-8").strip())
+        m = client.recv(self.header_length)
+        message_length = int(m.decode("utf-8").strip())
         message = pickle.loads(client.recv(message_length))
-        i = self.clients.index(client)
-        self.queue.append({i: message})
+        self.queue.append((client, message))
+
+    def sendForSure(self, client, message, max_attempts=10):
+        attempts = 0
+        sent = False
+        while not sent and attempts < max_attempts:
+            try:
+                self.send(client, message)
+                sent = True
+            except:
+                attempts += 1
+        if not sent:
+            print("The message: {} could not be sent after {} attempts.".format(message, max_attempts))
 
     def send(self, client, message):
         """Send a message to a client."""
-        message = pickle.dumps(message)
-        header = f"{len(message):<{self.header_length}}".encode("utf-8")
-        client.send(header + message)
+        bytes_message = pickle.dumps(message)
+        bytes_header = f"{len(bytes_message):<{self.header_length}}".encode("utf-8")
+        client.send(bytes_header + bytes_message)
 
     def sendAll(self, message):
         """Send a message to all clients."""
         for client in self.clients:
-            client.send(pickle.dumps(message))
+            self.send(client, message)
+
+    def sendAllForSure(self, message):
+        """Send a message to all clients."""
+        for client in self.clients:
+            self.sendForSure(client, message)
 
     def __del__(self):
         """Close all connections."""
-        print("closing server connection")
-        self.closeEach(self.clients)
-        self.close()
+        try:
+            self.closeEach(self.clients)  # We also close the connections of the computers connected.
+            self.close()
+            print("Closed server connection.")
+        except:
+            raise Warning("Failed to close client connection.")
 
     def closeEach(self, clients):
         """Close the connection of each client."""
@@ -109,22 +135,33 @@ class Client:
     """Create a socket client that can send request and receive results to the
     server with socket."""
 
-    def __init__(self, ip, port, header_length=10):
+    def __init__(self, ip, port, header_length=HEADER_LENGTH):
         # We don't want people to access our ip, and we suppose the ip constant.
         """Create a client which connects to a server using its ip and port."""
         self._ip = ip
         self._port = port
         self.header_length = header_length
+
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((self._ip, self._port))
         self.connection.setblocking(False)
         self.queue = deque([])
 
+    def sendForSure(self, message, max_attempts=10):
+        attempts = 0
+        sent = False
+        while not sent and attempts < max_attempts:
+            try:
+                self.send(message)
+                sent = True
+            except:
+                attempts += 1
+
     def send(self, message):
         """Send a message to the server"""
-        message = pickle.dumps(message)
-        header = f"{len(message):<{self.header_length}}".encode("utf-8")
-        self.connection.send(header + message)
+        bytes_message = pickle.dumps(message)
+        bytes_header = f"{len(bytes_message):<{self.header_length}}".encode("utf-8")
+        self.connection.send(bytes_header + bytes_message)
 
     def receive(self):
         """"Receive a message from the server."""
@@ -135,12 +172,25 @@ class Client:
 
     def __del__(self):
         """Close all connections."""
-        print("closing client connection")
-        self.close()
+        try:
+            self.close()
+            print("Closed client connection.")
+        except:
+            raise Warning("Failed to close client connection.")
 
     def close(self):
         """Close the main connection with the server."""
         self.connection.close()
+
+    def getIp(self):
+        """Ip is readable but not writable.."""
+        return self._ip
+
+    def getPort(self):
+        return self._port
+
+    ip = property(getIp)
+    port = property(getPort)
 
 
 if __name__ == "__main__":
@@ -149,20 +199,21 @@ if __name__ == "__main__":
     c2 = Client(IP_CLIENT, PORT)
     s.update()
     print("Clients number:", len(s.clients))
+    from myasteroidgame import AsteroidGame # We can send whatever we want
 
     c1.send("slt")
     c2.send("hola")
-    c1.send("slt encore")
+    c1.send(AsteroidGame)
     s.update()
     s.update()
     s.update()
     print("server queue:", s.queue)
 
-    s.message = "wesh"
+    s.message = AsteroidGame
     s.update()
     c1.receive()
     c2.receive()
-    print("client queues:",c1.queue, c2.queue)
+    print("client queues:", c1.queue, c2.queue)
 
     del s, c1, c2
     print("Deleted connections and released ports.")

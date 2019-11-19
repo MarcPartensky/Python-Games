@@ -1365,15 +1365,15 @@ class Form:
                     return False
         return True
 
-    def cross(*forms):
+    def cross(form1, form2):
         """Return the points of intersection between the crossing forms."""
-        if len(forms) == 1: forms = forms[0]
-        l = len(forms)
-        points = []
-        for i in range(l):
-            for j in range(i + 1, l):
-                points.extend(forms[i].crossForm(forms[j]))
-        return points
+        for point in form1.points:
+            if point in form2:
+                return True
+        for point in form2.points:
+            if point in form1:
+                return True
+        return
 
     @classmethod
     def intersectionTwoForms(cls, form1, form2):
@@ -1532,6 +1532,15 @@ class Form:
         return sorted(self.points) == sorted(other.points)
 
     def getCenter(self):
+        return Point.average(self.points)
+
+    def setCenter(self, center):
+        """Set the center of the form."""
+        p = center - self.center
+        for i in range(len(self.points)):
+            self.points[i] += p
+
+    def getCentroid(self):
         """Return the point of the center.
         This only works for 2 dimensional forms obviously."""
         if len(self.points) == 0:
@@ -1546,7 +1555,6 @@ class Form:
         elif len(self.points) == 3:
             # Intersection point of 2 medians
             return Point.average(self.points)
-
         else:
             # Geometric decomposition to compute centroids (wikipedia)
             n = len(self.points)  # n is the number of points
@@ -1560,9 +1568,9 @@ class Form:
             centroid = weighted_centroid / sum(areas)
             return centroid
 
-    def setCenter(self, center):
+    def setCentroid(self, center):
         """Set the center of the form."""
-        p = center - self.center
+        p = center - self.centroid
         for i in range(len(self.points)):
             self.points[i] += p
 
@@ -1924,10 +1932,11 @@ class Form:
     getCrossPoints = crossSelf
 
     # points=         property(getPoints,setPoints,"Represents the points.") #If I do this, the program will be very slow...
-    sides = segments = property(getSegments, setSegments, "Represents the segments.")
-    center = property(getCenter, setCenter, "Represents the center.")
-    color = property(getColor, setColor, delColor, "Represents the color.")
-    cross_points = property(getCrossPoints, "Represents the point of intersections of the segments.")
+    sides = segments = property(getSegments, setSegments, doc="Represents the segments.")
+    center = property(getCenter, setCenter, doc="Center of the form.")
+    centroid = property(getCentroid, setCentroid, doc="Centroid of the form.")
+    color = property(getColor, setColor, delColor, doc="Segment color.")
+    cross_points = property(getCrossPoints, doc="Represents the point of intersections of the segments.")
     # cross_points=   property(getCrossPoints,setCrossPoints,delCrossPoints, "Represents the point of intersections of the segments.")
     # point_color=    property(getPointColor,setPointColor,delPointColor,"Represents the color of the points.")
     # point_mode=     property(getPointMode,setPointMode,delPointMode,"Represents the mode of the points.")
@@ -2048,9 +2057,10 @@ class Circle:
         vector.show(window, self.center, width=width)
         vector.showText(surface, self.center, "radius", size=20)
 
-    def __call__(self):
+    def __call__(self, n):
         """Return the main components of the circle."""
-        return [self.position, self.radius]
+        perimeter = 2*math.pi
+        return Point(math.cos(n/perimeter),math.sin(n/perimeter))
 
     def isCrossingCircle(self, other):
         """Determine if two circles are crossing."""
@@ -2079,9 +2089,9 @@ class Circle:
 
 
 if __name__ == "__main__":
-    from mycontext import Surface
+    from mycontext import Context
 
-    surface = Surface(name="Abstract Demonstration", fullscreen=True)
+    surface = Context(name="Abstract Demonstration", fullscreen=True)
 
     p1 = Point(10, 0, radius=0.05, color=mycolors.YELLOW)
     p2 = Point(20, 20, radius=0.05, color=mycolors.YELLOW)

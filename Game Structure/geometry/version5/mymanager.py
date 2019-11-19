@@ -311,7 +311,6 @@ class Manager:
 
     def reactMain(self, key):
         """React as usual when not typing."""
-        self.context.control()
         if key == K_f:
             self.switchFullscreen()
         if key == K_1:
@@ -403,7 +402,7 @@ class Manager:
 
     def showLoop(self):
         """Show the graphical components and deal with the context in the loop."""
-        if not self.typing:  # Ugly fix for easier praticial use
+        if not self.typing:  # Ugly fix for easier pratical use
             self.context.control()
         self.context.clear()
         self.context.show()
@@ -557,6 +556,53 @@ class AbstractManager(Manager):
         """Show the objects of the group."""
         for e in self.group:
             e.show(self.context)
+
+
+class GameManager(Manager):
+    """Base class Manager for games."""
+
+    def __init__(self, game, controller=None, **kwargs):
+        super().__init__(**kwargs)
+        self.game = game
+        self.controller = controller
+        self.context.units = [10, 10]
+
+    def update(self):
+        if self.controller:
+            self.context.position = self.getPlayer().position
+        self.game.update()
+
+    def showLoop(self):
+        """Show the graphical components and deal with the context in the loop."""
+        if not self.typing:  # Ugly fix for easier practical use
+            # self.context.control()
+            pass
+        self.context.clear()
+        self.show()
+        self.showCamera()
+        self.context.console.show()
+        self.context.flip()
+
+    def show(self):
+        self.game.show(self.context)
+
+    def reactKeyDown(self, key):
+        super().reactKeyDown(key)
+        self.game.reactKeyDown(key)
+
+    def reactMouseMotion(self, position):
+        position = self.context.getFromScreen(position)
+        self.game.reactMouseMotion(position)
+
+    def reactMouseButtonDown(self, button, position):
+        position = self.context.getFromScreen(position)
+        self.game.reactMouseButtonDown(button, position)
+
+    def getPlayer(self):
+        return self.game.control(self.controller)
+
+
+
 
 
 if __name__ == "__main__":

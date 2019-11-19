@@ -1,46 +1,59 @@
 from myconnection import Client
-from mymanager import Manager
-from myasteroidgame import AsteroidDuo
+from mymanager import GameManager
+from myasteroidgame import AsteroidGame
 
 
-class AsteroidDuoClient(Client, Manager):
+class AsteroidClient(GameManager):
     def __init__(self, ip, port):
-        Client.__init__(self, ip, port)
-        Manager.__init__(self, build=False)
-        self.game = AsteroidDuo()
-        self.id = None
+        self.id = id(self)
+        self.client = Client(ip, port)
+        game = AsteroidGame()
+        super().__init__(game, build=False)
+        print("ip:", self.client.connection.getsockname()[0])
 
-    def prepare(self):
-        self.send("ready")
-        while self.id is None:
-            self.receiveID()
+    def showLoop(self):
+        if self.client.connection.getsockname()[0] in self.game.players:
+            player = self.game.players[self.client.connection.getsockname()[0]]
+            self.context.position = player.position
+            self.context.clear()
+            self.game.show(self.context)
+            self.context.console.show()
+            self.context.flip()
 
-    def main(self):
-        self.prepare()
-        self.build()
-        super().main()
+    def setup(self):
+        self.context.build()
 
     def update(self):
-        self.game = self.queue.popleft()
+        super().update()
+        try:
+            self.receive()
+        except:
+            print("Client failed to receive.")
 
-    def show(self):
-        self.game.show(self.context)
+    def receive(self):
+        self.client.receive()
+        self.game = self.client.queue.pop()
+        self.client.queue.clear()
 
+    def reactKeyDown(self, key):
+        super().reactKeyDown(key)
+        self.client.sendForSure(("events/keydown", key))
 
+    def reactMouseMotion(self, position):
+        position = self.context.getFromScreen(position)
+        self.client.sendForSure(("events/mousemotion", position))
 
-    def receiveID(self):
-        while len(self.queue) > 0:
-            message = self.queue.popleft()
-            if "id" in message:
-                self.id = message["id"]
-            self.context.console("Id:",self.id)
+    def reactMouseButtonDown(self, button, position):
+        position = self.context.getFromScreen(position)
+        self.client.sendForSure(("events/mousebuttondown", (button, position)))
 
 
 if __name__ == "__main__":
     IP = "172.16.0.39."
     PORT = 1234
-
-    c = AsteroidDuoClient(IP, PORT)
+    # IP, PORT
+    c = AsteroidClient(IP, PORT)
+    # print(c)
     c()
 
-    del c
+    # del c

@@ -1,5 +1,5 @@
 from mymanager import Manager
-from myabstract import Vector, Form
+from myabstract import Vector, Form, Circle
 from mymotion import Motion
 from mybody import Body
 import mycolors
@@ -223,22 +223,23 @@ class Simulation(Manager):
         """Create a random simulation of boids."""
         return cls(BoidGroup.random(n), **kwargs)
 
-    def __init__(self, group, friction=1e-3, born=100, dt=1, **kwargs):
+    def __init__(self, group, friction=1e-3, radius=100, dt=1, **kwargs):
         """Create a simulation of flocking."""
         super().__init__(dt=dt, **kwargs)
         self.group = group
         self.friction = friction
-        self.born = born
+        self.circle = Circle(0,0, radius=radius)
 
     def update(self):
         """Update the boid group."""
-        self.group.update(self.dt, self.friction, self.born)
-        #self.group.follow(self.context.point())
+        self.group.update(self.dt, self.friction, self.circle.radius)
+        # self.group.follow(self.context.point())
 
     def show(self):
         """Show the boid group."""
         self.group.show(self.context)
         self.group.showMotions(self.context)
+        self.circle.show(self.context)
 
 
 if __name__ == "__main__":

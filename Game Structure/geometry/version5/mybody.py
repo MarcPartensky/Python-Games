@@ -41,7 +41,7 @@ class Body(Physics):
     def random(cls, n=5, d=2, nm=2, nv=3, borns=[-1, 1]):
         """Create a random body."""
         anatomy = Form.random(n=n, d=d, borns=borns)
-        anatomy.recenter()
+        anatomy.recenter(anatomy.centroid)
         motions = []
         if nm >= 1:
             motions.append(Motion.random(n=nv, d=d))
@@ -175,7 +175,6 @@ class Body(Physics):
 
     def updateBorn(self):
         """Return the born of the body."""
-        print(self.anatomy)
         c = self.anatomy.center
         lengths = [Segment(c, p).length for p in self.anatomy.points]
         self._born = max(lengths)
@@ -198,6 +197,14 @@ class Body(Physics):
         """Return the circle that borns the body."""
         return Circle(*self.position, self.born)
 
+    def spread(self, n):
+        """Take away the entity by multiplying the norm of the position by n."""
+        self.position.norm *= n
+
+    def enlarge(self, n):
+        """Enlarge the anatomy."""
+        self.anatomy.enlarge(n)
+        self._born *= n
 
 class FrictionBody(Body):
     """Add some friction to a body."""
@@ -298,26 +305,18 @@ class MaterialBody(Material):
     absolute = property(getAbsolute)
 
 
+class BornShowingBody(Body):
+    def showBorn(self, context):
+        circle = Circle(*self.position, radius=self._born)
+        circle.show(context)
+
+    def show(self, context):
+        super().show(context)
+        self.showBorn(context)
+
+
 if __name__ == "__main__":
-    from mymanager import Manager
-
-
-    class BodyTester(Manager):
-        def __init__(self):
-            super().__init__()
-            self.bodies = {
-                'b': Body.random(n=30)
-            }
-
-        def update(self):
-            for body in self.bodies.values():
-                body.update(self.dt)
-
-        def show(self):
-            for body in self.bodies.values():
-                body.showAll(self.context)
-                body.center.show(self.context)
-
-
-    m = BodyTester()
+    from mymanager import BodyManager
+    b = BornShowingBody.random()
+    m = BodyManager(b)
     m()

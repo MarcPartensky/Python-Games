@@ -1,6 +1,6 @@
-from myentitygroup import BasicEntityGroup, EntityGroup
+from myentitygroup import EntityGroup
 from myabstract import Form, Segment, Vector
-from myentity import LimitedEntity, Entity
+from myentity import LimitedEntity, LivingEntity, Entity
 from mymotion import Motion, Moment
 from myasteroidbase import SpiderBaseAnatomy
 from pygame.locals import *
@@ -12,9 +12,8 @@ import copy
 from mymanager import BodyManager
 
 
-class SpaceShip(LimitedEntity):
+class SpaceShip(LimitedEntity, LivingEntity):
     """Base class of all spaceships."""
-
     @classmethod
     def random(cls, **kwargs):
         """Create a random spaceship."""
@@ -74,9 +73,9 @@ class ShowMotionSpaceShip(SpaceShip):
 class Missile(Entity):
     """Base class of all missiles."""
 
-    def __init__(self, anatomy, motion, target=None, **kwargs):
+    def __init__(self, anatomy, motion, target=None, friction=0, **kwargs):
         """Create a missile using the motion and the target."""
-        super().__init__(anatomy, motion, **kwargs)
+        super().__init__(anatomy, motion, friction=friction, **kwargs)
         self.target = target
 
 
@@ -98,7 +97,6 @@ class ShortMissile(Missile):
 
 class SegmentMissile(ShortMissile):
     """Base class of any missile."""
-
     @classmethod
     def random(cls):
         """Create a segment missile with a random motion."""
@@ -112,23 +110,22 @@ class SegmentMissile(ShortMissile):
 
 
 class Shooter(SpaceShip):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, shooting_speed=10, **kwargs):
         """Space ship that can shoot."""
         super().__init__(*args, **kwargs)
         self.shooting = False
         self.anatomy.side_color = mycolors.ORANGE
+        self.shooting_speed = shooting_speed
         self.activate()
 
     def shoot(self):
         """Return a missile with the same motion."""
         self.shooting = False
-        l = 1
-        s = Segment.createFromTuples((0, 0), (l, 0))
+        s = Segment.createFromTuples((0, 0), (1, 0))
         s.rotate(self.velocity.angle)
-        m = copy.deepcopy(self.motion)
-        m.position += Vector.createFromPolar(self.born + l, m.velocity.angle)
-        m.velocity.norm += 10
-        del m.acceleration
+        m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
+        m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
+        m.velocity.norm += self.shooting_speed
         return SegmentMissile(s, m)
 
 
@@ -148,10 +145,6 @@ class MaxSpeedSpaceShip(SpaceShip):
 
 class PlayableSpaceShip(MaxSpeedSpaceShip):
     """Spaceship that can be controlled and played by the user."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.acceleration.set(Vector.null())
 
     def reactMouseMotion(self, position):
         """Follow the mouse by changing the velocity."""
@@ -333,7 +326,17 @@ class SpaceShipTester(BodyManager):
         super().reactMouseButtonDown(event)
         position = self.context.getFromScreen(tuple(event.pos))
         for body in self.bodies:
-            body.reactMouseButtonDown(event.button)
+            body.reactMouseButtonDown(event.button, position)
+
+
+class GamePlayer(PlayableShooter, TriangleSpaceShip, ShowMotionSpaceShip):
+    pass
+
+
+class GameHunter(Hunter, TriangleSpaceShip):
+    pass
+
+
 
 
 if __name__ == "__main__":
