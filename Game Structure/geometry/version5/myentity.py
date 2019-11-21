@@ -4,6 +4,7 @@ from mybody import Body
 
 import mycolors
 
+
 class Entity(Body):
     """An entity is a body that can be alive and active."""
 
@@ -100,6 +101,16 @@ class Entity(Body):
 
 
 class LivingEntity(Entity):
+    def __init__(self, *args,
+                 life_bar_color=mycolors.GREEN,
+                 life_background_color=mycolors.WHITE,
+                 life_margin=0.3,
+                 **kwargs):
+        self.life_bar_color = life_bar_color
+        self.life_background_color = life_background_color
+        self.life_margin = life_margin
+        super().__init__(*args, **kwargs)
+
     def showLife(self, context):
         """Show the life with a rectangle."""
         r1, r2 = self.life_rectangles
@@ -108,14 +119,13 @@ class LivingEntity(Entity):
 
     @property
     def life_rectangles(self):
-        margin = 0.1
         x, y = self.x, self.y
-        y -= (self._born + margin)
-        w, h = self._born, margin
+        y -= (self._born + self.life_margin)
+        w, h = self._born, self.life_margin
         w1 = w * self.life/self.max_life
         x1 = x-w/2+w1/2
-        r1 = Rectangle([x1, y], [w1, h], area_color=mycolors.GREEN, fill=True, point_show=False)
-        r2 = Rectangle([x, y], [w, h], side_color=mycolors.WHITE, point_show=False)
+        r1 = Rectangle([x1, y], [w1, h], area_color=self.life_bar_color, fill=True, point_show=False, side_width=1)
+        r2 = Rectangle([x, y], [w, h], side_color=self.life_background_color, point_show=False)
         return [r1, r2]
 
     def show(self, context):
@@ -157,11 +167,20 @@ class LimitedEntity(Entity):
                 self.position.y = ly
 
 
+from mymanager import EntityManager
+
+
+class LivingEntityTester(EntityManager):
+    def update(self):
+        super().update()
+        for entity in self.entities:
+            entity.life = (entity.life + 0.01) % 1
+
+
 if __name__ == "__main__":
     entity = LivingEntity.random(nv=2)
-    entity.life = 0.5
+    entity.life = 0.2
 
-    from mymanager import EntityManager
-    m = EntityManager(entity)
+    m = LivingEntityTester(entity)
     m()
 

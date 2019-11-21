@@ -22,7 +22,6 @@ class Component:
 
     def save(self, directory):
         """Save the component for later use."""
-        pa
 
 
 class Grass(Component):

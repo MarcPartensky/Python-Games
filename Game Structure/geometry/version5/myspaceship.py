@@ -8,11 +8,12 @@ from pygame.locals import *
 import mycolors
 import time  # To time missiles life
 import copy
+import math
 
 from mymanager import BodyManager
 
 
-class SpaceShip(LimitedEntity, LivingEntity):
+class SpaceShip(LivingEntity, LimitedEntity):
     """Base class of all spaceships."""
     @classmethod
     def random(cls, **kwargs):
@@ -20,6 +21,9 @@ class SpaceShip(LimitedEntity, LivingEntity):
         motion = Motion.random()
         form = Form.random()
         return cls(form, motion, **kwargs)
+
+    def show(self, context):
+        LivingEntity.show(self, context)
 
 
 class SpaceBase(LimitedEntity):
@@ -73,10 +77,11 @@ class ShowMotionSpaceShip(SpaceShip):
 class Missile(Entity):
     """Base class of all missiles."""
 
-    def __init__(self, anatomy, motion, target=None, friction=0, **kwargs):
+    def __init__(self, anatomy, motion, target=None, damage=1,friction=0, **kwargs):
         """Create a missile using the motion and the target."""
         super().__init__(anatomy, motion, friction=friction, **kwargs)
         self.target = target
+        self.damage = damage
 
 
 class ShortMissile(Missile):
@@ -110,12 +115,13 @@ class SegmentMissile(ShortMissile):
 
 
 class Shooter(SpaceShip):
-    def __init__(self, *args, shooting_speed=10, **kwargs):
+    def __init__(self, *args, shooting_speed=10, damage=1, **kwargs):
         """Space ship that can shoot."""
         super().__init__(*args, **kwargs)
         self.shooting = False
-        self.anatomy.side_color = mycolors.ORANGE
+        self.anatomy.side_color = mycolors.ORANGE  # Arbitrary choice made on purpose to distinguish entities for now
         self.shooting_speed = shooting_speed
+        self.damage = damage
         self.activate()
 
     def shoot(self):
@@ -126,7 +132,28 @@ class Shooter(SpaceShip):
         m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
         m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
         m.velocity.norm += self.shooting_speed
-        return SegmentMissile(s, m)
+        return [SegmentMissile(s, m)]
+
+
+class NShooter(Shooter):
+    def __init__(self, *args, n=3, shooting_view=math.pi, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.n = n
+        self.shooting_view = shooting_view
+
+    def shoot(self):
+        """Return a missile with the same motion."""
+        self.shooting = False
+        shooted = []
+        for i in range(self.n):
+            s = Segment.createFromTuples((0, 0), (1, 0))
+            angle = self.shooting_view * i / self.n
+            s.rotate(self.velocity.angle + angle)
+            m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
+            m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
+            m.velocity.norm += self.shooting_speed
+            shooted.append(m)
+        return shooted
 
 
 class MaxSpeedSpaceShip(SpaceShip):
@@ -213,7 +240,7 @@ class Hunter(Shooter, Follower):
         return self.velocity.norm * dt
 
 
-class Asteroid(Entity):
+class Asteroid(LivingEntity):
     """Mother class of all asteroids."""
 
     @classmethod
@@ -257,18 +284,12 @@ class SpaceshipGameGroup:
 
     def reactMouseButtonDown(self, button, position):
         """React to a mouse button down event."""
-        self.missiles.reactMouseButtonDown(button, )
-        self.missiles.reactMouseButtonDown(button, )
+        self.missiles.reactMouseButtonDown(button, position)
+        self.missiles.reactMouseButtonDown(button, position)
 
     def updateShooting(self):
         """Add the shooted missiles."""
         self.missiles.group.append(self.spaceships.getShooted())
-
-
-class MissileGroup:
-    def updateAlives(self, dt):
-        """Update alived missiles by kill."""
-        self.updateEach(dt)
 
 
 class SegmentMissilesGroup(EntityGroup):

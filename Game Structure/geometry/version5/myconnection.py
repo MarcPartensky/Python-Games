@@ -93,8 +93,8 @@ class Server:
                 sent = True
             except:
                 attempts += 1
-        if not sent:
-            print("The message: {} could not be sent after {} attempts.".format(message, max_attempts))
+        # if not sent:
+        #     print("The message: {} could not be sent after {} attempts.".format(message, max_attempts))
 
     def send(self, client, message):
         """Send a message to a client."""

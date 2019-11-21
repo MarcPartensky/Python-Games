@@ -95,6 +95,12 @@ class Group(list):
         """Hash lazily with id."""
         return id(self)
 
+    def appendleft(self, element):
+        """Append an element to the left."""
+        self.reverse()
+        self.append(element)
+        self.reverse()
+
 
 class Tree(Group):
     """A tree is an object specialized in groups of groups."""

@@ -6,12 +6,13 @@ import mycolors
 import time
 import copy
 
-
 # For the camera only
 from pygame.locals import *
 import numpy as np
 import pygame
 import cv2
+
+
 # For the camera only
 
 
@@ -30,7 +31,7 @@ class Camera:
         self._draw = draw
         self.position = position
         self.filename = filename
-        self.fourccs={'mp4':'MP4V','avi':'DIVX'}
+        self.fourccs = {'mp4': 'MP4V', 'avi': 'DIVX'}
         self.framerate = framerate
         # Building videos components
         if build_capture:
@@ -46,25 +47,25 @@ class Camera:
         camera."""
         self.capture = cv2.VideoCapture(0)
 
-    def buildCaptureWriter(self, filename=None, framerate = None):
+    def buildCaptureWriter(self, filename=None, framerate=None):
         """Write the videos of the camera, this is just an odd concept, nothing
         really functional."""
-        if not filename: filename=self.filename
-        _, extension=filename.split('.')
-        fourcc=self.fourccs[extension]
+        if not filename: filename = self.filename
+        _, extension = filename.split('.')
+        fourcc = self.fourccs[extension]
         print(fourcc)
-        fourcc=cv2.VideoWriter_fourcc(*fourcc)
+        fourcc = cv2.VideoWriter_fourcc(*fourcc)
         if not framerate: framerate = self.framerate
-        self.capture_writer = cv2.VideoWriter(filename,fourcc,framerate,frameSize=self._draw.window.size)
+        self.capture_writer = cv2.VideoWriter(filename, fourcc, framerate, frameSize=self._draw.window.size)
 
-    def buildScreenWriter(self, filename=None, framerate = None):
+    def buildScreenWriter(self, filename=None, framerate=None):
         """Write the videos of the screen."""
-        if not filename: filename=self.filename
-        _, extension=filename.split('.')
-        fourcc=self.fourccs[extension]
-        fourcc=cv2.VideoWriter_fourcc(*fourcc)
+        if not filename: filename = self.filename
+        _, extension = filename.split('.')
+        fourcc = self.fourccs[extension]
+        fourcc = cv2.VideoWriter_fourcc(*fourcc)
         if not framerate: framerate = self.framerate
-        self.screen_writer = cv2.VideoWriter(filename,fourcc,framerate,frameSize=self._draw.window.size)
+        self.screen_writer = cv2.VideoWriter(filename, fourcc, framerate, frameSize=self._draw.window.size)
 
     def writeCapture(self):
         """Write the capture."""
@@ -193,15 +194,15 @@ class Camera:
             self.capture_writer.release()
 
 
-
 class Line:
     """Representation of a line in the console.
     This might be used for visual debugging but also for typing commands."""
 
-    def __init__(self, *content, time, separator=" "):
+    def __init__(self, *content, time=time.time(), color=mycolors.WHITE, separator=" "):
         """Object of line created using the text and optional time."""
         self.content = list(content)
         self.time = time
+        self.color = color
         self.separator = separator
 
     def __str__(self):
@@ -225,15 +226,17 @@ class Line:
     def getText(self):
         """Return the content of a line."""
         return self.content
+
     text = property(getText)
 
     def refresh(self):
         """Refresh the time."""
-        self.time=time.time()
+        self.time = time.time()
 
     @property
     def empty(self):
-        return self.content[0]=="" #difficult to do uglier
+        return self.content[0] == ""  # difficult to do uglier
+
 
 class Console:
     def __init__(self, draw,
@@ -268,38 +271,37 @@ class Console:
 
     def eval(self):
         """Execute the last line."""
-        content=self.lines[-1].content
-        if len(content)>=1:
-            if content[0]=="marc":
-                content[0]+=" is awesome."
-            elif content[0]=="time":
-                content[0]="The time is "+time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime())+"."
-            elif content[0]=="minecraft":
-                content[0]+="is the best game ever."
-            elif content[0][:6]=="print(":
+        content = self.lines[-1].content
+        if len(content) >= 1:
+            if content[0] == "marc":
+                content[0] += " is awesome."
+            elif content[0] == "time":
+                content[0] = "The time is " + time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()) + "."
+            elif content[0] == "minecraft":
+                content[0] += "is the best game ever."
+            elif content[0][:6] == "print(":
                 self(eval(content[0][6:-1]))
-            elif content[0]=="refresh":
+            elif content[0] == "refresh":
                 self.refresh()
 
     def back(self):
         """Set the line to an older one."""
-        if self.line_index==0:
-            self.line_memory=copy.deepcopy(self.line)
-        if self.line_index<len(self.lines)-1:
-            self.line_index+=1
-            self.line=copy.deepcopy(self.lines[-1-self.line_index])
+        if self.line_index == 0:
+            self.line_memory = copy.deepcopy(self.line)
+        if self.line_index < len(self.lines) - 1:
+            self.line_index += 1
+            self.line = copy.deepcopy(self.lines[-1 - self.line_index])
             self.line.refresh()
 
     def forward(self):
         """Set the line to a new one."""
-        if self.line_index>1:
-            self.line_index-=1
-            self.line=copy.deepcopy(self.lines[-1-self.line_index])
-        elif self.line_index==1:
-            self.line_index-=1
-            self.line=self.line_memory
+        if self.line_index > 1:
+            self.line_index -= 1
+            self.line = copy.deepcopy(self.lines[-1 - self.line_index])
+        elif self.line_index == 1:
+            self.line_index -= 1
+            self.line = self.line_memory
         self.line.refresh()
-
 
     def clear(self):
         """Clear the console by removing all the lines."""
@@ -308,7 +310,7 @@ class Console:
     def refresh(self):
         """Refresh the console by showing its previous messages."""
         for line in self.lines:
-            line.time=time.time()
+            line.time = time.time()
 
     def __getitem__(self, i):
         """Return the i-th line."""
@@ -322,6 +324,7 @@ class Console:
         """Add a line to the console."""
         l = Line(*args, time=time.time())
         self.lines.append(l)
+
     append = __iadd__
 
     def appendLines(self, lines):
@@ -329,13 +332,11 @@ class Console:
         for line in lines:
             self.append(line)
 
-    def __call__(self, *args, show=True):
+    def __call__(self, *args, **kwargs):
         """Display a message on the context as a console would do."""
         if len(args) > 0:
-            l = Line(*args,time=time.time())
+            l = Line(*args, **kwargs)
             self.lines.append(l)
-        if show:
-            self.show()
 
     def nextArg(self):
         """Create a new argument."""
@@ -345,8 +346,8 @@ class Console:
         """Create a new line."""
         self("")
 
-    def setLine(self,line):
-        self.lines[-1]=line
+    def setLine(self, line):
+        self.lines[-1] = line
 
     def getLine(self):
         return self.lines[-1]
@@ -354,8 +355,7 @@ class Console:
     def delLine(self):
         del self.lines[-1]
 
-    line=property(getLine,setLine,delLine)
-
+    line = property(getLine, setLine, delLine)
 
     def show(self):
         """Show the console without adding a text."""
@@ -364,15 +364,13 @@ class Console:
         nmax = self.max_lines_shown
         dls = self.disappearance_lines_shown
         for i in range(min(n, nmax)):
-            position = (self.left_padding, sy -
-                        self.interline * i - self.down_padding)
+            position = (self.left_padding, sy - self.interline * i - self.down_padding)
             to = self.lines[-i - 1].time
             t = (time.time() - to) / self.duration_lines_shown
             if t < 1:
-                c1 = self.colors[0] + (t**dls,)
-                c2 = self.colors[1] + (t**dls,)
-                self._draw.print(
-                    self.lines[-i - 1], position, self.size, c1, self.font, self.conversion)
+                c1 = self.lines[-i-1].color + (t ** dls,)
+                # c2 = self.colors[1] + (t ** dls,)
+                self._draw.print(self.lines[-i - 1], position, self.size, c1, self.font, self.conversion)
 
 
 class Context(Rect):
@@ -418,10 +416,10 @@ class Context(Rect):
     def getScreen(self):
         return self.draw.window.screen
 
-    def setScreen(self,screen):
-        self.draw.window.screen=screen
+    def setScreen(self, screen):
+        self.draw.window.screen = screen
 
-    screen=property(getScreen,setScreen)
+    screen = property(getScreen, setScreen)
 
     def getKeys(self):
         """Return the keys of the window."""
@@ -530,9 +528,8 @@ class Context(Rect):
     def blit(self, surface, position):
         """Blit a given surface to a given position."""
         size = surface.get_size()
-        position=self.draw.plane.getToScreen(position,self.window)
-        self.draw.window.screen.blit(surface,position)
-
+        position = self.draw.plane.getToScreen(position, self.window)
+        self.draw.window.screen.blit(surface, position)
 
     def getOpen(self):
         return self.draw.window.open
@@ -653,7 +650,7 @@ if __name__ == "__main__":
     context = Context(name="Context test")
     context.camera.buildCapture()
     context.camera.buildScreenWriter("mycontext test.mp4")
-    #context.camera.buildCaptureWriter('zzzz.mp4')
+    # context.camera.buildCaptureWriter('zzzz.mp4')
     context.console.duration_lines_shown = 2
     context.console.max_lines_shown = 40
     # context.corners=[0,0,1,1]
@@ -672,7 +669,7 @@ if __name__ == "__main__":
         context.camera.write()
         context.console(context.rate)
 
-        #if context.counter > 100:
+        # if context.counter > 100:
         #    context.camera.destroy()
 
         context.flip()

@@ -14,7 +14,7 @@ class SpaceShipGroup(EntityGroup):
         shooted = []
         for entity in self:
             if isinstance(entity, Shooter):
-                shooted.append(entity.shoot())
+                shooted += entity.shoot()
         return shooted
 
 
@@ -98,16 +98,6 @@ class AdvancedSpaceShipGroup(SpaceShipGroup):
         return shooted
 
 
-class HunterGroup(EntityGroup):
-    """Group of hunters."""
-
-    @classmethod
-    def random(cls, n=10, **kwargs):
-        """Create a group of n random hunters."""
-        hunters = [Hunter.random() for i in range(n)]
-        return cls(*hunters, **kwargs)
-
-
 class AsteroidGroup(EntityGroup):
     """Group of asteroids."""
 
@@ -135,11 +125,25 @@ class ShooterGroup(SpaceShipGroup):
         shooted = []
         for entity in self:
             if entity.shooting:
-                shooted.append(entity.shoot())
+                shooted += entity.shoot()
         return shooted
 
     def reactMouseMotion(self, position):
         super().reactMouseMotion(position)
+
+
+class HunterGroup(ShooterGroup):
+    """Group of hunters."""
+
+    @classmethod
+    def random(cls, n=10, **kwargs):
+        """Create a group of n random hunters."""
+        hunters = [Hunter.random() for i in range(n)]
+        return cls(*hunters, **kwargs)
+
+    def retarget(self, target):
+        for hunter in self:
+            hunter.target = target
 
 
 class GameSpaceShipGroup(SpaceShipGroup):
@@ -159,17 +163,17 @@ class GameSpaceShipGroup(SpaceShipGroup):
         for entity in self:
             if isinstance(entity, Shooter):
                 if entity.shooting:
-                    shooted.append(entity.shoot())
+                    shooted += entity.shoot()
                     entity.shooting = False
         return shooted
 
 
 class MissileGroup(EntityGroup):
     @classmethod
-    def random(cls, n, **kwargs):
+    def random(cls, n, missile_kwargs={}, **kwargs):
         """Create a missile group of random missiles. This is rarely needed
         since missiles are shooted from spaceships in practice."""
-        missiles = [Missile.random() for i in range(n)]
+        missiles = [Missile.random(**missile_kwargs) for i in range(n)]
         return cls(*missiles, **kwargs)
 
 
@@ -254,7 +258,7 @@ class AsteroidGameGroup(EntityGroup):
         self.missiles.clean()
 
     def newPlayer(self, player):
-        self.spaceships.append(player)
+        self.spaceships.appendleft(player)
 
 
 class AsteroidLevelDuo(AsteroidGameGroup):

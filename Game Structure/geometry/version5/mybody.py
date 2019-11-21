@@ -125,7 +125,7 @@ class Body(Physics):
         self.anatomy.position.set(v)
 
     def getForm(self):
-        """Return a copy of the form in absolute coordonnates."""
+        """Return a copy of the form in absolute coordinates."""
         form = copy.deepcopy(self.anatomy)
         form.points = self.motion.position.applyToPoints(form.points)
         if len(self.motions) == 1:  # Ugly fix for general case
@@ -205,6 +205,7 @@ class Body(Physics):
         """Enlarge the anatomy."""
         self.anatomy.enlarge(n)
         self._born *= n
+
 
 class FrictionBody(Body):
     """Add some friction to a body."""
@@ -317,6 +318,7 @@ class BornShowingBody(Body):
 
 if __name__ == "__main__":
     from mymanager import BodyManager
+
     b = BornShowingBody.random()
     m = BodyManager(b)
     m()

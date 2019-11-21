@@ -88,7 +88,7 @@ class PendulumManager(Manager):
         """Create a random pendulum."""
         return cls(Pendulum.random(n=2))
 
-    def __init__(self, pendulum, name="Pendulum",dt=0.01):
+    def __init__(self, pendulum, name="Pendulum", dt=0.01):
         """Create a pendulum manager using the pendulum."""
         super().__init__(name=name)
         self.pendulum = pendulum

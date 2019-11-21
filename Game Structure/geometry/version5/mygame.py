@@ -85,14 +85,21 @@ class Game:
         self.level.reactMouseButtonDown(button, position)
 
     def update(self):
-        self.level.update()
+        """Update the game by updating the level or changing it to the next one."""
+        if self.level.on:
+            self.level.update()
+        elif self.stage < len(self.levels)-1:
+            self.stage += 1
 
     def fixedUpdate(self):
         """Update the current level if the time is right, so that the game speed
         does not depend on the efficiency of the computer."""
-        if time.time() - self.t > self.speed:
-            self.level.update()
-            self.t = time.time()
+        if self.level.on:
+            if time.time() - self.t > self.speed:
+                self.level.update()
+                self.t = time.time()
+        else:
+            self.stage += 1
 
     def show(self, context):
         """Show the current level of the game."""
@@ -108,6 +115,10 @@ class Game:
         self.level.players.clear()
 
     players = property(getPlayers, setPlayers, delPlayers)
+
+    def control(self, controller):
+        """Point to the control of the level."""
+        return self.level.control(controller)
 
 
 class Level:

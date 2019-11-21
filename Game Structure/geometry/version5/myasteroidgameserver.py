@@ -37,7 +37,6 @@ class AsteroidServer(Server):
             if path[1] == "keydown":
                 self.game.players[client.getsockname()[0]].reactKeyDown(value)
             elif path[1] == "mousemotion":
-                print(value)
                 self.game.players[client.getsockname()[0]].reactMouseMotion(value)
             elif path[1] == "mousebuttondown":
                 self.game.players[client.getsockname()[0]].reactMouseButtonDown(*value)
@@ -51,3 +50,4 @@ if __name__ == "__main__":
     s.main()
 
     del s
+

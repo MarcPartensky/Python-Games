@@ -19,11 +19,13 @@ class Physics(Material): #,Rotational?
         """Create n random physical objects."""
         return cls([Motion.random(n=nm,d=d) for i in range(n)])
 
-    def __init__(self, motions=[Motion.null(n=3, d=2), Motion.null(n=2, d=1)], mass = 1):
+    def __init__(self, motions=None, mass=1):
         """Create a physical object using its motions, by default a physical
         has 2 motions but it can have more.
         By default a physical object has a motion and a moment that are both
         nulls and 2 dimensionals."""
+        if motions is None:
+            motions = [Motion.null(n=3, d=2), Motion.null(n=2, d=1)]
         self.motions = motions
         self.mass = mass
 

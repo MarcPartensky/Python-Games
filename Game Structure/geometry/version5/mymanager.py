@@ -569,7 +569,9 @@ class GameManager(Manager):
 
     def update(self):
         if self.controller:
-            self.context.position = self.getPlayer().position
+            player = self.getPlayer()
+            if player:
+                self.context.position = player.position
         self.game.update()
 
     def showLoop(self):
@@ -602,12 +604,8 @@ class GameManager(Manager):
         return self.game.control(self.controller)
 
 
-
-
-
 if __name__ == "__main__":
     from myentity import Entity
-
     m = EntityManager.random(build=False)
     print(m)
     # cm()
