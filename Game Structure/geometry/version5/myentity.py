@@ -8,12 +8,12 @@ import mycolors
 class Entity(Body):
     """An entity is a body that can be alive and active."""
 
-    def __init__(self, anatomy, *motions,
+    def __init__(self, anatomy, motions,
                  life=1, max_life=1,
                  alive=None, active=False,
-                 friction=1e-2, ):
+                 friction=1e-2):
         """Create an entity."""
-        super().__init__(anatomy, *motions)
+        super().__init__(anatomy, motions)
         self.max_life = max_life
         if alive is None:
             self.life = life
@@ -120,8 +120,8 @@ class LivingEntity(Entity):
     @property
     def life_rectangles(self):
         x, y = self.x, self.y
-        y -= (self._born + self.life_margin)
-        w, h = self._born, self.life_margin
+        y -= (self.born + self.life_margin)
+        w, h = self.born, self.life_margin
         w1 = w * self.life/self.max_life
         x1 = x-w/2+w1/2
         r1 = Rectangle([x1, y], [w1, h], area_color=self.life_bar_color, fill=True, point_show=False, side_width=1)
@@ -167,17 +167,16 @@ class LimitedEntity(Entity):
                 self.position.y = ly
 
 
-from mymanager import EntityManager
-
-
-class LivingEntityTester(EntityManager):
-    def update(self):
-        super().update()
-        for entity in self.entities:
-            entity.life = (entity.life + 0.01) % 1
-
-
 if __name__ == "__main__":
+    from mymanager import EntityManager
+
+    class LivingEntityTester(EntityManager):
+        def update(self):
+            super().update()
+            for entity in self.entities:
+                entity.life = (entity.life + 0.01) % 1
+
+
     entity = LivingEntity.random(nv=2)
     entity.life = 0.2
 

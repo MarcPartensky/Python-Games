@@ -1,16 +1,17 @@
 from myentitygroup import EntityGroup
-from myabstract import Form, Segment, Vector
+from myabstract import Vector
+from myanatomies import FormAnatomy, SegmentAnatomy
+from myasteroidanatomies import TriangleAnatomy
 from myentity import LimitedEntity, LivingEntity, Entity
 from mymotion import Motion, Moment
 from myasteroidbase import SpiderBaseAnatomy
+from myspaceshipbehaviours import Shoot
 from pygame.locals import *
 
 import mycolors
 import time  # To time missiles life
 import copy
 import math
-
-from mymanager import BodyManager
 
 
 class SpaceShip(LivingEntity, LimitedEntity):
@@ -19,11 +20,11 @@ class SpaceShip(LivingEntity, LimitedEntity):
     def random(cls, **kwargs):
         """Create a random spaceship."""
         motion = Motion.random()
-        form = Form.random()
-        return cls(form, motion, **kwargs)
+        anatomy = FormAnatomy.random()
+        return cls(anatomy, [motion], **kwargs)
 
-    def show(self, context):
-        LivingEntity.show(self, context)
+    # def show(self, context):
+    #     LivingEntity.show(self, context)
 
 
 class SpaceBase(LimitedEntity):
@@ -43,26 +44,26 @@ class SpiderBase(SpaceBase):
     def __init__(self, motion, moment, **kwargs):
         """Create a spider base using the motion and optional parameters for the spider base anatomy."""
         anatomy = SpiderBaseAnatomy(**kwargs)
-        super().__init__(anatomy, motion, moment)
+        super().__init__(anatomy, [motion, moment])
 
 
-class TriangleSpaceShip(SpaceShip):
-    @classmethod
-    def random(cls, sparse=100, **kwargs):
-        """Create a random triangle spaceship."""
-        return cls(sparse * Motion.random(), **kwargs)
-
-    def __init__(self, motion, **kwargs):
-        """Create a triangle spaceship."""
-        anatomy = Form.createFromTuples([(1, 0), (-1, -1), (-0.5, 0), (-1, 1)], **kwargs)
-        anatomy.recenter()
-        super().__init__(anatomy, motion)
-
-    def getForm(self):
-        """Return the form."""
-        f = super().getForm()
-        f.side_color = mycolors.YELLOW
-        return f
+# class TriangleSpaceShip(SpaceShip):
+#     @classmethod
+#     def random(cls, sparse=100, **kwargs):
+#         """Create a random triangle spaceship."""
+#         return cls([sparse * Motion.random()], **kwargs)
+#
+#     def __init__(self, motion, **kwargs):
+#         """Create a triangle spaceship."""
+#         anatomy = FormAnatomy.createFromTuples([(1, 0), (-1, -1), (-0.5, 0), (-1, 1)], **kwargs)
+#         anatomy.recenter()
+#         super().__init__(anatomy, motion)
+#
+#     def getForm(self):
+#         """Return the form."""
+#         f = super().getForm()
+#         f.side_color = mycolors.YELLOW
+#         return f
 
 
 class ShowMotionSpaceShip(SpaceShip):
@@ -77,11 +78,19 @@ class ShowMotionSpaceShip(SpaceShip):
 class Missile(Entity):
     """Base class of all missiles."""
 
-    def __init__(self, anatomy, motion, target=None, damage=1,friction=0, **kwargs):
+    def __init__(self, *args, target=None, damage=1, **kwargs):
         """Create a missile using the motion and the target."""
-        super().__init__(anatomy, motion, friction=friction, **kwargs)
         self.target = target
         self.damage = damage
+        # if "target" in kwargs:
+        #     self.target = kwargs.pop("target")
+        # else:
+        #     self.target = None
+        # if "damage" in kwargs:
+        #     self.damage = kwargs.pop("damage")
+        # else:
+        #     self.damage = 1
+        super().__init__(*args, **kwargs)
 
 
 class ShortMissile(Missile):
@@ -106,33 +115,34 @@ class SegmentMissile(ShortMissile):
     def random(cls):
         """Create a segment missile with a random motion."""
         motion = Motion.random()
-        segment = Segment.createFromTuples((-0.5, 0), (0.5, 0))
-        return cls(segment, motion)
+        segment = SegmentAnatomy.createFromTuples((-0.5, 0), (0.5, 0))
+        return cls(segment, [motion])
 
-    def __init__(self, segment, motion, **kwargs):
-        """Create a segment missile."""
-        super().__init__(segment, motion, **kwargs)
+    def cross(self, other):
+        p1, p2 = self.form
+        if p1 in other or p2 in other:
+            return True
+        return False
 
 
 class Shooter(SpaceShip):
-    def __init__(self, *args, shooting_speed=10, damage=1, **kwargs):
+    @classmethod
+    def random(cls, **kwargs):
+        """Create a shooter with a Shoot, TriangleAnatomy, and motion"""
+        shoot = Shoot(SegmentMissile)
+        anatomy = TriangleAnatomy()
+        motion = Motion.random(n=2, d=2)
+        return cls(anatomy, [motion], shoot)
+
+    def __init__(self, anatomy, motions, shooting, **kwargs):
         """Space ship that can shoot."""
-        super().__init__(*args, **kwargs)
-        self.shooting = False
+        self.shooting = shooting
+        super().__init__(anatomy, motions, **kwargs)
         self.anatomy.side_color = mycolors.ORANGE  # Arbitrary choice made on purpose to distinguish entities for now
-        self.shooting_speed = shooting_speed
-        self.damage = damage
         self.activate()
 
     def shoot(self):
-        """Return a missile with the same motion."""
-        self.shooting = False
-        s = Segment.createFromTuples((0, 0), (1, 0))
-        s.rotate(self.velocity.angle)
-        m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
-        m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
-        m.velocity.norm += self.shooting_speed
-        return [SegmentMissile(s, m)]
+        return self.shooting(self.position, self.velocity, self.born)
 
 
 class NShooter(Shooter):
@@ -143,22 +153,20 @@ class NShooter(Shooter):
 
     def shoot(self):
         """Return a missile with the same motion."""
-        self.shooting = False
         shooted = []
         for i in range(self.n):
-            s = Segment.createFromTuples((0, 0), (1, 0))
+            anatomy = SegmentAnatomy.createFromTuples((0, 0), (1, 0))
             angle = self.shooting_view * i / self.n
-            s.rotate(self.velocity.angle + angle)
+            anatomy.rotate(self.velocity.angle + angle)
             m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
             m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
             m.velocity.norm += self.shooting_speed
-            shooted.append(m)
+            shooted.append(SegmentMissile(a, m))
         return shooted
 
 
 class MaxSpeedSpaceShip(SpaceShip):
     """Spaceship with max speed."""
-
     def __init__(self, *args, max_speed=10, **kwargs):
         """Crate a spaceship with a given max speed."""
         super().__init__(*args, **kwargs)
@@ -172,7 +180,6 @@ class MaxSpeedSpaceShip(SpaceShip):
 
 class PlayableSpaceShip(MaxSpeedSpaceShip):
     """Spaceship that can be controlled and played by the user."""
-
     def reactMouseMotion(self, position):
         """Follow the mouse by changing the velocity."""
         self.acceleration.set(Vector(*position) - self.position)
@@ -183,24 +190,26 @@ class PlayableSpaceShip(MaxSpeedSpaceShip):
         self.showMotion(context)
 
 
-class PlayableShooter(PlayableSpaceShip, Shooter):
+class PlayableShooter(Shooter, PlayableSpaceShip):
     """Shooter that can be played by a player and so reacts to a space key event."""
+    def __init__(self, *args, **kwargs):
+        Shooter.__init__(self, *args, **kwargs)
 
     def reactKeyDown(self, key):
         """React to a key down event."""
         if key == K_SPACE:
-            self.shooting = True
+            self.shooting.shooting = True
 
 
 class Follower(MaxSpeedSpaceShip):
     """Entity that follows a target. It can be used to make self-guided missiles, or hunters."""
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, target=None, **kwargs):
         """Create a follower entity."""
-        if "target" in kwargs:
-            self.target = kwargs.pop("target")
-        else:
-            self.target = None
+        self.target = target
+        # if "target" in kwargs:
+        #     self.target = kwargs.pop("target")
+        # else:
+        #     self.target = None
         super().__init__(*args, **kwargs)
 
     def update(self, dt):
@@ -212,15 +221,6 @@ class Follower(MaxSpeedSpaceShip):
 
 class Hunter(Shooter, Follower):
     """Create a spaceship that hunts its targets."""
-
-    def __init__(self, *args, shooting_view=1, **kwargs):
-        """Create a hunter spaceship using spaceship arguments and view."""
-        if "shooting_view" in kwargs:
-            self.shooting_view = kwargs.pop("shooting_view")
-        else:
-            self.shooting_view = 1
-            super().__init__(*args, **kwargs)
-
     def update(self, dt):
         """Update the entity, follow it, and shoot at it when in range and in view."""
         super().update(dt)
@@ -234,66 +234,28 @@ class Hunter(Shooter, Follower):
         if abs(v1.angle - v2.angle) <= self.shooting_view:
             distance = (self.position - self.target.position).norm
             if distance <= self.getShootingRange(dt):
-                self.shooting = True
+                self.shooting.shooting = True
 
     def getShootingRange(self, dt):
         return self.velocity.norm * dt
 
+    def retarget(self, target):
+        self.target = target
+
 
 class Asteroid(LivingEntity):
     """Mother class of all asteroids."""
-
     @classmethod
-    def random(cls, n=5, **kwargs):
+    def random(cls, n=5, size=5, life_factor=1/10, **kwargs):
         """Create a random asteroid."""
-        a = Form.random(n)
+        a = FormAnatomy.random(n)
         mt = Motion.random(n=2, d=2)
         mm = Moment.random(n=2, d=1)
-        return cls(a, mt, mm, **kwargs)
-
-
-class SpaceshipGameGroup:
-    """Group of groups."""
-
-    @classmethod
-    def random(cls, nmissiles, nspaceships, **kwargs):
-        """Return a random group."""
-        missiles = MissileGroup.random(nmissiles)
-        spaceships = SpaceShipGroup.random()
-        return cls(missiles, spaceships, **kwargs)
-
-    def __init__(self, groups):
-        """Create a super group using the groups."""
-        super().__init__(**kwargs)
-        self.groups = groups
-
-    def update(self, dt):
-        """Update with shooting."""
-        self.updateGroups(dt)
-        self.updateShooting(dt)
-
-    def reactKeyDown(self, key):
-        """React to a key down event."""
-        self.missiles.reactKeyDown(key)
-        self.spaceships.reactKeyDown(key)
-
-    def reactMouseMotion(self, position):
-        """React to a mouse motion event."""
-        self.missiles.reactMouseMotion(position)
-        self.spaceships.reactMouseMotion(position)
-
-    def reactMouseButtonDown(self, button, position):
-        """React to a mouse button down event."""
-        self.missiles.reactMouseButtonDown(button, position)
-        self.missiles.reactMouseButtonDown(button, position)
-
-    def updateShooting(self):
-        """Add the shooted missiles."""
-        self.missiles.group.append(self.spaceships.getShooted())
+        a.enlarge(size)
+        return cls(a, [mt, mm], alive=True, max_life=a.area*life_factor, **kwargs)
 
 
 class SegmentMissilesGroup(EntityGroup):
-
     @classmethod
     def random(cls, n=20):
         """Create a random segment."""
@@ -302,64 +264,40 @@ class SegmentMissilesGroup(EntityGroup):
         return cls(entities)
 
 
-class SpaceShipTester(BodyManager):
-    """Tester of spaceships."""
-
+class GamePlayer(PlayableShooter, ShowMotionSpaceShip):
     @classmethod
-    def random(cls, n=20, **kwargs):
-        """Create random bodies."""
-        bodies = [PlayableSpaceship.random()]
-        bodies += [TriangleSpaceShip.random() for i in range(n)]
-        bodies += [SegmentMissile.random()]
-        return cls(bodies, **kwargs)
+    def random(cls, **kwargs):
+        anatomy = TriangleAnatomy()
+        motion = Motion.random(n=3, d=2)
+        shoot = Shoot(SegmentMissile)
+        return cls(anatomy, motion, shoot, **kwargs)
 
-    def makeSparse(self, n=10):
-        """Sparse the bodies."""
-        for body in self.bodies:
-            body.motion *= n
-
-    def setRandomColors(self):
-        """Set the colors of the bodies to random."""
-        for body in self.bodies:
-            for vector in body.motion:
-                vector.color = mycolors.random()
-
-    def spread(self, n=10):
-        """Spread randomly the bodies."""
-        for body in self.bodies:
-            body.motion = n * Motion.random()
-
-    def reactKeyDown(self, key):
-        """React to a keydown event."""
-        super().reactKeyDown(key)
-        for body in self.bodies:
-            body.reactKeyDown(key)
-
-    def reactMouseMotion(self, event):
-        """React to a mouse motion event."""
-        super().reactMouseMotion(event)
-        position = self.context.getFromScreen(tuple(event.pos))
-        for body in self.bodies:
-            body.reactMouseMotion(position)
-
-    def reactMouseButtonDown(self, event):
-        """React to a mouse button down event."""
-        super().reactMouseButtonDown(event)
-        position = self.context.getFromScreen(tuple(event.pos))
-        for body in self.bodies:
-            body.reactMouseButtonDown(event.button, position)
+    def __init__(self, anatomy, motion, shoot, **kwargs):
+        """Create a game player using its anatomy, motion, shoot attributes and kwargs."""
+        PlayableShooter.__init__(self, anatomy, [motion], shoot, **kwargs)
 
 
-class GamePlayer(PlayableShooter, TriangleSpaceShip, ShowMotionSpaceShip):
-    pass
+class GameHunter(Hunter):
+    @classmethod
+    def random(cls, **kwargs):
+        anatomy = TriangleAnatomy()
+        motion = Motion.random(n=3, d=2)
+        shoot = Shoot(SegmentMissile)
+        return cls(anatomy, motion, shoot, **kwargs)
 
-
-class GameHunter(Hunter, TriangleSpaceShip):
-    pass
-
-
+    def __init__(self, anatomy, motion, shoot, **kwargs):
+        """Create a game player using its anatomy, motion, shoot attributes and kwargs."""
+        super().__init__(anatomy, [motion], shoot, **kwargs)
 
 
 if __name__ == "__main__":
-    t = SpaceShipTester.random()
+    from mymanager import EntityManager
+
+    class SpaceShipTester(EntityManager):
+        def __init__(self, *entities, **kwargs):
+            player = GamePlayer.random()
+            entities = [player] + list(entities)
+            super().__init__(*entities, **kwargs)
+
+    t = SpaceShipTester()
     t()

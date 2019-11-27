@@ -1,5 +1,5 @@
-from myspaceship import SegmentMissile
-from myabstract import Segment, Vector
+from myanatomies import SegmentAnatomy
+from myabstract import Vector
 from mymotion import Motion
 
 import copy
@@ -13,22 +13,19 @@ class Update:
         group.update(dt)
 
 
-class ResponsibleUpdate(Update):
-
+class ResponsibleUpdate:
     def __call__(self, dt, group, anatomy):
-        super().__call__(group, dt)
+        group.update(dt)
         anatomy.update(dt)
 
 
 class Show:
     """Show Behaviour."""
-
     def __init__(self):
         pass
 
     def __call__(self, context):
         pass
-
 
 
 class Follow:
@@ -38,47 +35,57 @@ class Follow:
 
 class Shoot:
     """Shooting Behaviour."""
-
     def __init__(self,
-                 shooting_speed=10,
-                 shooting_type=SegmentMissile,
+                 shooting_type,
+                 speed=10,
+                 shooting=False,
                  damage=1
                  ):
-        self.shooting_speed = shooting_speed
-        self.shooting_type = shooting_type
+        self.type = shooting_type
+        self.speed = speed
+        self.shooting = shooting
         self.damage = damage
 
-    def shoot(self, position, velocity, born):
+    def __bool__(self):
+        return self.shooting
+
+    def __call__(self, position, velocity, born):
         """Return a missile with the same motion."""
-        s = Segment.createFromTuples((0, 0), (1, 0))
-        s.rotate(velocity.angle)
+        s = SegmentAnatomy.createFromTuples((0, 0), (1, 0))
+        s.angle = velocity.angle
         m = Motion(copy.deepcopy(position), copy.deepcopy(velocity))
         m.position += Vector.createFromPolar(born + 1, velocity.angle)
-        m.velocity.norm += self.shooting_speed
-        return [self.shooting_type(s, m, damage=self.damage)]
+        m.velocity.norm += self.speed
+        self.shooting = False
+        return [self.type(s, [m], damage=self.damage)]
+
+    def __str__(self):
+        return type(self).__name__+"("+",".join(map(lambda tp: ":".join(map(str, tp)), list(self.__dict__.items())))+")"
 
 
 class NShoot(Shoot):
+    """Shoot n missiles."""
     def __init__(self, n,
-                 shooting_view,
+                 view,
                  **kwargs
                  ):
         super().__init__(**kwargs)
         self.n = n
-        self.shooting_view = shooting_view
+        self.view = view
 
-    def __call__(self):
+    def __call__(self, position, velocity, born):
         """Return a missile with the same motion."""
         self.shooting = False
         shooted = []
         for i in range(self.n):
-            s = Segment.createFromTuples((0, 0), (1, 0))
-            angle = self.shooting_view * i / self.n
-            s.rotate(self.velocity.angle + angle)
-            m = Motion(copy.deepcopy(self.position), copy.deepcopy(self.velocity))
-            m.position += Vector.createFromPolar(self.born + 1, m.velocity.angle)
-            m.velocity.norm += self.shooting_speed
-            shooted.append(self.shooting_type(s, m))
+            s = SegmentAnatomy.createFromTuples((0, 0), (1, 0))
+            s.angle = velocity.angle
+            angle = self.view * i / self.n
+            s.rotate(velocity.angle + angle)
+            m = Motion(copy.deepcopy(position), copy.deepcopy(velocity))
+            m.position += Vector.createFromPolar(born + 1, m.velocity.angle)
+            m.velocity.norm += self.speed
+            shooted.append(self.type(s, [m]))
         return shooted
 
 
@@ -124,3 +131,28 @@ class Life:
 
     def show(self, context):
         pass
+
+
+from myentity import Entity
+#
+# class Entity:
+#     def __init__(self, anatomy, motions):
+#
+# class SpaceShip(Entity):
+#     def __init__(self, anatomy, motions, update, show):
+#         super().__init__(anatomy, *motions)
+#         self.update = update
+#         self.show = show
+#
+#
+# class Shooter(SpaceShip):
+#     def __init__(self, anatomy, motions, update, show, shoot):
+#         super().__init__(anatomy, motions, update, show)
+#         self.shoot = shoot
+#
+#
+
+if __name__ == "__main__":
+    s = Shoot(None)
+    print(s)
+

@@ -88,6 +88,15 @@ class Physics(Material): #,Rotational?
     position = property(getPosition, setPosition)
     angle = property(getAngle, setAngle)
 
+    def getMomentum(self):
+        """Return the momentum of the object, computed using the velocity and the mass."""
+        return self.velocity * self.mass
+
+    def setMomentum(self, momentum):
+        """Set the momentum of the object, by changing its velocity."""
+        self.velocity = momentum / self.mass
+
+    momentum = property(getMomentum, setMomentum)
 
 if __name__ == "__main__":
     #from mycontext import Context

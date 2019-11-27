@@ -4,6 +4,7 @@ from mymanager import AbstractManager
 
 import mycolors
 
+
 def crossSegmentForm(segment, form):
     for s in form.segments:
         if Segment.cross(segment, s):
@@ -13,9 +14,6 @@ def crossSegmentForm(segment, form):
     if segment.p2 in form:
         return True
     return False
-
-
-
 
 
 class AbstractCollision:
@@ -35,6 +33,6 @@ class AbstractCollisionManager(AbstractManager):
             self.group[0].color = mycolors.GREEN
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     m = AbstractCollisionManager()
     m()

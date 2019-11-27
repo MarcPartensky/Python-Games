@@ -10,5 +10,3 @@ class Ground(ImmutableBody):
         """Create a ground using its line."""
         self.mass=float('inf')
 
-#(m1+m2)v=m1v1+m2v2
-#m*v**2=m1*v1**2+m2*v2**2

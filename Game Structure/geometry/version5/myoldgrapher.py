@@ -2,13 +2,24 @@ from mywindow import Window
 from myplane import Plane
 from mycolors import *
 
-from math import cos, sin, exp, tan, atan
+from functools import reduce
+from math import cos, sin, exp, tan
 
 import random
 
-sigmoid = lambda x: 1 / (1 + exp(-x))
-alea = lambda x: random.random()
-interpolator = lambda x, s, n: [s[j] * prod([(n * x - i) / (j - i) for i in range(n) if i != j]) for j in range(n)]
+alea = random.random
+
+
+def prod(x):
+    return reduce(lambda a, b: a * b, x)
+
+
+def sigmoid(x):
+    return 1 / (1 + exp(-x))
+
+
+def interpolator(x, s, n):
+    return [s[j] * prod([(n * x - i) / (j - i) for i in range(n) if i != j]) for j in range(n)]
 
 
 class Grapher(Plane):
@@ -53,10 +64,9 @@ class Grapher(Plane):
             if points[i] and points[i + 1]:
                 window.draw.line(window.screen, color, points[i], points[i + 1])
 
-        # window.draw.lines(window.screen,color,False,points,1)
-
 
 if __name__ == "__main__":
+    """Still working even though the program is deprecated."""
     window = Window(fullscreen=True)
     fs = [sin, cos, tan]
     grapher = Grapher(fs)

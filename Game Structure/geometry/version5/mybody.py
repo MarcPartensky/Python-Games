@@ -1,4 +1,5 @@
-from myabstract import Form, Vector, Point, Segment, Circle
+from myabstract import Vector, Point, Segment, Circle
+from myanatomies import FormAnatomy
 from mymotion import Motion, Moment
 from mymaterial import Material
 from myphysics import Physics
@@ -40,7 +41,7 @@ class Body(Physics):
     @classmethod
     def random(cls, n=5, d=2, nm=2, nv=3, borns=[-1, 1]):
         """Create a random body."""
-        anatomy = Form.random(n=n, d=d, borns=borns)
+        anatomy = FormAnatomy.random(n=n, d=d, borns=borns)
         anatomy.recenter(anatomy.centroid)
         motions = []
         if nm >= 1:
@@ -49,19 +50,19 @@ class Body(Physics):
             motions.append(Moment.random(n=nv, d=d))
         if nm >= 3:
             motions.extend([Motion.random(n=nv, d=d) for i in range(nm - 2)])
-        return cls(anatomy, *motions)
+        return cls(anatomy, motions)
 
     @classmethod
     def createFromForm(cls, anatomy, motion=Motion(), moment=Moment()):
         """Create a body from an absolute form using its motion and its angular moment."""
         motion.position = Vector(*anatomy.center)
         anatomy.points = (-motion.position).applyToPoints(anatomy.points)
-        return cls(form, motion, moment)
+        return cls(anatomy, [motion, moment])
 
     @classmethod
     def createFromMotionMoment(cls, anatomy, motion=Motion(), moment=Moment()):
         """Create a body from a relative anatomy, a motion and a moment."""
-        return cls(form, [motion] + [moment])
+        return cls(anatomy, [motion, moment])
 
     @classmethod
     def createFromRandomMotions(cls, anatomy, n=2):
@@ -73,13 +74,14 @@ class Body(Physics):
             motions.append(Moment.random())
         if n >= 3:
             motions.extend([Motion.random() for i in range(n - 2)])
-        return cls(anatomy, *motions)
+        return cls(anatomy, motions)
 
-    def __init__(self, anatomy, *motions):
+    def __init__(self, anatomy, motions):
         """Create body using its anatomy, its motion and its angular moment."""
         self.anatomy = anatomy
-        self.motions = list(motions)
-        self.updateBorn()
+        if not isinstance(motions, list):
+            raise TypeError("Wrong motions: "+str(motions))
+        super().__init__(motions)
 
     def __str__(self):
         """Return the string representation of the body."""
@@ -107,6 +109,11 @@ class Body(Physics):
         self.show(context)
         self.showMotion(context)
         self.showMoment(context)
+        self.showBorn(context)
+
+    def showBorn(self, context):
+        """Show the born circle of the entity."""
+        self.getCircle().show(context)
 
     def update(self, dt=1):
         """Update the motions of the body using 'dt'."""
@@ -127,7 +134,7 @@ class Body(Physics):
     def getForm(self):
         """Return a copy of the form in absolute coordinates."""
         form = copy.deepcopy(self.anatomy)
-        form.points = self.motion.position.applyToPoints(form.points)
+        form.center = Point(*self.motion.position)
         if len(self.motions) == 1:  # Ugly fix for general case
             form.rotate(self.velocity.angle)
         else:
@@ -173,16 +180,6 @@ class Body(Physics):
         """Determine if the body is crossing with the other body using xor method."""
         return self.form | other.form
 
-    def updateBorn(self):
-        """Return the born of the body."""
-        c = self.anatomy.center
-        lengths = [Segment(c, p).length for p in self.anatomy.points]
-        self._born = max(lengths)
-
-    @property
-    def born(self):
-        return self._born
-
     def getPoints(self):
         """Return the points of the form of the body."""
         return self.form.points
@@ -193,9 +190,17 @@ class Body(Physics):
 
     points = property(getPoints, setPoints)
 
+    def getBorn(self):
+        return self.anatomy.born
+
+    def setBorn(self, born):
+        self.anatomy.born = born
+
+    born = property(getBorn, setBorn)
+
     def getCircle(self):
-        """Return the circle that borns the body."""
-        return Circle(*self.position, self.born)
+        """Return the circle that born the body."""
+        return Circle(*self.position, radius=self.born)
 
     def spread(self, n):
         """Take away the entity by multiplying the norm of the position by n."""
@@ -204,7 +209,6 @@ class Body(Physics):
     def enlarge(self, n):
         """Enlarge the anatomy."""
         self.anatomy.enlarge(n)
-        self._born *= n
 
 
 class FrictionBody(Body):
@@ -253,7 +257,7 @@ class MaterialBody(Material):
 
     def __str__(self):
         """Return the string representation of the body."""
-        return "b(" + str(self.anatomy) + "," + str(",".join(map(str, self.motions))) + ")"
+        return "mb(" + str(self.anatomy) + "," + str(",".join(map(str, self.motion))) + ")"
 
     def center(self):
         """Center the anatomy."""
@@ -307,10 +311,6 @@ class MaterialBody(Material):
 
 
 class BornShowingBody(Body):
-    def showBorn(self, context):
-        circle = Circle(*self.position, radius=self._born)
-        circle.show(context)
-
     def show(self, context):
         super().show(context)
         self.showBorn(context)

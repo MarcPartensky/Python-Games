@@ -3,11 +3,9 @@ from mycolors import *
 from pygame.locals import *
 import pygame
 
-import time
 import random
-import json
+import time
 
-import sys
 
 class Window:
     made=0
@@ -18,11 +16,19 @@ class Window:
     display=pygame.display
     transform=pygame.transform
 
-
     #Creation of the window
 
-    def __init__(self,name="Unnamed",size=None,text_font="monospace",text_size=50,text_color=WHITE,background_color=BLACK,fullscreen=False,build=True):
-        """Create a window object using name, size text_font, text_size, text_color, background and set."""
+    def __init__(self,
+                name="Unnamed",
+                size=None,
+                text_font="monospace",
+                text_size=50,
+                text_color=WHITE,
+                background_color=BLACK,
+                fullscreen=False,
+                build=True):
+        """Create a window object using name, size text_font, text_size,
+        text_color, background and set."""
         Window.made+=1
         self.number=Window.made
         self.name=name
@@ -301,7 +307,6 @@ class Window:
         if not size:
             if self.fullscreen:
                 size=[self.info.current_w,self.info.current_h]
-                print(size)
             else:
                 size=[2*self.info.current_w//3,2*self.info.current_h//3]
         if self.fullscreen:

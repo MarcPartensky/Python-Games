@@ -40,10 +40,8 @@ class EntityGroup(Group):
     @classmethod
     def randomOfTypes(cls, *types, n=0, **kwargs):
         """Create a group of n random entities of type a all of the given types."""
-
         class etype(*types):
             pass
-
         return cls.randomOfType(etype, **kwargs)
 
     @classmethod
@@ -144,6 +142,10 @@ class EntityGroup(Group):
         """Show all entities."""
         for entity in self:
             entity.show(context)
+
+    def showBorn(self, context):
+        for entity in self:
+            entity.showBorn(context)
 
     def __str__(self, name=None):
         """Return the str of the types of the entities."""

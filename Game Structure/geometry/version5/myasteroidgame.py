@@ -1,5 +1,6 @@
 from myspaceshipgroup import AsteroidGameGroup, GamePlayer, \
-    AsteroidGroup, MissileGroup, ShooterGroup, HunterGroup
+    AsteroidGroup, MissileGroup, ShooterGroup, HunterGroup, \
+    SuperSpaceShipGroup, PlayerGroup
 from myrectangle import Rectangle
 from mygame import Level, Game
 
@@ -38,11 +39,16 @@ class SoloAsteroidGame(AsteroidGame):
         if player is not None:
             if not player.alive:
                 self.level.restart(self.difficulty)
+                player.respawn()
+
+    def start(self):
+        self.level.start()
 
 
 class AsteroidLevel(Level):
     """Base class of all asteroid levels."""
     def __init__(self, *args, **kwargs):
+        """Create an asteroid level."""
         super().__init__(*args, **kwargs)
         self.dt = 0.05
         self.rectangle = Rectangle((0, 0), (200, 200))
@@ -54,17 +60,20 @@ class AsteroidLevel(Level):
         pass
 
     def restart(self, *args, **kwargs):
-        self.__dict__ = (super().__init__(*args, **kwargs)).__dict__
+        # self.__dict__ = (super().__init__(*args, **kwargs)).__dict__
+        # pass
+        print("can not restart yet")
 
     def show(self, context):
         super().show(context)
+        self.group.showBorn(context)
         self.rectangle.show(context)
         if self.logging_win:
             self.showWin(context)
 
     def newPlayer(self, **kwargs):
         """For now we are adding the base class of a player, but this is a naive approach."""
-        g = GamePlayer.random(**kwargs, damage=1/2)
+        g = GamePlayer.random(**kwargs)
         self.group.newPlayer(g)
         self.group.active = True
         return g
@@ -79,11 +88,13 @@ class AsteroidLevel(Level):
         self.logging_win = False
 
     def update(self):
+        """Update the level by updating the groups and checking if the game is won.."""
         super().update()
         self.updateWon()
         self.checkWon()
 
     def checkWon(self):
+        """Determine if the level is on or if the victory must be shown when the game is won."""
         if self.won:
             if self.won_time is None:
                 self.won_time = time.time()
@@ -95,9 +106,9 @@ class AsteroidLevel(Level):
 
 class DestroyAsteroids(AsteroidLevel):
     """Level in which the players must destroy all the asteroids to win."""
-
     def __init__(self, n=10, **kwargs):
-        spaceships = ShooterGroup(active=False)
+        """Create a level by creating the groups."""
+        spaceships = SuperSpaceShipGroup(PlayerGroup(GamePlayer.random()))
         missiles = MissileGroup()
         asteroids = AsteroidGroup.random(n=n, sparse=100)
         group = AsteroidGameGroup(spaceships, missiles, asteroids)
@@ -105,16 +116,24 @@ class DestroyAsteroids(AsteroidLevel):
         self.asteroids_left = None
 
     def start(self):
+        """Start the game with 0 asteroids left."""
         super().start()
         self.asteroids_left = 0
 
+    def restart(self, n):
+        """Restart the game by respawning the asteroids."""
+        self.group.asteroids = AsteroidGroup.random(n=n, sparse=100)
+        self.asteroids_left = len(self.group.asteroids)
+
     def show(self, context):
+        """Show the level and the number of asteroids left to destroy."""
         super().show(context)
         if self.asteroids_left != len(self.group.asteroids):
             self.asteroids_left = len(self.group.asteroids)
             context.console("{} asteroids left".format(self.asteroids_left))
 
     def updateWon(self):
+        """Determine if the game is won depending on the number of asteroids of the group."""
         self.won = (len(self.group.asteroids) == 0)
 
 
@@ -125,10 +144,12 @@ class DestroySpaceShips(AsteroidLevel):
         self.spaceships_left = 0
 
     def start(self):
+        """Start the level with 0 spaceships left."""
         super().start()
-        self.spaceships_left = 0
+        self.spaceships_left = len(self.group.spaceships)
 
     def show(self, context):
+        """Show the level with the number of spaceships left to destroy."""
         super().show(context)
         if self.spaceships_left != len(self.group.spaceships):
             self.spaceships_left = len(self.group.spaceships)
@@ -139,7 +160,10 @@ class DestroySpaceShips(AsteroidLevel):
 
 
 class DestroyShooters(DestroySpaceShips):
+    """Level in which the goal is to destroy all shooters."""
+    # For now it is unclear how to use shooters that are not hunters.
     def __init__(self, n=10, **kwargs):
+        """Create the level by creating the groups."""
         spaceships = ShooterGroup.random(n=n)
         missiles = MissileGroup()
         asteroids = AsteroidGroup()
@@ -148,7 +172,10 @@ class DestroyShooters(DestroySpaceShips):
 
 
 class DestroyHunters(DestroySpaceShips):
+    """Level in which the goal is to destroy all hunters."""
     def __init__(self, n=10, **kwargs):
+        """Create the level by creating the groups."""
+        # AdvancedSpaceShip()
         spaceships = HunterGroup.random(n=n)
         missiles = MissileGroup()
         asteroids = AsteroidGroup()
@@ -156,12 +183,14 @@ class DestroyHunters(DestroySpaceShips):
         super().__init__(group, **kwargs)
 
     def update(self):
+        """Update the level and the targets."""
         super().update()
-        self.group.spaceships.target = self.group.spaceships[0]
+        self.group.spaceships.retarget(self.group.spaceships[0])
 
 
 if __name__ == "__main__":
     from mymanager import GameManager
     game = SoloAsteroidGame()
-    m = GameManager(game, controller=[0, 0])
+    game.start()
+    m = GameManager(game, controller=[0, 0, 0])
     m()

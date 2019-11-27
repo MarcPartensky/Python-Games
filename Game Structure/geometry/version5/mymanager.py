@@ -178,8 +178,12 @@ class Manager:
             self.switchQuit()
         elif event.type == KEYDOWN:
             self.reactKeyDown(event.key)
+        elif event.type == KEYUP:
+            self.reactKeyUp(event.key)
         elif event.type == MOUSEBUTTONDOWN:
             self.reactMouseButtonDown(event.button, event.pos)
+        elif event.type == MOUSEBUTTONUP:
+            self.reactMouseButtonUp(event.button, event.pos)
         elif event.type == MOUSEMOTION:
             self.reactMouseMotion(event.pos)
 
@@ -194,6 +198,10 @@ class Manager:
             self.reactTyping(key)
         else:
             self.reactMain(key)
+
+    def reactKeyUp(self, key):
+        """React to a keyup event."""
+        pass
 
     def reactAlways(self, key):
         """React to a key whether or not the typing mode is on."""
@@ -384,6 +392,10 @@ class Manager:
         if button == 5:
             self.context.draw.plane.zoom([0.9, 0.9])
 
+    def reactMouseButtonUp(self, button, position):
+        """React to a mouse button up event."""
+        pass
+
     def reactMouseMotion(self, position):
         """React to a mouse motion event."""
         pass
@@ -484,12 +496,6 @@ class BodyManager(Manager):
 class EntityManager(Manager):
     """Create a manager that deals with entities."""
 
-    @classmethod
-    def random(cls, n=10, **kwargs):
-        """Create an entity manager with 'n' random entities."""
-        entities = [Entity.random() for i in range(n)]
-        return cls(*entities, **kwargs)
-
     def __init__(self, *entities, dt=0.1, friction=0.1, **kwargs):
         """Create an entity manager using the list of entities and optional
         arguments for the manager."""
@@ -550,7 +556,7 @@ class AbstractManager(Manager):
     def __init__(self, *group, **kwargs):
         """Create a group of abstract (geometrical) objects."""
         super().__init__(**kwargs)
-        self.group = group
+        self.group = list(group)
 
     def show(self):
         """Show the objects of the group."""

@@ -3,7 +3,7 @@ from myrect import Rect
 from mywindow import Window
 
 import mycolors
-import time
+import time as tm
 import copy
 
 # For the camera only
@@ -198,8 +198,9 @@ class Line:
     """Representation of a line in the console.
     This might be used for visual debugging but also for typing commands."""
 
-    def __init__(self, *content, time=time.time(), color=mycolors.WHITE, separator=" "):
+    def __init__(self, *content, time=None, color=mycolors.WHITE, separator=" "):
         """Object of line created using the text and optional time."""
+        if time is None: time=tm.time()
         self.content = list(content)
         self.time = time
         self.color = color
@@ -231,7 +232,7 @@ class Line:
 
     def refresh(self):
         """Refresh the time."""
-        self.time = time.time()
+        self.time = tm.time()
 
     @property
     def empty(self):
@@ -310,7 +311,7 @@ class Console:
     def refresh(self):
         """Refresh the console by showing its previous messages."""
         for line in self.lines:
-            line.time = time.time()
+            line.time = tm.time()
 
     def __getitem__(self, i):
         """Return the i-th line."""
@@ -322,7 +323,7 @@ class Console:
 
     def __iadd__(self, *args):
         """Add a line to the console."""
-        l = Line(*args, time=time.time())
+        l = Line(*args, time=tm.time())
         self.lines.append(l)
 
     append = __iadd__
@@ -366,7 +367,7 @@ class Console:
         for i in range(min(n, nmax)):
             position = (self.left_padding, sy - self.interline * i - self.down_padding)
             to = self.lines[-i - 1].time
-            t = (time.time() - to) / self.duration_lines_shown
+            t = (tm.time() - to) / self.duration_lines_shown
             if t < 1:
                 c1 = self.lines[-i-1].color + (t ** dls,)
                 # c2 = self.colors[1] + (t ** dls,)
@@ -392,7 +393,7 @@ class Context(Rect):
             console = Console(draw)
         if camera is None:
             camera = Camera(draw)
-        self.start_time = time.time()
+        self.start_time = tm.time()
         self.draw = draw
         self.console = console
         self.camera = camera
@@ -615,7 +616,7 @@ class Context(Rect):
 
     def setFullscreen(self, fullscreen):
         """Set the fullscreen mode."""
-        self.draw.window.fullscreen
+        self.draw.window.fullscreen = fullscreen
 
     def getResolution(self):
         """Return the resolution of the screen."""
@@ -623,14 +624,14 @@ class Context(Rect):
 
     @property
     def rate(self):
-        return self.counter / (time.time() - self.start_time)
+        return self.counter / (tm.time() - self.start_time)
 
     window = property(getWindow, setWindow)
     plane = property(getPlane, setPlane)
 
     corners = property(getCorners, setCorners)
     rect = property(getRect, setRect)
-    coordonnates = property(getCoordonnates, setCoordonnates)
+    coordonnates = property(getCoordonnates, setCoordonnates)  # Coordinates
     position = property(getPosition, setPosition)
     size = property(getSize, setSize)
     units = property(getUnits, setUnits)

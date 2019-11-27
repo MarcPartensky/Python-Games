@@ -31,7 +31,7 @@ class Rect:
         x, y, xm, ym = corners
         w = xm - x
         h = ym - y
-        return cls(x+w/2, y+h/2, w, h)
+        return cls(x + w / 2, y + h / 2, w, h)
 
     @classmethod
     def createFromCoordinates(cls, *coordinates):
@@ -42,7 +42,7 @@ class Rect:
     def createFromRect(cls, *rect):
         """Create a rect from an unpacked pygame.rect"""
         l, r, w, h = rect
-        return cls(l+w/2, r+h/2, w, h)
+        return cls(l + w / 2, r + h / 2, w, h)
 
     def __init__(self, x, y, w, h):
         """Create a rectangle using its x, y, width, and height, the
@@ -55,10 +55,10 @@ class Rect:
     def __setitem__(self, key, value):
         self.components[key] = value
 
-    x = property(lambda cls:cls. __getitem__(0), lambda cls,value: cls.__setitem__(0, value), doc="x component of the center")
-    y = property(lambda cls: cls.__getitem__(1), lambda cls,value: cls.__setitem__(1, value ), doc="y component of the center")
-    w = property(lambda cls: cls.__getitem__(2), lambda cls,value: cls.__setitem__(2, value), doc="width")
-    h = property(lambda cls: cls.__getitem__(3), lambda cls,value: cls.__setitem__(3, value), doc="height")
+    x = property(lambda cls: cls.__getitem__(0), lambda cls, value: cls.__setitem__(0, value),
+                 doc="x component of the center")
+    y = property(lambda cls: cls.__getitem__(1), lambda cls, value: cls.__setitem__(1, value),
+                 doc="y component of the center")
 
     def getSize(self):
         return [self.w, self.h]
@@ -79,7 +79,7 @@ class Rect:
     def __str__(self, n=2):
         """Return the string representation of a rect."""
         r = self.__round__(n)
-        return "Rect(x="+str(r.x)+",y="+str(r.y)+",w="+str(r.w)+",h="+str(r.h)+")"
+        return "Rect(x=" + str(r.x) + ",y=" + str(r.y) + ",w=" + str(r.w) + ",h=" + str(r.h) + ")"
 
     def __round__(self, n=2):
         """Round the components of the rect."""
@@ -106,24 +106,23 @@ class Rect:
     def __next__(self):
         if self.iterator < 4:
             self.iterator += 1
-            return self.components[self.iterator-1]
+            return self.components[self.iterator - 1]
         else:
             raise StopIteration
-
 
     # properties
     # corners
     def getCorners(self):
         """Return the corners of the rect."""
-        return [self.x-self.w/2, self.y-self.h/2, self.x+self.w/2, self.y+self.h/2]
+        return [self.x - self.w / 2, self.y - self.h / 2, self.x + self.w / 2, self.y + self.h / 2]
 
     def setCorners(self, corners):
         """Set the corners of the rect."""
         x1, y1, x2, y2 = corners
-        self.w = x2-x1
-        self.h = y2-y1
-        self.x = x1-self.w/2
-        self.y = y1-self.w/2
+        self.w = x2 - x1
+        self.h = y2 - y1
+        self.x = x1 - self.w / 2
+        self.y = y1 - self.w / 2
 
     # coordinates
     def getCoordinates(self):
@@ -145,22 +144,22 @@ class Rect:
         self.setCoordinates(Rect.getCoordinatesFromRect(rect))
 
     # sx component
-    def getSx(self):
+    def getWidth(self):
         """Return the width."""
-        return self.w
+        return self.components[2]
 
-    def setSx(self, sx):
+    def setWidth(self, w):
         """Set the width."""
-        self.w = sx
+        self.components[2] = w
 
     # sy component
-    def getSy(self):
+    def getHeight(self):
         """Return the height."""
-        return self.h
+        return self.components[3]
 
-    def setSy(self, sy):
+    def setHeight(self, h):
         """Set the height."""
-        self.h = sy
+        self.components[3] = h
 
     # xmin component
     def getXmin(self):
@@ -178,7 +177,7 @@ class Rect:
 
     def setYmin(self, ymin):
         """Set the minimum of the y component."""
-        self.y= ymin + self.h / 2
+        self.y = ymin + self.h / 2
 
     # xmax component
     def getXmax(self):
@@ -198,10 +197,10 @@ class Rect:
         """Set the maximum of the y component."""
         self.y = ymax - self.h / 2
 
-    corners = property(getCorners, setCorners, doc="Corners.")
-    coordinates = property(getCoordinates, setCoordinates, doc="Center+Size.")
-    sx = width = property(getSx, setSx, doc="Width")
-    sy = height = property(getSy, setSy, doc="Height.")
+    corners = property(getCorners, setCorners, doc="Corners")
+    coordinates = property(getCoordinates, setCoordinates, doc="Center+Size")
+    w = sx = width = property(getWidth, setWidth, doc="Width")
+    h = sy = height = property(getHeight, setHeight, doc="Height")
     xmin = x1 = left = l = property(getXmin, setXmin, doc="Left")
     xmax = x2 = right = r = property(getXmax, setXmax, doc="Right")
     ymin = y1 = bottom = b = property(getYmin, setYmin, doc="Bottom")
