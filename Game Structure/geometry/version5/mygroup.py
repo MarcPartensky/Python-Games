@@ -101,6 +101,16 @@ class Group(list):
         self.append(element)
         self.reverse()
 
+    def flattened(self):
+        """Flatten the tree."""
+        tree = Group()
+        for element in self:
+            if isinstance(element, Group):
+                tree.extend(element.flattened())
+            else:
+                tree.append(element)
+        return tree
+
 
 class Tree(Group):
     """A tree is an object specialized in groups of groups."""

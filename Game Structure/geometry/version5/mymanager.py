@@ -576,7 +576,7 @@ class GameManager(Manager):
     def update(self):
         if self.controller:
             player = self.getPlayer()
-            if player:
+            if player and not self.game.won:
                 self.context.position = player.position
         self.game.update()
 
@@ -585,6 +585,8 @@ class GameManager(Manager):
         if not self.typing:  # Ugly fix for easier practical use
             # self.context.control()
             pass
+        if self.game.won:
+            self.context.control()
         self.context.clear()
         self.show()
         self.showCamera()

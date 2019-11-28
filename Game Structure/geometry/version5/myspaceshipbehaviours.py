@@ -39,12 +39,14 @@ class Shoot:
                  shooting_type,
                  speed=10,
                  shooting=False,
-                 damage=1
+                 damage=1,
+                 duration=5,
                  ):
         self.type = shooting_type
         self.speed = speed
         self.shooting = shooting
         self.damage = damage
+        self.duration = duration
 
     def __bool__(self):
         return self.shooting
@@ -57,7 +59,7 @@ class Shoot:
         m.position += Vector.createFromPolar(born + 1, velocity.angle)
         m.velocity.norm += self.speed
         self.shooting = False
-        return [self.type(s, [m], damage=self.damage)]
+        return [self.type(s, [m], damage=self.damage, duration=self.duration)]
 
     def __str__(self):
         return type(self).__name__+"("+",".join(map(lambda tp: ":".join(map(str, tp)), list(self.__dict__.items())))+")"

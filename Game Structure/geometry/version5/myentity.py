@@ -7,7 +7,6 @@ import mycolors
 
 class Entity(Body):
     """An entity is a body that can be alive and active."""
-
     def __init__(self, anatomy, motions,
                  life=1, max_life=1,
                  alive=None, active=False,
@@ -36,9 +35,13 @@ class Entity(Body):
 
     alive = property(getAlive, setAlive)
 
-    def hit(self, damage):
+    def hurt(self, damage):
         """Receive damage."""
         self.life = max(self.life - damage, 0)
+
+    def hit(self, other, damage):
+        """Hit another entity."""
+        other.hurt(damage)
 
     def __str__(self):
         """Return the string representation of an entity."""
@@ -98,6 +101,10 @@ class Entity(Body):
     def setFriction(self, friction):
         """Set the friction to the given friction."""
         self.friction = friction
+
+    # def spread(self, borns):
+    #     """Spread the entities inside the borns."""
+    #     raise NotImplementedError("How to randomly spread entities without crossing each other.")
 
 
 class LivingEntity(Entity):

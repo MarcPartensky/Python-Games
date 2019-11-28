@@ -120,15 +120,22 @@ class Game:
         """Point to the control of the level."""
         return self.level.control(controller)
 
+    def start(self):
+        self.level.start()
+
+    @property
+    def won(self):
+        return self.level.won
+
 
 class Level:
-    def __init__(self, group, on=True, won=False, dt=0.01):
+    def __init__(self, group, dt=0.01, on=True, won=False, lost=False):
         """Create a level using the group of the level and optional the 'on' and 'won' parameters."""
         self.group = group
         self.on = on
         self.won = won
+        self.lost = lost
         self.dt = dt
-        self.players = {}
 
     def update(self):
         self.group.update(self.dt)

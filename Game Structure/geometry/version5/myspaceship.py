@@ -19,7 +19,7 @@ class SpaceShip(LivingEntity, LimitedEntity):
     @classmethod
     def random(cls, **kwargs):
         """Create a random spaceship."""
-        motion = Motion.random()
+        motion = Motion.random(n=3, d=2)
         anatomy = FormAnatomy.random()
         return cls(anatomy, [motion], **kwargs)
 
@@ -82,15 +82,10 @@ class Missile(Entity):
         """Create a missile using the motion and the target."""
         self.target = target
         self.damage = damage
-        # if "target" in kwargs:
-        #     self.target = kwargs.pop("target")
-        # else:
-        #     self.target = None
-        # if "damage" in kwargs:
-        #     self.damage = kwargs.pop("damage")
-        # else:
-        #     self.damage = 1
         super().__init__(*args, **kwargs)
+
+    def hit(self, other):
+        super().hit(other, self.damage)
 
 
 class ShortMissile(Missile):
@@ -131,7 +126,7 @@ class Shooter(SpaceShip):
         """Create a shooter with a Shoot, TriangleAnatomy, and motion"""
         shoot = Shoot(SegmentMissile)
         anatomy = TriangleAnatomy()
-        motion = Motion.random(n=2, d=2)
+        motion = Motion.random(n=3, d=2)
         return cls(anatomy, [motion], shoot)
 
     def __init__(self, anatomy, motions, shooting, **kwargs):
@@ -221,11 +216,18 @@ class Follower(MaxSpeedSpaceShip):
 
 class Hunter(Shooter, Follower):
     """Create a spaceship that hunts its targets."""
+    def __init__(self, *args, shooting_view=2*math.pi, cool_down=3, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.shooting_view = shooting_view
+        self.cool_down = cool_down
+        self.time = time.time()
+
     def update(self, dt):
         """Update the entity, follow it, and shoot at it when in range and in view."""
         super().update(dt)
         if self.target is not None:
-            self.hunt(dt)
+            if time.time() - self.time > self.cool_down:
+                self.hunt(dt)
 
     def hunt(self, dt):
         """Hunt the target supposing it exists."""
@@ -233,11 +235,12 @@ class Hunter(Shooter, Follower):
         v2 = self.velocity
         if abs(v1.angle - v2.angle) <= self.shooting_view:
             distance = (self.position - self.target.position).norm
-            if distance <= self.getShootingRange(dt):
+            if distance <= self.getShootingRange():
                 self.shooting.shooting = True
+                self.time = time.time()
 
-    def getShootingRange(self, dt):
-        return self.velocity.norm * dt
+    def getShootingRange(self):
+        return self.shooting.speed * self.shooting.duration
 
     def retarget(self, target):
         self.target = target

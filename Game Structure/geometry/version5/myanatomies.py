@@ -146,13 +146,7 @@ class FormAnatomy(PointsAnatomy, Form):
 
 class SegmentAnatomy(PointsAnatomy, Segment):
     def collide(self, other):
-        """Determine if the segments are colliding."""
-        p = self.line.cross(other.line)
-        if p is None:
-            return False
-        if p in self and p in other:
-            return True
-        return False
+        return self.p1 in other or self.p2 in other
 
 
 class LineAnatomy(Line):

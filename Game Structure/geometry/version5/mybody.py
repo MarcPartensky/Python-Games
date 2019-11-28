@@ -176,6 +176,9 @@ class Body(Physics):
         """Determine if the body is crossing with the other body."""
         return self.form.cross(other.form)
 
+    def collide(self, other):
+        return self.form.collide(other.form)
+
     def __xor__(self, other):
         """Determine if the body is crossing with the other body using xor method."""
         return self.form | other.form

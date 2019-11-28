@@ -58,12 +58,12 @@ class EntityGroup(Group):
         g.spread(sparse)
         return g
 
-    def __init__(self, *entities, alive=False, active=False):
+    def __init__(self, *entities, alive=False, active=False, activate=False):
         """Create a entity group."""
         super().__init__(*entities)
         self.active = active
         self.alive = alive
-        if active:
+        if activate:
             self.activate()
 
     # Binding the entities to the elements
@@ -175,6 +175,7 @@ class EntityGroup(Group):
 
     def control(self, controller):
         """Return the controlled entity using the controller."""
+        # print(self[:])
         if len(controller) > 1:
             return self[controller[0]].control(controller[1:])
         else:
