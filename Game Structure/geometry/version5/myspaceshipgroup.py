@@ -279,7 +279,7 @@ class AsteroidGameGroup(EntityGroup):
 
     asteroids = property(getAsteroids, setAsteroids, delAsteroids)
 
-    def update(self, dt):
+    def updateDefault(self, dt):
         """Update the super group."""
         # Update the group
         super().update(dt)

@@ -5,8 +5,9 @@ from myabstract import Point, Segment, Form
 from mywidgets import Slider
 
 from collections import deque
-
 import pygame as pg
+
+import pickle
 import mycolors
 
 
@@ -22,6 +23,8 @@ class AbstractRoomManager(AbstractManager):
         self.buffer = []
         self.actions = deque()
         self.widgets = []  # [Slider.createFromTuples((0, 0), (0, 10))]
+        self.path = "AbstractRoom/Objects/"
+
 
     def reactKeyDown(self, key):
         super().reactKeyDown(key)
@@ -37,6 +40,14 @@ class AbstractRoomManager(AbstractManager):
                 f = Form(self.selection)
                 self.group.append(f)
                 self.selection = []
+            elif key == pg.K_s:
+                data = pickle.dumps([self.group, self.points])
+                pickle.dump(data, open(self.path, "wb"))
+            elif key == pg.K_l:
+                data = pickle.load(open(self.path, "rb"))
+                group, points = pickle.loads(data)
+                self.points.extend(points)
+                self.group.extend(group)
 
     def remove(self):
         for element in self.group:
