@@ -1,3 +1,5 @@
+import random
+
 from myabstract import Form, Point
 from myrect import Rect
 import mycolors
@@ -12,7 +14,7 @@ class Rectangle(Rect, Form):
         if isinstance(r1, cls) and isinstance(r2, cls):
             r = Rect.cross(r1, r2)
             if r is not None:
-                return cls.createFromRect(r, **kwargs)
+                return cls(*r, **kwargs)
         elif isinstance(r1, Form) and isinstance(r2, Form):
             return Form.cross(r1, r2)
 
@@ -20,16 +22,16 @@ class Rectangle(Rect, Form):
     def random(cls, borns=[-1, 1], size_borns=[0, 1], **kwargs):
         """Create a random rectangle."""
         rect = Rect.random(borns, size_borns)
-        return cls.createFromRect(rect, **kwargs)
+        return cls(*rect, **kwargs)
 
     @classmethod
     def createFromRect(cls, rect, **kwargs):
         """Create a rectangle using a rect."""
-        return cls(rect[:2], rect[2:], **kwargs)
+        return cls(*rect, **kwargs)
 
     def __init__(self,
-                 position,
-                 size,
+                 x, y,
+                 w, h,
                  fill=False,
                  point_mode=0,
                  point_size=[0.01, 0.01],
@@ -50,7 +52,7 @@ class Rectangle(Rect, Form):
                  side_show=True,
                  area_show=False):
         """Create an abstract rectangle with coordinates."""
-        Rect.__init__(self, *position, *size)
+        Rect.__init__(self, x, y, w, h)
 
         self.point_mode = point_mode
         self.point_size = point_size
@@ -96,10 +98,18 @@ class Rectangle(Rect, Form):
 
 class Square(Rectangle):
     """Create a square that unherits from rectangle."""
+    @classmethod
+    def random(cls, borns=[-1,1], size_born=1, **kwargs):
+        x = random.uniform(*borns)
+        y = random.uniform(*borns)
+        size = random.uniform(0, size_born)
+        return cls(x, y, size, **kwargs)
 
-    def __init__(self, position, length, **kwargs):
-        size = (length, length)
-        super().__init__(position, size, **kwargs)
+    def __init__(self, x, y, size, **kwargs):
+        super().__init__(x, y, size, size, **kwargs)
+
+    def __str__(self):
+        return type(self).__name__ + "(x="+str(self.x) +",y="+str(self.y) +",s="+str(self.size[0]) +")"
 
 
 if __name__ == "__main__":
@@ -108,8 +118,8 @@ if __name__ == "__main__":
 
     context = Context(name="Rectangle Test")
     p = Point.random(radius=0.5)
-    r1 = Rectangle([0, 0], [3, 2], side_width=3, side_color=mycolors.BLUE, area_color=mycolors.WHITE, area_show=True)
-    r2 = Square([-1, -1], 2, side_width=3, side_color=mycolors.BLUE, area_color=mycolors.WHITE, area_show=True)
+    r1 = Rectangle(0, 0, 3, 2, side_width=3, side_color=mycolors.BLUE, area_color=mycolors.WHITE, area_show=True)
+    r2 = Square(-1, -1, 2, side_width=3, side_color=mycolors.BLUE, area_color=mycolors.WHITE, area_show=True)
     while context:
         context.check()
         context.control()

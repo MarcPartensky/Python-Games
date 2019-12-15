@@ -612,6 +612,43 @@ class GameManager(Manager):
         return self.game.control(self.controller)
 
 
+class ActivityManager(Manager):
+    """Activity manager inspired from android studio"""
+
+    def __init__(self, activities, **kwargs):
+        super().__init__(**kwargs)
+        self.activities = activities
+        self.index = 0
+
+    def show(self):
+        self.activity.show(self.context)
+
+    def update(self):
+        self.activity.update(self.dt)
+
+    def reactKeyUp(self, key):
+        self.activity.onKeyUp(key)
+
+    def reactKeyDown(self, key):
+        self.activity.onKeyDown(key)
+
+    def reactMouseButtonDown(self, button, position):
+        position = self.context.getFromScreen(position)
+        self.activity.onMouseButtonDown(button, position)
+
+    def reactMouseMotion(self, position):
+        position = self.context.getFromScreen(position)
+        self.activity.onMouseMotion(position)
+
+    def getActivity(self):
+        return self.activities[self.index]
+
+    def setActivity(self, activity):
+        self.activities[self.index] = activity
+
+    activity = property(getActivity, setActivity)
+
+
 if __name__ == "__main__":
     from myentity import Entity
     m = EntityManager.random(build=False)

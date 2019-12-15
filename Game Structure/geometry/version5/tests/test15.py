@@ -45,7 +45,7 @@ class AbstractTester(AbstractManager):
         #print(corners)
         for e in self.group:
             if isinstance(e, Line):
-                e.showWithinCorners3(self.context, [-1, -1, 2, 2])
+                e.showWithinCorners(self.context, [-1, -1, 2, 2])
             else:
                 e.show(self.context)
 

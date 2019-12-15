@@ -29,6 +29,12 @@ old_styles = {
 
 
 class Widget:
+
+    default = 0
+    hovered = 1
+    focus = 2
+    clicked = 3
+
     def __init__(self, state=0, reference=[]):
         """Create a widget."""
         self.state = state
