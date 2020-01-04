@@ -7,6 +7,9 @@ from mygame import Level, Game
 import mycolors
 import time
 
+import sys
+print(sys.version)
+
 
 class AsteroidGame(Game):
     def __init__(self, difficulty=10, stage=1, **kwargs):
@@ -29,7 +32,7 @@ class AsteroidLevel(Level):
         """Create an asteroid level."""
         if group is None:
             group = AsteroidGameGroup()
-        self.rectangle = Rectangle((0, 0), (200, 200))
+        self.rectangle = Rectangle(0, 0, 200, 200)
         self.logging_win = False
         self.logging_restart = False
         self.won_time = None

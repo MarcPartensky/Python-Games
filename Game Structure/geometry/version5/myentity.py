@@ -131,8 +131,8 @@ class LivingEntity(Entity):
         w, h = self.born, self.life_margin
         w1 = w * self.life/self.max_life
         x1 = x-w/2+w1/2
-        r1 = Rectangle([x1, y], [w1, h], area_color=self.life_bar_color, fill=True, point_show=False, side_width=1)
-        r2 = Rectangle([x, y], [w, h], side_color=self.life_background_color, point_show=False)
+        r1 = Rectangle(x1, y, w1, h, area_color=self.life_bar_color, fill=True, point_show=False, side_width=1)
+        r2 = Rectangle(x, y, w, h, side_color=self.life_background_color, point_show=False)
         return [r1, r2]
 
     def show(self, context):
