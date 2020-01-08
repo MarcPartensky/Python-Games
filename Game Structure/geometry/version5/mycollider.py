@@ -1,9 +1,10 @@
 from myabstract import Segment, Vector, Line
 from myanatomies import CircleAnatomy, FormAnatomy
-from mymanager import EntityManager
+from mymanager import Manager
 from mymotion import Motion, Moment
 from myentity import Entity
 from myrectangle import Square
+from mygroup import Group
 
 import math
 
@@ -102,7 +103,7 @@ class Collider:
     def collide(self, e1, e2):
         """Determine if their is a collision or not."""
         vector = e1.position - e2.position
-        radius = e1.born + e2.born
+        radius = e1.anatomy.born + e2.anatomy.born
         if vector.norm < radius:
             return e1.collide(e2)
         return False
@@ -172,36 +173,44 @@ class Collider:
 
 
 
-class ColliderTester(EntityManager):
+class ColliderTester(Manager):
     def __init__(self, n=10, s=5, g=10, radius_borns=[1, 10], **kwargs):
-        entities = [Entity(CircleAnatomy.random(radius_borns=radius_borns), \
-                    [Motion(s*Vector.random(), 10*Vector.random(), Vector(0, -g))], friction=0) \
-                    for i in range(n)]
+        super().__init__(**kwargs)
         # entities = [Entity(FormAnatomy.random(),
         #             [Motion(s * Vector.random(), 10 * Vector.random(), Vector(0, -g)),
         #              Moment(Vector.random(), 5*Vector.random())], friction=0)
         #             for i in range(n)]
-        super().__init__(*entities, **kwargs)
-        self.collider = BounceOnCollision(elasticity=0.9)
+        self.group = Group(*[Entity(CircleAnatomy.random(radius_borns=radius_borns), \
+                            [Motion(s*Vector.random(), Vector(0,0), Vector(0, -g))], friction=0.1) \
+                            for i in range(n)])
+        self.collider = Collider(elasticity=0.9)
         self.born = s
         self.born_elasticity = 0.5
-        self.square = Square((0, 0), 2 * self.born)
+        self.square = Square(0, 0, 2 * self.born)
         self.correctMasses()
 
     def correctMasses(self):
-        for entity in self.entities:
+        for entity in self.group:
             entity.mass = entity.anatomy.area
 
     def update(self):
         super().update()
-        for i, e1 in enumerate(self.entities):
-            for e2 in self.entities[i+1:]:
-                self.collider(e1, e2)
-            self.limit(e1)
+        for e in self.group:
+            e.update(self.dt)
+        self.collider.soloChocs(self.group, bouncing=True, overlapping=True, elastic=True)
+        for e in self.group:
+            self.limit(e)
+
+        self.context.camera.write()
 
     def show(self):
         super().show()
+        self.showGroup()
         self.square.show(self.context)
+
+    def showGroup(self):
+        for e in self.group:
+            e.show(self.context)
 
     def limit(self, e):
         l = self.born_elasticity
@@ -221,5 +230,7 @@ class ColliderTester(EntityManager):
 
 
 if __name__ == "__main__":
-    m = ColliderTester(n=50, s=5, dt=0.01, radius_borns=[0.2, 0.3])
+    m = ColliderTester(n=100, s=5, dt=0.001, radius_borns=[0.15, 0.2], fullscreen=True)
+    m.context.camera.buildScreenWriter("Sand Simulation.mp4", framerate=100)
     m()
+    m.context.camera.release()
