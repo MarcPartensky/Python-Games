@@ -2,6 +2,7 @@ from mycontext import Context
 from pygame.locals import *
 import pygame
 
+
 class SimpleManager:
     """Manage a program using the context by many having functions that can be
     overloaded to make simple and fast programs.
@@ -10,10 +11,10 @@ class SimpleManager:
     The way it works is by making the main class of the program inheriting from
     this one."""
 
-    def __init__(self, name="SimpleManager",**kwargs):
+    def __init__(self, name="SimpleManager", **kwargs):
         """Create a context manager with the optional name."""
-        self.context = Context(name=name,**kwargs)
-        self.pause=False
+        self.context = Context(name=name, **kwargs)
+        self.pause = False
 
     def __call__(self):
         """Call the main loop."""
@@ -32,7 +33,7 @@ class SimpleManager:
                 if event.key == K_ESCAPE:
                     self.context.open = False
                 if event.key == K_SPACE:
-                    self.pause=not(self.pause)
+                    self.pause = not (self.pause)
                 if event.key == K_f:
                     self.context.switch()  # Set or reverse fullscreen
             if event.type == MOUSEBUTTONDOWN:
@@ -125,9 +126,9 @@ class oldManager:  # This manager is deprecated
 
 
 class Manager:
-    def __init__(self, name="Manager", dt=10e-3,**kwargs):
+    def __init__(self, name="Manager", dt=10e-3, **kwargs):
         """Create a manager using a context, this methods it to be overloaded."""
-        self.context = Context(name=name,**kwargs)
+        self.context = Context(name=name, **kwargs)
         self.count = self.context.count
         self.pause = False
         self.dt = dt
@@ -140,6 +141,11 @@ class Manager:
         self.shiftlock = False
         self.capslock = False
         self.altlock = False
+
+    def __str__(self):
+        """Return the string representation of the manager."""
+        return type(self).__name__ + "(\n{}\n)".format(
+            "\n".join(map(lambda x: ":".join(map(str, x)), self.__dict__.items())))
 
     def __call__(self):
         """Call the main loop, this method is to be overloaded."""
@@ -166,20 +172,24 @@ class Manager:
         for event in pygame.event.get():
             self.react(event)
 
-    def react(self,event):
+    def react(self, event):
         """React to the pygame events."""
         if event.type == QUIT:
             self.switchQuit()
         elif event.type == KEYDOWN:
             self.reactKeyDown(event.key)
+        elif event.type == KEYUP:
+            self.reactKeyUp(event.key)
         elif event.type == MOUSEBUTTONDOWN:
-            self.reactMouseButtonDown(event)
+            self.reactMouseButtonDown(event.button, event.pos)
+        elif event.type == MOUSEBUTTONUP:
+            self.reactMouseButtonUp(event.button, event.pos)
         elif event.type == MOUSEMOTION:
-            self.reactMouseMotion(event)
+            self.reactMouseMotion(event.pos)
 
     def switchQuit(self):
         """React to a quit event."""
-        self.context.open = not(self.context.open)
+        self.context.open = not (self.context.open)
 
     def reactKeyDown(self, key):
         """React to a keydown event."""
@@ -189,28 +199,32 @@ class Manager:
         else:
             self.reactMain(key)
 
-    def reactAlways(self,key):
+    def reactKeyUp(self, key):
+        """React to a keyup event."""
+        pass
+
+    def reactAlways(self, key):
         """React to a key whether or not the typing mode is on."""
         # print(key) for debugging the keys
         if key == K_ESCAPE:
             self.switchQuit()
-        if key==K_SLASH or key==K_BACKSLASH:
+        if key == K_SLASH or key == K_BACKSLASH:
             if not self.typing:
                 self.context.console("Typing activated.")
-            self.typing=True
-        if key==K_BACKQUOTE:
+            self.typing = True
+        if key == K_BACKQUOTE:
             self.switchTyping()
 
-    def reactLock(self,key):
+    def reactLock(self, key):
         """React to a locking key."""
-        if key==K_CAPSLOCK:
-            self.capslock=not(self.capslock)
-        elif key==K_LSHIFT or key==K_RSHIFT:
-            self.shiftlock=True
-        elif key==K_LALT or key==K_RALT:
-            self.altlock=True
+        if key == K_CAPSLOCK:
+            self.capslock = not (self.capslock)
+        elif key == K_LSHIFT or key == K_RSHIFT:
+            self.shiftlock = True
+        elif key == K_LALT or key == K_RALT:
+            self.altlock = True
 
-    def reactTyping(self,key):
+    def reactTyping(self, key):
         """React to a typing event."""
         self.reactLock(key)
         if self.altlock:
@@ -220,93 +234,91 @@ class Manager:
         else:
             self.reactLowerCase(key)
 
-        if key==K_SPACE:
+        if key == K_SPACE:
             self.write(" ")
-        elif key==8:
+        elif key == 8:
             self.delete()
-        if key==K_LCTRL:
+        if key == K_LCTRL:
             self.context.console.nextArg()
-        elif key==K_UP:
+        elif key == K_UP:
             self.context.console.back()
-        elif key==K_DOWN:
+        elif key == K_DOWN:
             self.context.console.forward()
-        elif key==K_RETURN:
+        elif key == K_RETURN:
             self.eval()
             self.context.console.nextLine()
 
     def eval(self):
         """Execute a line."""
-        content=self.context.console.line.content
-        if content[0]=="/":
+        content = self.context.console.line.content
+        if content[0] == "/":
             for command in content[1:]:
                 try:
                     self.context.console(str(eval(command)))
                 except:
                     self.context.console("Invalid command.")
-        if content[0]=="\\":
+        if content[0] == "\\":
             for command in content[1:]:
                 try:
                     exec(command)
-                    self.context.console("Command "+command+" executed.")
+                    self.context.console("Command " + command + " executed.")
                 except Exception as e:
                     self.context.console(str(e))
         self.context.console.eval()
 
-    def reactAltCase(self,key):
+    def reactAltCase(self, key):
         """React when typing with alt key pressed."""
-        if key==K_e:
-            self.write("`") #Stupid
-        elif key==167:
+        if key == K_e:
+            self.write("`")  # Stupid
+        elif key == 167:
             self.write("´")
 
-    def reactLowerCase(self,key):
+    def reactLowerCase(self, key):
         """React when typing in lower case."""
-        d={K_COMMA:",",K_PERIOD:".",K_SEMICOLON:";",K_LEFTBRACKET:"[",
-        K_RIGHTBRACKET:"]",39:"'",45:"-",K_EQUALS:"="}
-        if 48<=key<=57:
-            self.write(self.numbers[key-48])
-        elif 97<=key<=122:
-            self.write(self.alphabet[key-97])
+        d = {K_COMMA: ",", K_PERIOD: ".", K_SEMICOLON: ";", K_LEFTBRACKET: "[",
+             K_RIGHTBRACKET: "]", 39: "'", 45: "-", K_EQUALS: "="}
+        if 48 <= key <= 57:
+            self.write(self.numbers[key - 48])
+        elif 97 <= key <= 122:
+            self.write(self.alphabet[key - 97])
         elif key in d:
             self.write(d[key])
-        elif key==K_SLASH:
+        elif key == K_SLASH:
             if not self.context.console.line.empty:
                 self.context.console.nextLine()
             self.write("/")
             self.context.console.nextArg()
-        elif key==K_BACKSLASH:
+        elif key == K_BACKSLASH:
             if not self.context.console.line.empty:
                 self.context.console.nextLine()
             self.write("\\")
             self.context.console.nextArg()
 
-
-    def reactUpperCase(self,key):
+    def reactUpperCase(self, key):
         """React to a key when typing in uppercase."""
-        d={59:":''",44:"<",46:">",47:"?",
-        45:"_",39:"\"",61:"+"}
-        if 48<=key<=57:
-            self.write(self.caps_numbers[key-48])
-        elif 97<=key<=122:
-            self.write(self.alphabet[key-97].upper())
+        d = {59: ":''", 44: "<", 46: ">", 47: "?",
+             45: "_", 39: "\"", 61: "+"}
+        if 48 <= key <= 57:
+            self.write(self.caps_numbers[key - 48])
+        elif 97 <= key <= 122:
+            self.write(self.alphabet[key - 97].upper())
         elif key in d:
             self.write(d[key])
 
-    def write(self,c):
+    def write(self, c):
         """Write some content."""
-        self.context.console.lines[-1].content[-1]+=c
+        self.context.console.lines[-1].content[-1] += c
         self.context.console.lines[-1].refresh()
-        self.shiftlock=False
-        self.altlock=False
+        self.shiftlock = False
+        self.altlock = False
 
-    def delete(self,n=1):
+    def delete(self, n=1):
         """Delete some content."""
-        self.context.console.lines[-1].content[-1]=self.context.console.lines[-1].content[-1][:-n]
+        self.context.console.lines[-1].content[-1] = self.context.console.lines[-1].content[-1][:-n]
         self.context.console.lines[-1].refresh()
 
-    def reactMain(self,key):
+    def reactMain(self, key):
         """React as usual when not typing."""
-        self.context.control()
         if key == K_f:
             self.switchFullscreen()
         if key == K_1:
@@ -315,12 +327,12 @@ class Manager:
             self.switchCaptureWriting()
         if key == K_3:
             self.switchScreenWriting()
-        if key == K_SPACE:
+        if key == K_LALT:
             self.switchPause()
 
     def switchTyping(self):
         """Switch the typing mode."""
-        self.typing=not(self.typing)
+        self.typing = not (self.typing)
         if self.typing:
             self.context.console("Typing activated.")
             self.context.console.nextLine()
@@ -328,7 +340,7 @@ class Manager:
             self.context.console("Typing deactivated.")
 
     def switchScreenWriting(self):
-        """Swtich the screen writing mode."""
+        """Switch the screen writing mode."""
         if self.context.camera.screen_writing:
             self.context.camera.screen_writer.release()
         self.context.camera.switchScreenWriting()
@@ -351,7 +363,7 @@ class Manager:
 
     def switchPause(self):
         """React to a pause event."""
-        self.pause = not(self.pause)
+        self.pause = not self.pause
         if self.pause:
             self.context.console('The system is paused.')
         else:
@@ -373,14 +385,18 @@ class Manager:
         else:
             self.context.console("The fullscreen mode is unset.")
 
-    def reactMouseButtonDown(self, event):
+    def reactMouseButtonDown(self, button, position):
         """React to a mouse button down event."""
-        if event.button == 4:
+        if button == 4:
             self.context.draw.plane.zoom([1.1, 1.1])
-        if event.button == 5:
+        if button == 5:
             self.context.draw.plane.zoom([0.9, 0.9])
 
-    def reactMouseMotion(self, event):
+    def reactMouseButtonUp(self, button, position):
+        """React to a mouse button up event."""
+        pass
+
+    def reactMouseMotion(self, position):
         """React to a mouse motion event."""
         pass
 
@@ -398,7 +414,7 @@ class Manager:
 
     def showLoop(self):
         """Show the graphical components and deal with the context in the loop."""
-        if not self.typing: #Ugly fix for easier praticial use
+        if not self.typing:  # Ugly fix for easier pratical use
             self.context.control()
         self.context.clear()
         self.context.show()
@@ -427,12 +443,15 @@ class Manager:
         def fset(self, counter):
             """Set the counter of the context."""
             self.context.counter = counter
+
         return locals()
+
     counter = property(**counter())
 
 
 class BodyManager(Manager):
     """Manage the bodies that are given when initalizing the object."""
+
     @classmethod
     def createRandomBodies(cls, t, n=5, **kwargs):
         """Create random bodies using their class t.
@@ -440,7 +459,7 @@ class BodyManager(Manager):
         bodies = [t.random() for i in range(n)]
         return cls(bodies, **kwargs)
 
-    def __init__(self, bodies, following=False, **kwargs):
+    def __init__(self, *bodies, following=False, **kwargs):
         """Create a body manager using its bodies and optional arguments for the context."""
         super().__init__(**kwargs)
         self.bodies = bodies
@@ -474,11 +493,164 @@ class BodyManager(Manager):
             body.show(self.context)
 
 
+class EntityManager(Manager):
+    """Create a manager that deals with entities."""
+
+    def __init__(self, *entities, dt=0.1, friction=0.1, **kwargs):
+        """Create an entity manager using the list of entities and optional
+        arguments for the manager."""
+        super().__init__(**kwargs)
+        self.entities = list(entities)
+        self.dt = dt
+        self.friction = friction
+
+    def update(self):
+        """Update all entities."""
+        for entity in self.entities:
+            entity.update(self.dt)
+
+    def show(self):
+        """Show all entities."""
+        for entity in self.entities:
+            entity.show(self.context)
+
+    def reactKeyDown(self, key):
+        """Make all entities react to the keydown event."""
+        super().reactKeyDown(key)
+        for entity in self.entities:
+            entity.reactKeyDown(key)
+
+    def reactMouseMotion(self, position):
+        """Make all entities react to the mouse motion."""
+        position = self.context.getFromScreen(tuple(position))
+        for entity in self.entities:
+            entity.reactMouseMotion(position)
+
+    def reactMouseButtonDown(self, button, position):
+        """Make all entities react to the mouse button down event."""
+        position = self.context.getFromScreen(tuple(position))
+        for entity in self.entities:
+            entity.reactMouseButtonDown(button, position)
+
+    def spread(self, n=10):
+        """Spread randomly the bodies."""
+        for entity in self.entities:
+            entity.motion *= n
+
+    def setFriction(self, friction):
+        """Set the friction of all entities to the given friction."""
+        for entity in self.entities:
+            entity.setFriction(friction)
+
+
 class BlindManager(Manager):
     """Ugly way to make a manager without camera."""
-    def __init__(self,camera=False,**kwargs):
-        super().__init__(camera=camera,**kwargs)
+
+    def __init__(self, camera=False, **kwargs):
+        super().__init__(camera=camera, **kwargs)
+
+
+class AbstractManager(Manager):
+    """Manager that deals with abstract objects."""
+
+    def __init__(self, *group, **kwargs):
+        """Create a group of abstract (geometrical) objects."""
+        super().__init__(**kwargs)
+        self.group = list(group)
+
+    def show(self):
+        """Show the objects of the group."""
+        for e in self.group:
+            e.show(self.context)
+
+
+class GameManager(Manager):
+    """Base class Manager for games."""
+
+    def __init__(self, game, controller=None, **kwargs):
+        super().__init__(**kwargs)
+        self.game = game
+        self.controller = controller
+        self.context.units = [10, 10]
+
+    def update(self):
+        if self.controller:
+            player = self.getPlayer()
+            if player and not self.game.won:
+                self.context.position = player.position
+        self.game.update()
+
+    def showLoop(self):
+        """Show the graphical components and deal with the context in the loop."""
+        if not self.typing:  # Ugly fix for easier practical use
+            # self.context.control()
+            pass
+        if self.game.won:
+            self.context.control()
+        self.context.clear()
+        self.show()
+        self.showCamera()
+        self.context.console.show()
+        self.context.flip()
+
+    def show(self):
+        self.game.show(self.context)
+
+    def reactKeyDown(self, key):
+        super().reactKeyDown(key)
+        self.game.reactKeyDown(key)
+
+    def reactMouseMotion(self, position):
+        position = self.context.getFromScreen(position)
+        self.game.reactMouseMotion(position)
+
+    def reactMouseButtonDown(self, button, position):
+        position = self.context.getFromScreen(position)
+        self.game.reactMouseButtonDown(button, position)
+
+    def getPlayer(self):
+        return self.game.control(self.controller)
+
+
+class ActivityManager(Manager):
+    """Activity manager inspired from android studio"""
+
+    def __init__(self, activities, **kwargs):
+        super().__init__(**kwargs)
+        self.activities = activities
+        self.index = 0
+
+    def show(self):
+        self.activity.show(self.context)
+
+    def update(self):
+        self.activity.update(self.dt)
+
+    def reactKeyUp(self, key):
+        self.activity.onKeyUp(key)
+
+    def reactKeyDown(self, key):
+        self.activity.onKeyDown(key)
+
+    def reactMouseButtonDown(self, button, position):
+        position = self.context.getFromScreen(position)
+        self.activity.onMouseButtonDown(button, position)
+
+    def reactMouseMotion(self, position):
+        position = self.context.getFromScreen(position)
+        self.activity.onMouseMotion(position)
+
+    def getActivity(self):
+        return self.activities[self.index]
+
+    def setActivity(self, activity):
+        self.activities[self.index] = activity
+
+    activity = property(getActivity, setActivity)
+
 
 if __name__ == "__main__":
-    cm = Manager()
-    cm()
+    from myentity import Entity
+    m = EntityManager.random(build=False)
+    print(m)
+    # cm()

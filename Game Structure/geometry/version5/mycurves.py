@@ -6,6 +6,12 @@ import itertools
 
 class Trajectory:
     @classmethod
+    def random(cls,n=5,**kwargs):
+        """Create a random trajectory of n points."""
+        points=[Point.random() for i in range(n)]
+        return cls(points,**kwargs)
+
+    @classmethod
     def createFromTuples(cls,tuples,**kwargs):
         """Create a trajectory using tuples and optional arguments."""
         pts=[Point(*t) for t in tuples]
@@ -23,8 +29,6 @@ class Trajectory:
             raise Exception("It is impossible to interpolate without at least 2 points.")
         length=self.length
         ns=len(self.segments)
-        #lenghts=list(map(lambda s:s.lengths,self.segments))
-        #sum_lengths=list(itertools.accumulate(lengths))
         tsl=0
         for i in range(ns):
             s=Segment(self.points[i],self.points[i+1])
@@ -36,7 +40,7 @@ class Trajectory:
 
     def __str__(self):
         """Return the string representation of a trajectory."""
-        return "Tjc("+",".join(map(str,self.points))+")"
+        return "tj("+",".join(map(str,self.points))+")"
 
     def show(self,surface,**kwargs):
         """Show the trajectory on the surface."""
@@ -110,18 +114,6 @@ class Trajectory:
     segments=property(getSegments)
     length=property(getLength)
     center=property(getCenter)
-
-class CurvedForm(Form):
-    def __init__(self,*args,**kwargs):
-        """Create a bezier form."""
-        super().__init__(*args,**kwargs)
-    def show(self,surface):
-        """Show the curved form on the screen."""
-        b=BezierCurve(self.points+[self.points[0]])
-        b.show(surface)
-        #Doesn't work the way it should because the form is not closed.
-
-
 
 class BezierCurve:
     def __init__(self,points,point_color=mycolors.WHITE,segment_color=mycolors.WHITE):
@@ -202,6 +194,15 @@ class BezierCurve:
 
     segments=property(getSegments)
 
+class BezierForm(Form):
+    def show(self,context):
+        """Show the curved form on the screen."""
+        self.bezier.show(context)
+
+    @property
+    def bezier(self):
+        """Return the bezier curve of the form."""
+        return BezierCurve(self.points+[self.points[0]])
 
 
 

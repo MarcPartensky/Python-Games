@@ -1,11 +1,12 @@
 from mywindow import Window
 
+
 class Lab:
-    def __init__(self,name="Lab"):
+    def __init__(self, name="Lab"):
         """Creates lab using name."""
-        self.name=name
-        self.entities=[]
-        self.window=Window(self.name,set=False)
+        self.name = name
+        self.entities = []
+        self.window = Window(self.name, set=False)
 
     def __call__(self):
         """Main loop."""
@@ -32,8 +33,9 @@ class Lab:
         for entity in self.entities:
             entity.spawn()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     #import mypanel
 
-    lab=Lab("Testing Zone")
+    lab = Lab("Testing Zone")
     lab()

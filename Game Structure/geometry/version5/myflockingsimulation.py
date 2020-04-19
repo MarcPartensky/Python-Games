@@ -1,5 +1,5 @@
 from mymanager import Manager
-from myabstract import Vector, Form
+from myabstract import Vector, Form, Circle
 from mymotion import Motion
 from mybody import Body
 import mycolors
@@ -7,6 +7,7 @@ import math
 
 
 class Boid(Body):
+    """Representation of a boid of craig reynolds."""
 
     @classmethod
     def random(cls, p=100, v=10):
@@ -25,10 +26,14 @@ class Boid(Body):
                  separation_perception=2,
                  alignment_influence=10,
                  cohesion_influence=10,
-                 separation_influence=10
+                 separation_influence=10,
+                 **kwargs
                  ):
         """Create a boid."""
-        anatomy = self.getAnatomy()
+        anatomy = self.makeAnatomy(**kwargs)
+        print(list(map(str,anatomy.points)))
+        print(anatomy.area)
+        print(anatomy.center)
         super().__init__(anatomy, motion)
         self.max_velocity = max_velocity
         self.max_acceleration = max_acceleration
@@ -39,12 +44,14 @@ class Boid(Body):
         self.cohesion_influence = cohesion_influence
         self.separation_influence = separation_influence
 
-    def getAnatomy(self):
+    def makeAnatomy(self, **kwargs):
         """Return the anatomy of a boid."""
-        anatomy = Form.createFromTuples([(0, 1), (1, -1), (0, 0), (-1, -1)])
-        anatomy.rotate(-math.pi / 2)
-        anatomy.area_color = mycolors.RED
-        anatomy.fill = True
+        if not "area_color" in kwargs:
+            kwargs["area_color"] = mycolors.RED
+        if not "fill" in kwargs:
+            kwargs["fill"] = True
+        anatomy = Form.createFromTuples([(1, 0), (-1, -1), (-0.5, 0), (-1, 1)], **kwargs)
+        anatomy.recenter()
         return anatomy
 
     def getVisibleMates(self, mates, perception):
@@ -109,7 +116,7 @@ class Boid(Body):
         # self.acceleration.set(v)
         return v
 
-    def updateBorn(self, born):
+    def updateLimit(self, born):
         """Update the position of the boid in order to stay in the born."""
         p = self.position
         if self.position.norm > born:
@@ -125,7 +132,7 @@ class Boid(Body):
         super().update(dt)
         v = self.updateFriction(friction)
         a = self.updateRules(mates)
-        p = self.updateBorn(born)
+        p = self.updateLimit(born)
         return Motion(p, v, a)
 
 
@@ -216,22 +223,23 @@ class Simulation(Manager):
         """Create a random simulation of boids."""
         return cls(BoidGroup.random(n), **kwargs)
 
-    def __init__(self, group, friction=1e-3, born=100, dt=1, **kwargs):
+    def __init__(self, group, friction=1e-3, radius=100, dt=1, **kwargs):
         """Create a simulation of flocking."""
         super().__init__(dt=dt, **kwargs)
         self.group = group
         self.friction = friction
-        self.born = born
+        self.circle = Circle(0,0, radius=radius)
 
     def update(self):
         """Update the boid group."""
-        self.group.update(self.dt, self.friction, self.born)
-        #self.group.follow(self.context.point())
+        self.group.update(self.dt, self.friction, self.circle.radius)
+        # self.group.follow(self.context.point())
 
     def show(self):
         """Show the boid group."""
         self.group.show(self.context)
         self.group.showMotions(self.context)
+        self.circle.show(self.context)
 
 
 if __name__ == "__main__":

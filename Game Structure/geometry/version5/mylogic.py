@@ -3,151 +3,153 @@ from myabstract import Circle
 
 import mycolors
 
-class Operator(Case):
-    def __init__(self,*args,**kwargs):
-        """Create an operator using case arguments such as position and size."""
-        super().__init__(*args,**kwargs)
 
-    def showBox(self,surface):
+class Operator(Case):
+    def __init__(self, *args, **kwargs):
+        """Create an operator using case arguments such as position and size."""
+        super().__init__(*args, **kwargs)
+
+    def showBox(self, surface):
         """Show the box on the given surface."""
 
-class Adder(Operator):
-    def __init__(self,*args,**kwargs):
-        """Create an adder using case arguments such as position and size."""
-        super().__init__(*args,**kwargs)
-        self.inputs=3
-        self.outputs=2
 
-    def __call__(self,a,b,c):
+class Adder(Operator):
+    def __init__(self, *args, **kwargs):
+        """Create an adder using case arguments such as position and size."""
+        super().__init__(*args, **kwargs)
+        self.inputs = 3
+        self.outputs = 2
+
+    def __call__(self, a, b, c):
         """Perform the adder operation using binary arguments a,b and c and returning the sum and the carry."""
-        pass #Might be made using circuit class
+        pass  # Might be made using circuit class
+
 
 class LogicGate(Case):
-    def __init__(self,position,size=(1,1),color=mycolors.WHITE,fill=False):
+    def __init__(self, position, size=(1, 1), color=mycolors.WHITE, fill=False):
         """Create a logic gate using case arguments such as position and size."""
-        super().__init__(position,size,color,fill)
-        self.name="Logic Gate"
-        self.inputs=2
-        self.outputs=1
+        super().__init__(position, size, color, fill)
+        self.name = "Logic Gate"
+        self.inputs = 2
+        self.outputs = 1
 
     def __str__(self):
         """Return the string representation of the and gate."""
         return self.name
 
-    __repr__=__str__
+    __repr__ = __str__
 
-    def showCase(self,*args,**kwargs):
+    def showCase(self, *args, **kwargs):
         """Show the form on screen."""
-        self.showForm(*args,**kwargs)
+        self.showForm(*args, **kwargs)
 
-    def showText(self,surface,text=None):
+    def showText(self, context, text=None):
         """Show the text on the surface."""
-        if not text: text=self.name
-        point=self.center()
-        point.showText(surface,text)
+        if not text:
+            text = self.name
+        point = self.center()
+        point.showText(context, text)
 
-    def show(self,surface,**kwargs):
+    def show(self, context, **kwargs):
         """Show the and gate."""
-        self.showText(surface)
-        self.showCase(surface,**kwargs)
+        self.showText(context)
+        self.showCase(context, **kwargs)
 
-
-    def showCircle(self,surface,**kwargs):
+    def showCircle(self, context, **kwargs):
         """Show a circle at the back of the logic gate when necessary."""
         pass
 
-class AndGate(LogicGate):
-    def __init__(self,*args,**kwargs):
-        """Create an and gate using logic gate arguments."""
-        super().__init__(*args,**kwargs)
-        self.name="&"
 
-    def __call__(self,a,b):
+class AndGate(LogicGate):
+    def __init__(self, *args, **kwargs):
+        """Create an and gate using logic gate arguments."""
+        super().__init__(*args, **kwargs)
+        self.name = "&"
+
+    def __call__(self, a, b):
         """Perform the and gate known operation using a and b in binary."""
         return a and b
 
 
 class OrGate(LogicGate):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """Create an or gate."""
-        super().__init__(*args,**kwargs)
-        self.name=">=1"
+        super().__init__(*args, **kwargs)
+        self.name = ">=1"
 
-    def __call__(self,a,b):
+    def __call__(self, a, b):
         """Perform the or gate known operation using a and b in binary."""
         return a or b
 
 
-
-
 class XorGate(LogicGate):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """Create an or gate."""
-        super().__init__(*args,**kwargs)
-        self.name="=1"
+        super().__init__(*args, **kwargs)
+        self.name = "=1"
 
-    def __call__(self,a,b):
+    def __call__(self, a, b):
         """Perform the or gate known operation using a and b in binary."""
-        return (a or b) and (a!=b)
+        return (a or b) and (a != b)
+
 
 class NorGate(LogicGate):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """Create an or gate."""
-        super().__init__(*args,**kwargs)
-        self.name="<=1"
+        super().__init__(*args, **kwargs)
+        self.name = "<=1"
 
-    def __call__(self,a,b):
+    def __call__(self, a, b):
         """Perform the or gate known operation using a and b in binary."""
-        return (a or b) and (a!=b)
+        return (a or b) and (a != b)
 
 
 class Not(LogicGate):
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         """Create an or gate."""
-        super().__init__(*args,**kwargs)
-        self.name="1"
+        super().__init__(*args, **kwargs)
+        self.name = "1"
 
-    def __call__(self,a):
+    def __call__(self, a):
         """Perform the or gate known operation using a and b in binary."""
         return not a
 
+
 class Button(Circle):
-    def __init__(self,default_value=0,colors=[mycolors.BLACK,mycolors.RED]):
+    def __init__(self, default_value=0, colors=[mycolors.BLACK, mycolors.RED]):
         """Create a pushable button."""
-        self.default_value=default_value
-        self.colors=colors
+        self.default_value = default_value
+        self.colors = colors
 
     def push(self):
         """Allow the user to push the button."""
 
-class Circuit:
-    def __init__(self,logic_gates=[]):
-        """Create a circuit object."""
-        self.logic_gates=logic_gates
-        self.connexions=[]
 
-    def show(self,surface):
+class Circuit:
+    def __init__(self, logic_gates=[]):
+        """Create a circuit object."""
+        self.logic_gates = logic_gates
+        self.connexions = []
+
+    def show(self, surface):
         """Show the circuit by showing all its logic gates."""
         for gate in self.logic_gates:
             gate.show(surface)
 
 
+if __name__ == "__main__":
+    from mycontext import Context
 
+    context = Context(name="Logic Gates")
+    g1 = OrGate([1, 1])
+    g2 = AndGate([2, 1])
+    gs = [g1, g2]
+    c = Circuit(gs)
 
-
-
-if __name__=="__main__":
-    from mysurface import Surface
-    surface=Surface(name="Logic Gates")
-    g1=OrGate([1,1])
-    g2=AndGate([2,1])
-    gs=[g1,g2]
-    c=Circuit(gs)
-
-    while surface.open:
-        surface.check()
-        surface.control()
-        surface.clear()
-        surface.show()
-        c.show(surface)
-        surface.flip()
+    while context.open:
+        context.check()
+        context.control()
+        context.clear()
+        context.show()
+        c.show(context)
+        context.flip()

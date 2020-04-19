@@ -1,4 +1,5 @@
-from myabstract import Form, Vector, Point, Segment, Circle
+from myabstract import Vector, Point, Segment, Circle
+from myanatomies import FormAnatomy
 from mymotion import Motion, Moment
 from mymaterial import Material
 from myphysics import Physics
@@ -11,6 +12,7 @@ import copy
 import mycolors
 import random
 import math
+
 
 # Interface Anatomy
 # - show(context)   //an anatomy must be responsible for drawing itself
@@ -39,8 +41,8 @@ class Body(Physics):
     @classmethod
     def random(cls, n=5, d=2, nm=2, nv=3, borns=[-1, 1]):
         """Create a random body."""
-        anatomy = Form.random(n=n, d=d, borns=borns)
-        anatomy.recenter()
+        anatomy = FormAnatomy.random(n=n, d=d, borns=borns)
+        anatomy.recenter(anatomy.centroid)
         motions = []
         if nm >= 1:
             motions.append(Motion.random(n=nv, d=d))
@@ -48,19 +50,19 @@ class Body(Physics):
             motions.append(Moment.random(n=nv, d=d))
         if nm >= 3:
             motions.extend([Motion.random(n=nv, d=d) for i in range(nm - 2)])
-        return cls(anatomy, *motions)
+        return cls(anatomy, motions)
 
     @classmethod
     def createFromForm(cls, anatomy, motion=Motion(), moment=Moment()):
         """Create a body from an absolute form using its motion and its angular moment."""
         motion.position = Vector(*anatomy.center)
         anatomy.points = (-motion.position).applyToPoints(anatomy.points)
-        return cls(form, motion, moment)
+        return cls(anatomy, [motion, moment])
 
     @classmethod
     def createFromMotionMoment(cls, anatomy, motion=Motion(), moment=Moment()):
         """Create a body from a relative anatomy, a motion and a moment."""
-        return cls(form, [motion] + [moment])
+        return cls(anatomy, [motion, moment])
 
     @classmethod
     def createFromRandomMotions(cls, anatomy, n=2):
@@ -72,16 +74,18 @@ class Body(Physics):
             motions.append(Moment.random())
         if n >= 3:
             motions.extend([Motion.random() for i in range(n - 2)])
-        return cls(anatomy, *motions)
+        return cls(anatomy, motions)
 
-    def __init__(self, anatomy, *motions):
+    def __init__(self, anatomy, motions):
         """Create body using its anatomy, its motion and its angular moment."""
         self.anatomy = anatomy
-        self.motions = list(motions)
+        if not isinstance(motions, list):
+            raise TypeError("Wrong motions: "+str(motions))
+        super().__init__(motions)
 
     def __str__(self):
         """Return the string representation of the body."""
-        return "b(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
+        return type(self).__name__[0].lower() + "(" + str(self.form) + "," + ",".join(map(str, self.motions)) + ")"
 
     def show(self, context):
         """Show the form on the window."""
@@ -105,16 +109,21 @@ class Body(Physics):
         self.show(context)
         self.showMotion(context)
         self.showMoment(context)
+        self.showBorn(context)
+
+    def showBorn(self, context):
+        """Show the born circle of the entity."""
+        self.getCircle().show(context)
 
     def update(self, dt=1):
         """Update the motions of the body using 'dt'."""
         for motion in self.motions:
             motion.update(dt)
 
-    def updateFriction(self,friction=0.1):
+    def updateFriction(self, friction=0.1):
         """Update the frictions of the body using the 'friction'."""
         for motion in self.motions:
-            motion.velocity.norm*=(1-friction)
+            motion.velocity.norm *= (1 - friction)
 
     def recenter(self):
         """Set the center of the relative anatomy on the origin."""
@@ -123,9 +132,9 @@ class Body(Physics):
         self.anatomy.position.set(v)
 
     def getForm(self):
-        """Return a copy of the form in absolute coordonnates."""
+        """Return a copy of the form in absolute coordinates."""
         form = copy.deepcopy(self.anatomy)
-        form.points = self.motion.position.applyToPoints(form.points)
+        form.center = Point(*self.motion.position)
         if len(self.motions) == 1:  # Ugly fix for general case
             form.rotate(self.velocity.angle)
         else:
@@ -167,20 +176,12 @@ class Body(Physics):
         """Determine if the body is crossing with the other body."""
         return self.form.cross(other.form)
 
-    def getBorn(self):
-        """Return the born of the body."""
-        c = self.anatomy.center
-        lengths = [Segment(c, p).length for p in self.anatomy.points]
-        return max(lengths)
+    def collide(self, other):
+        return self.form.collide(other.form)
 
-    def setBorn(self, born):
-        """Set the born of the body."""
-        c = self.anatomy.center
-        f = born / self.born
-        for point in self.points:
-            point *= f
-
-    born = property(getBorn, setBorn)
+    def __xor__(self, other):
+        """Determine if the body is crossing with the other body using xor method."""
+        return self.form | other.form
 
     def getPoints(self):
         """Return the points of the form of the body."""
@@ -192,9 +193,43 @@ class Body(Physics):
 
     points = property(getPoints, setPoints)
 
+    def getBorn(self):
+        return self.anatomy.born
+
+    def setBorn(self, born):
+        self.anatomy.born = born
+
+    born = property(getBorn, setBorn)
+
     def getCircle(self):
-        """Return the circle that borns the body."""
-        return Circle(*self.position, self.born)
+        """Return the circle that born the body."""
+        return Circle(*self.position, radius=self.born)
+
+    def spread(self, n):
+        """Take away the entity by multiplying the norm of the position by n."""
+        self.position.norm *= n
+
+    def enlarge(self, n):
+        """Enlarge the anatomy."""
+        self.anatomy.enlarge(n)
+
+
+class FrictionBody(Body):
+    """Add some friction to a body."""
+
+    def __init__(self, *args, friction=0.1):
+        """Create a body with friction."""
+        super().__init__(*args)
+        self.friction = friction
+
+    def update(self, dt):
+        """Update the spaceship."""
+        super().update(dt)
+        self.updateFriction()
+
+    def updateFriction(self):
+        """Add some friction."""
+        self.velocity.norm *= (1 - self.friction)
 
 
 class MaterialBody(Material):
@@ -217,7 +252,7 @@ class MaterialBody(Material):
         anatomy = Form.random(n=5)
         return cls(anatomy, motion)
 
-    def __init__(self,  anatomy, motion):
+    def __init__(self, anatomy, motion):
         """Create a simple body."""
         self.motion = motion
         self.anatomy = anatomy
@@ -225,7 +260,7 @@ class MaterialBody(Material):
 
     def __str__(self):
         """Return the string representation of the body."""
-        return "b(" + str(self.anatomy) + "," + str(",".join(map(str, self.motions))) + ")"
+        return "mb(" + str(self.anatomy) + "," + str(",".join(map(str, self.motion))) + ")"
 
     def center(self):
         """Center the anatomy."""
@@ -278,23 +313,15 @@ class MaterialBody(Material):
     absolute = property(getAbsolute)
 
 
+class BornShowingBody(Body):
+    def show(self, context):
+        super().show(context)
+        self.showBorn(context)
+
+
 if __name__ == "__main__":
-    from mymanager import Manager
+    from mymanager import BodyManager
 
-    class BodyTester(Manager):
-        def __init__(self):
-            super().__init__()
-            self.bodies = {
-                'b': Body.random(n=30)
-            }
-
-        def update(self):
-            for body in self.bodies.values():
-                body.update(self.dt)
-
-        def show(self):
-            for body in self.bodies.values():
-                body.showAll(self.context)
-                body.center.show(self.context)
-    m = BodyTester()
+    b = BornShowingBody.random()
+    m = BodyManager(b)
     m()

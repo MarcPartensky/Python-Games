@@ -10,12 +10,18 @@ class Room(Lab):
         self.factor=1
         Lab.__init__(self,name)
         self.window.size=[1440,900]
-        self.window.fullscreen=True
+        self.window.fullscreen=False
         self.window.text_size=20
         self.window.set()
         wsx,wsy=self.window.size
         v=3
-        self.entities=[Circle(position=[rdt(0,wsx),rdt(0,wsy)],velocity=[rdt(-v,v),rdt(-v,v)],acceleration=[0,0],mass=rdt(1,100),borders=[[0,wsx],[0,wsy]]) for i in range(circles_number)]
+        self.entities=[Circle(
+                            position=[rdt(0,wsx),rdt(0,wsy)],\
+                            velocity=[rdt(-v,v),rdt(-v,v)],\
+                            acceleration=[0,0],\
+                            mass=rdt(1,100),\
+                            borders=[[0,wsx],[0,wsy]]) \
+                            for i in range(circles_number)]
 
     def update(self):
         self.affectCollisions()

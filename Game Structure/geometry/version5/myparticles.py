@@ -3,25 +3,24 @@ from myphysics import Physics
 from myabstract import Point, Vector
 from mymotion import Motion
 
-#from pygame.locals import K_SPACE
-
 import math
 
-class Particle(Physics):
-    made = 0
 
-    def random(name=None):
+class Particle(Physics):
+    """Representation of a particle."""
+    made = 0
+    @classmethod
+    def random(cls, **kwargs):
         """Create a random particle using its motions' dimensions."""
-        return Particle([Motion.random(n=3, d=2), Motion.random(n=2, d=1)], name=name)
+        return cls([Motion.random(n=3, d=2), Motion.random(n=2, d=1)], **kwargs)
 
     def __init__(self, motions, name=None, mass=1):
         """Create a particle using its motions."""
-        super().__init__(motions)
+        super().__init__(motions, mass=mass)
         Particle.made += 1
         if name is None:
             name = "prt" + str(Particle.made)
         self.name = name
-        self.mass = mass
 
     def showAll(self, context):
         """Show the particle and its name."""
@@ -36,11 +35,11 @@ class Particle(Physics):
 
     def showName(self, context):
         """Show the name of the particle."""
-        self.point.showText(context, self.name, text_size=10, conversion=True)
+        self.point.showText(context, self.name, size=10, conversion=True)
 
     def showComponents(self, context):
         """Show the str of the particle."""
-        self.point.showText(context, str(self), text_size=10, conversion=True)
+        self.point.showText(context, str(self), size=10, conversion=True)
 
     def getPoint(self):
         """Return the points associated with the particle."""
@@ -50,11 +49,10 @@ class Particle(Physics):
         """Return the vector associated with the rotation of the particle."""
         angle = self.angle[0]
         angle %= (2 * math.pi)
-        return Vector.createFromPolarCoordonnates(1, angle)
+        return Vector.createFromPolar(1, angle)
 
     def getSpin(self):
-        """The name of spin is surely not appropritate at all, but for now it
-        will do i guess."""
+        """The spin of a particle stays unclear for now..."""
         return self.angle[0]
 
     point = property(getPoint)
@@ -63,13 +61,14 @@ class Particle(Physics):
 
 
 class ParticleGroup:
-
-    def random(n):
+    """Group of particles"""
+    @classmethod
+    def random(cls, n):
         """Create n random particles."""
-        return ParticleGroup([Particle.random() for i in range(n)])
+        return cls([Particle.random() for i in range(n)])
 
     def __init__(self, particles):
-        """Create all particles."""
+        """Create the particle group using the list of all particles."""
         self.particles = particles
 
     def show(self, context):
@@ -126,6 +125,9 @@ class ParticlesManager(Manager):
         """Update the particles."""
         self.particle_group.update(self.dt)
 
+    def updateForces(self):
+        """Update the forces of the particles."""
+
     def getParticles(self):
         """Return the particles group."""
         return self.particle_group
@@ -148,5 +150,5 @@ class ParticlesManager(Manager):
 
 if __name__ == "__main__":
     m = ParticlesManager()
-    print(m.particles[0])
+    m.context.console(m.particles[0])
     m()

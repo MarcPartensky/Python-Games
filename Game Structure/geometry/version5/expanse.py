@@ -1,5 +1,5 @@
 from mygameengine import Game,Level
-from mysurface import Context
+from mycontext import Context
 from mycase import Case
 import noise
 import numpy as np
@@ -8,7 +8,7 @@ import random
 
 class Expanse(Game):
     """Create an expanse game."""
-    def __init__(self,context=Context()):
+    def __init__(self,context):
         """Create the game."""
         self.context=context
         #self.player=Case(0,0)

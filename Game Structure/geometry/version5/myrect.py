@@ -1,270 +1,272 @@
 import random
 
+
 class Rect:
     """Define a pure and simple rectangle."""
 
+    # Class methods
     @classmethod
-    def cross(cls,r1,r2):
+    def cross(cls, r1, r2):
         """Determine the rectangle resulting of the intersection of two rectangles."""
-        if r1.xmax<r2.xmin or r1.xmin>r2.xmax: return
-        if r1.ymax<r2.ymin or r1.ymin>r2.ymax: return
-        xmin=max(r1.xmin,r2.xmin)
-        ymin=max(r1.ymin,r2.ymin)
-        xmax=min(r1.xmax,r2.xmax)
-        ymax=min(r1.ymax,r2.ymax)
-        return Rect.createFromCorners([xmin,ymin,xmax,ymax])
+        if r1.xmax < r2.xmin or r1.xmin > r2.xmax: return
+        if r1.ymax < r2.ymin or r1.ymin > r2.ymax: return
+        xmin = max(r1.xmin, r2.xmin)
+        ymin = max(r1.ymin, r2.ymin)
+        xmax = min(r1.xmax, r2.xmax)
+        ymax = min(r1.ymax, r2.ymax)
+        return Rect.createFromCorners(xmin, ymin, xmax, ymax)
 
     @classmethod
-    def random(cls,borns=[-1,1],borns_size=[0,1]):
+    def random(cls, borns=[-1, 1], borns_size=[0, 1]):
         """Create a random rect."""
-        x=random.uniform(*borns)
-        y=random.uniform(*borns)
-        sx=random.uniform(*borns_size)
-        sy=random.uniform(*borns_size)
-        return cls((x,y),(sx,sy))
+        x = random.uniform(*borns)
+        y = random.uniform(*borns)
+        sx = random.uniform(*borns_size)
+        sy = random.uniform(*borns_size)
+        return cls(x, y, sx, sy)
 
     @classmethod
-    def createFromCorners(cls,corners):
+    def createFromCorners(cls, *corners):
         """Create a rectangle."""
-        coordinates=Rect.getCoordinatesFromCorners(corners)
-        return cls(coordinates[:2],coordinates[2:])
+        x, y, xm, ym = corners
+        w = xm - x
+        h = ym - y
+        return cls(x + w / 2, y + h / 2, w, h)
 
     @classmethod
-    def createFromRect(cls,rect):
-        """Create a rect from a pygame rect."""
-        coordinates=Rect.getCoordinatesFromRect(rect)
-        return cls(coordinates[:2],coordinates[2:])
-
-    @classmethod
-    def createFromCoordinates(cls,coordinates):
+    def createFromCoordinates(cls, *coordinates):
         """Create a rect using the coordinates."""
-        return cls(coordinates[:2],coordinates[2:])
+        return cls(*coordinates)
 
-    def __init__(self,position,size):
-        """Create a rectangle using its position and size."""
-        self.position=list(position)
-        self.size=list(size)
+    @classmethod
+    def createFromRect(cls, *rect):
+        """Create a rect from an unpacked pygame.rect"""
+        l, r, w, h = rect
+        return cls(l + w / 2, r + h / 2, w, h)
 
-    def __str__(self,n=2):
+    def __init__(self, x, y, w, h):
+        """Create a rectangle using its x, y, width, and height, the
+        x and y components correspond to the center of the rectangle."""
+        self.components = [x, y, w, h]
+
+    def __getitem__(self, index):
+        return self.components[index]
+
+    def __setitem__(self, key, value):
+        self.components[key] = value
+
+    x = property(lambda cls: cls.__getitem__(0), lambda cls, value: cls.__setitem__(0, value),
+                 doc="x component of the center")
+    y = property(lambda cls: cls.__getitem__(1), lambda cls, value: cls.__setitem__(1, value),
+                 doc="y component of the center")
+
+    def getSize(self):
+        return [self.w, self.h]
+
+    def setSize(self, size):
+        self.w, self.height = size
+
+    size = property(getSize, setSize)
+
+    def getPosition(self):
+        return [self.x, self.y]
+
+    def setPosition(self, position):
+        self.x, self.y = position
+
+    center = position = property(getPosition, setPosition)
+
+    def __str__(self, n=2):
         """Return the string representation of a rect."""
-        r=round(self,n)
-        return "Rect(pos="+str(r.position)+",size="+str(r.size)+")"
+        r = self.__round__(n)
+        return "Rect(x=" + str(r.x) + ",y=" + str(r.y) + ",w=" + str(r.w) + ",h=" + str(r.h) + ")"
 
-    def __round__(self,n=2):
+    def __round__(self, n=2):
         """Round the components of the rect."""
-        x=round(self.x,n)
-        y=round(self.y,n)
-        sx=round(self.sx,n)
-        sy=round(self.sy,n)
-        return Rect([x,y],[sx,sy])
+        x = round(self.x, n)
+        y = round(self.y, n)
+        w = round(self.w, n)
+        h = round(self.h, n)
+        return Rect(x, y, w, h)
 
-    def __contains__(self,position):
+    def __contains__(self, position):
         """Determine if a position is in the rectangle."""
-        x,y=position
-        return (self.xmin<=x<=self.xmax) and (self.ymin<=y<=self.ymax)
+        x, y = position
+        return (self.xmin <= x <= self.xmax) and (self.ymin <= y <= self.ymax)
 
-    # def cross(self,other):
-    #     """Determine the rectangle resulting of the intersection of two rectangles."""
-    #     if self.xmax<other.xmin or self.xmin>other.xmax: return
-    #     if self.ymax<other.ymin or self.ymin>other.ymax: return
-    #     xmin=max(self.xmin,other.xmin)
-    #     ymin=max(self.ymin,other.ymin)
-    #     xmax=min(self.xmax,other.xmax)
-    #     ymax=min(self.ymax,other.ymax)
-    #     return Rect.createFromCorners([xmin,ymin,xmax,ymax])
-
-    def resize(self,n=1):
+    def resize(self, n):
         """Allow the user to resize the rectangle."""
-        for i in range(2):
-            self.size[i]*=n
+        self.w *= n
+        self.h *= n
 
-    #properties
-    #corners
+    def __iter__(self):
+        self.iterator = 0
+        return self
+
+    def __next__(self):
+        if self.iterator < 4:
+            self.iterator += 1
+            return self.components[self.iterator - 1]
+        else:
+            raise StopIteration
+
+    # properties
+    # corners
     def getCorners(self):
-        """Return the corners of the case."""
-        px,py=self.position
-        sx,sy=self.size
-        return (px-sx/2,py-sy/2,px+sx/2,py+sy/2)
+        """Return the corners of the rect."""
+        return [self.x - self.w / 2, self.y - self.h / 2, self.x + self.w / 2, self.y + self.h / 2]
 
-    def setCorners(self):
-        """Set the corners of the case."""
-        coordinates=self.getCoordinatesFromCorners(corners)
-        self.position=coordinates[:2]
-        self.size=coordinates[2:]
+    def setCorners(self, corners):
+        """Set the corners of the rect."""
+        x1, y1, x2, y2 = corners
+        self.w = x2 - x1
+        self.h = y2 - y1
+        self.x = x1 - self.w / 2
+        self.y = y1 - self.w / 2
 
-    #coordinates
+    # coordinates
     def getCoordinates(self):
-        """Return the coordinates ofthe rectangle."""
-        return self.position+self.size
+        """Return the coordinates of the rect."""
+        return [self.x, self.y, self.w, self.h]
 
-    def setCoordinates(self,coordinates):
-        """Set the coordinates of the rectangle."""
-        self.position=coordinates[:2]
-        self.size=coordinates[2:]
+    def setCoordinates(self, coordinates):
+        """Set the coordinates of the rect."""
+        self.position = coordinates[:2]
+        self.size = coordinates[2:]
 
-    #rect
+    # rect
     def getRect(self):
         """Return the rect of the rectangle."""
         return Rect.getRectFromCoordinates(self.getCoordinates())
 
-    def setRect(self,rect):
+    def setRect(self, rect):
         """Set the rect of the rectangle."""
         self.setCoordinates(Rect.getCoordinatesFromRect(rect))
 
-
-    #center
-    def getCenter(self):
-        """Return the center of the rectangle."""
-        return self.position
-
-    def setCenter(self,centers):
-        """Set the center of the rectangle."""
-        self.position=center
-
-    #x component
-    def getX(self):
-        """Return the x component."""
-        return self.position[0]
-
-    def setX(self,x):
-        """Set the x component."""
-        self.position[0]=x
-
-    #y component
-    def getY(self):
-        """Return the y component."""
-        return self.position[1]
-
-    def setY(self,y):
-        """Set the y component."""
-        self.position[1]=y
-
-    #sx component
-    def getSx(self):
+    # sx component
+    def getWidth(self):
         """Return the width."""
-        return self.size[0]
+        return self.components[2]
 
-    def setSx(self,sx):
+    def setWidth(self, w):
         """Set the width."""
-        self.size[0]=sx
+        self.components[2] = w
 
-    #sy component
-    def getSy(self):
+    # sy component
+    def getHeight(self):
         """Return the height."""
-        return self.size[1]
+        return self.components[3]
 
-    def setSy(self,sy):
+    def setHeight(self, h):
         """Set the height."""
-        self.size[1]=sy
+        self.components[3] = h
 
-    #xmin component
+    # xmin component
     def getXmin(self):
         """Return the minimum of the x component."""
-        return self.position[0]-self.size[0]/2
+        return self.x - self.w / 2
 
-    def setXmin(self,xmin):
+    def setXmin(self, xmin):
         """Set the minimum of the x component."""
-        self.position[0]=xmin+self.size[0]/2
+        self.x = xmin + w / 2
 
-    #ymin component
+    # ymin component
     def getYmin(self):
         """Return the minimum of the y component."""
-        return self.position[1]-self.size[1]/2
+        return self.y - self.h / 2
 
-    def setYmin(self,ymin):
+    def setYmin(self, ymin):
         """Set the minimum of the y component."""
-        self.position[1]=ymin+self.size[1]/2
+        self.y = ymin + self.h / 2
 
-    #xmax component
+    # xmax component
     def getXmax(self):
         """Return the maximum of the x component."""
-        return self.position[0]+self.size[0]/2
+        return self.x + self.w / 2
 
-    def setXmax(self,xmax):
+    def setXmax(self, xmax):
         """Set the maximum of the x component."""
-        self.position[0]=xmax-self.size[0]/2
+        self.x = xmax - self.w / 2
 
-    #ymax component
+    # ymax component
     def getYmax(self):
         """Return the maximum of the y component."""
-        return self.position[1]+self.size[1]/2
+        return self.y + self.h / 2
 
-    def setYmax(self,ymax):
+    def setYmax(self, ymax):
         """Set the maximum of the y component."""
-        self.position[1]=ymax-self.size[1]/2
+        self.y = ymax - self.h / 2
 
-    corners=property(getCorners,setCorners,"Allow the user to manipulate the corners as an attribute for simplicity.")
-    rect=property(getRect,setRect,"Allow the user to manipulate the rect of the rectangle easily.")
-    coordinates=property(getCoordinates,setCoordinates,"Allow the user to manipulate the coordinates of the rectangle easily for simplicity.")
-    x=property(getX,setX,"Allow the user to manipulate the x component easily.")
-    y=property(getY,setY,"Allow the user to manipulate the y component easily.")
-    sx=width=property(getSx,setSx,"Allow the user to manipulate the size in x component easily.")
-    sy=height=property(getSy,setSy,"Allow the user to manipulate the size in y component easily.")
-    xmin=property(getXmin,setXmin,"Allow the user to manipulate the minimum of x component easily.")
-    xmax=property(getXmax,setXmax,"Allow the user to manipulate the maximum of x component easily.")
-    ymin=property(getYmin,setYmin,"Allow the user to manipulate the minimum of y component easily.")
-    ymax=property(getYmax,setYmax,"Allow the user to manipulate the maximum of y component easily.")
+    corners = property(getCorners, setCorners, doc="Corners")
+    coordinates = property(getCoordinates, setCoordinates, doc="Center+Size")
+    w = sx = width = property(getWidth, setWidth, doc="Width")
+    h = sy = height = property(getHeight, setHeight, doc="Height")
+    xmin = x1 = left = l = property(getXmin, setXmin, doc="Left")
+    xmax = x2 = right = r = property(getXmax, setXmax, doc="Right")
+    ymin = y1 = bottom = b = property(getYmin, setYmin, doc="Bottom")
+    ymax = y2 = top = t = property(getYmax, setYmax, doc="Top")
 
+    # Static methods
+    @staticmethod
     def getCornersFromCoordinates(coordinates):
         """Return the corners (top_left_corner,bottom_right_corner) using the coordinates (position+size)."""
         """[x,y,sx,sy] -> [mx,my,Mx,My]"""
-        x,y,sx,sy=coordinates
-        mx,my=x-sx/2,y-sy/2
-        Mx,My=x+sx/2,y+sy/2
-        corners=(mx,my,Mx,My)
-        return corners
+        x, y, sx, sy = coordinates
+        mx, my = x - sx / 2, y - sy / 2
+        Mx, My = x + sx / 2, y + sy / 2
+        return [mx, my, Mx, My]
 
+    @staticmethod
     def getCoordinatesFromCorners(corners):
         """Return the coordinates (position+size) using the corners (top_left_corner,bottom_right_corner)."""
         """[mx,my,Mx,My] -> [x,y,sx,sy]"""
-        mx,my,Mx,My=corners
-        sx,sy=Mx-mx,My-my
-        x,y=mx+sx/2,my+sy/2
-        coordinates=(x,y,sx,sy)
-        return coordinates
+        mx, my, Mx, My = corners
+        sx, sy = Mx - mx, My - my
+        x, y = mx + sx / 2, my + sy / 2
+        return [x, y, sx, sy]
 
+    @staticmethod
     def getCoordinatesFromRect(rect):
         """Return the coordinates (position,size) using the rect (top_left_corner,size)."""
         """[x,y,sx,sy] -> [mx,my,sx,sy]"""
-        mx,my,sx,sy=rect
-        x,y=mx+sx/2,my+sy/2
-        coordinates=[x,y,sx,sy]
-        return coordinates
+        mx, my, sx, sy = rect
+        x, y = mx + sx / 2, my + sy / 2
+        return [x, y, sx, sy]
 
+    @staticmethod
     def getRectFromCoordinates(coordinates):
         """Return the rect (top_left_corner,size) using the coordinates (position,size)."""
         """[mx,my,sx,sy] -> [x,y,sx,sy]"""
-        x,y,sx,sy=coordinates
-        mx,my=x-sx/2,y-sy/2
-        rect=[mx,my,sx,sy]
-        return rect
+        x, y, sx, sy = coordinates
+        mx, my = x - sx / 2, y - sy / 2
+        return [mx, my, sx, sy]
 
+    @staticmethod
     def getRectFromCorners(corners):
         """Return the rect (top_left_corner,size) using the corners (top_left_corner,bottom_right_corner)."""
         """[mx,my,Mx,My] -> [mx,my,sx,sy]"""
-        mx,my,Mx,My=corners
-        sx,sy=Mx-mx,My-my
-        rect=[mx,my,sx,sy]
-        return rect
+        mx, my, Mx, My = corners
+        sx, sy = Mx - mx, My - my
+        return [mx, my, sx, sy]
 
+    @staticmethod
     def getCornersFromRect(rect):
         """Return the (top_left_corner,bottom_right_corner) using the corners rect (top_left_corner,size)."""
         """[mx,my,Mx,My] -> [mx,my,sx,sy]"""
-        mx,my,sx,sy=rect
-        Mx,My=mx+sx,my+sy
-        corners=[mx,my,Mx,My]
-        return corners
+        mx, my, sx, sy = rect
+        Mx, My = mx + sx, my + sy
+        return [mx, my, Mx, My]
 
 
-if __name__=="__main__":
-    r1=Rect.random()
-    r2=Rect.random()
-    print(r1,r2)
+if __name__ == "__main__":
+    r1 = Rect.random()
+    r2 = Rect.random()
+    r1.x -= 1
+    print(r1, r2)
     print(r1.corners)
     print(r1.coordinates)
-    print(r1.rect)
-    print(r1.x,r1.y)
-    print(r1.sx,r1.sy)
-    print(r1.width,r1.height)
-    r=Rect.cross(r1,r2)
-    print(r)
+    print(r1.x, r1.y)
+    print(r1.sx, r1.sy)
+    print(r1.width, r1.height)
+    r = Rect.cross(r1, r2)
+    print(*r1)
