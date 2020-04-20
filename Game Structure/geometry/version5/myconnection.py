@@ -4,12 +4,21 @@ import select
 import pickle
 
 
-def getIP():
-    return socket.gethostname()
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
 
-
-IP_CLIENT = "172.16.0.39."
-IP_SERVER = getIP()
+# IP_CLIENT = "172.16.0.39."
+# IP_SERVER = getIP()
+IP = get_ip()
 PORT = 1234
 
 HEADER_LENGTH = 10
@@ -93,8 +102,8 @@ class Server:
                 sent = True
             except:
                 attempts += 1
-        # if not sent:
-        #     print("The message: {} could not be sent after {} attempts.".format(message, max_attempts))
+        if not sent:
+            print("The message: {} could not be sent after {} attempts.".format(message, max_attempts))
 
     def send(self, client, message):
         """Send a message to a client."""
@@ -194,9 +203,9 @@ class Client:
 
 
 if __name__ == "__main__":
-    s = Server(IP_CLIENT, PORT)
-    c1 = Client(IP_CLIENT, PORT)
-    c2 = Client(IP_CLIENT, PORT)
+    s = Server(IP, PORT)
+    c1 = Client(IP, PORT)
+    c2 = Client(IP, PORT)
     s.update()
     print("Clients number:", len(s.clients))
     from myasteroidgame import AsteroidGame # We can send whatever we want

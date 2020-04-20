@@ -1,26 +1,28 @@
-from myconnection import Server
+from myconnection import Server, get_ip
 from myasteroidgame import AsteroidGame
 
 class AsteroidServer(Server):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.game = AsteroidGame()
-        print("Waiting for players to connect.")
+        self.game = AsteroidGame(stage=0)
+        self.game.start()
+        self.redirection = {}
+        print("Ready for players to connect.")
 
     def update(self):
         super().update()
         self.game.update()
         self.processAll()
-        self.sendAllForSure(self.game)
+        for client in self.clients[1:]:
+            self.send(client, self.game)
 
     def accept(self, client):
-        super().accept(client)
-        self.createPlayer(client)
+        client_socket, client_address = client.accept()
+        self.clients.append(client_socket)
+        self.game.players.append(self.game.level.newPlayer())
+        self.redirection[client_socket.getsockname()[0]] = len(self.game.players)-1
         print("Client: {} has been accepted by the server.".format(client))
-        print("client ip:", client.getsockname()[0])
-
-    def createPlayer(self, client):
-        self.game.players[client.getsockname()[0]] = self.game.level.newPlayer()
+        print("client ip:", client_socket.getsockname()[0])
 
     def processAll(self):
         """Receive the events of the players and distribute them to their played entity. """
@@ -31,23 +33,28 @@ class AsteroidServer(Server):
 
     def process(self, client, message):
         """Process a message sent by a client."""
-        path, value = message
-        path = path.split("/")
-        if path[0] == "events":
-            if path[1] == "keydown":
-                self.game.players[client.getsockname()[0]].reactKeyDown(value)
-            elif path[1] == "mousemotion":
-                self.game.players[client.getsockname()[0]].reactMouseMotion(value)
-            elif path[1] == "mousebuttondown":
-                self.game.players[client.getsockname()[0]].reactMouseButtonDown(*value)
+        # print(self.redirection, client.getsockname()[0], message)
+        if client.getsockname()[0] in self.redirection:
+            path, value = message
+            path = path.split("/")
+            player = self.game.players[self.redirection[client.getsockname()[0]]]
+            print(client.getsockname()[0], player, path, value)
+            if path[0] == "events":
+                if path[1] == "keydown":
+                    player.reactKeyDown(value)
+                elif path[1] == "mousemotion":
+                    player.reactMouseMotion(value)
+                elif path[1] == "mousebuttondown":
+                    player.reactMouseButtonDown(*value)
 
 
 if __name__ == "__main__":
-    IP = "172.16.0.39."
+    import socket
+
+    IP = ''
     PORT = 1234
-
     s = AsteroidServer(IP, PORT)
+    print("IP:",get_ip())
+    print("PORT:",PORT)
     s.main()
-
     del s
-

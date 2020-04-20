@@ -12,7 +12,7 @@ print(sys.version)
 
 
 class AsteroidGame(Game):
-    def __init__(self, difficulty=10, stage=1, **kwargs):
+    def __init__(self, difficulty=10, stage=0, **kwargs):
         """Create an asteroid game using its difficulty, stage and kwargs."""
         levels = [DestroyAsteroids(difficulty),
                   DestroyHunters(difficulty)]
@@ -28,10 +28,8 @@ class SoloAsteroidGame(AsteroidGame):
 
 class AsteroidLevel(Level):
     """Base class of all asteroid levels."""
-    def __init__(self, group=None, dt=0.05, **kwargs):
+    def __init__(self, group=AsteroidGameGroup(), dt=0.05, **kwargs):
         """Create an asteroid level."""
-        if group is None:
-            group = AsteroidGameGroup()
         self.rectangle = Rectangle(0, 0, 200, 200)
         self.logging_win = False
         self.logging_restart = False
@@ -159,6 +157,11 @@ class AsteroidLevel(Level):
 
     collider = property(getCollider, setCollider)
 
+class EmptyMultiplayerLevel(AsteroidLevel):
+    """Level empty so that players can join to play in multiplayer."""
+    def __init__(self, difficulty, **kwargs):
+        super().__init__(**kwargs)
+
 
 class DestroyAsteroids(AsteroidLevel):
     """Level in which the players must destroy all the asteroids to win."""
@@ -275,7 +278,7 @@ class DestroyHunters(DestroySpaceShips):
 
 if __name__ == "__main__":
     from mymanager import GameManager
-    game = SoloAsteroidGame()
+    game = SoloAsteroidGame(stage=1)
     game.start()
     m = GameManager(game, controller=[0, 0, 0])
     m()

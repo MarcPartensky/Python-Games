@@ -9,7 +9,6 @@ class AsteroidClient(GameManager):
         self.client = Client(ip, port)
         game = AsteroidGame()
         super().__init__(game, build=False)
-        print("ip:", self.client.connection.getsockname()[0])
 
     def showLoop(self):
         if self.client.connection.getsockname()[0] in self.game.players:
@@ -19,16 +18,18 @@ class AsteroidClient(GameManager):
             self.game.show(self.context)
             self.context.console.show()
             self.context.flip()
+            print("showLoop")
 
     def setup(self):
         self.context.build()
 
     def update(self):
         super().update()
+        self.context.position = Vector(0, 0)
         try:
             self.receive()
-        except:
-            print("Client failed to receive.")
+        except Exception as e:
+            print(e)
 
     def receive(self):
         self.client.receive()
@@ -49,8 +50,10 @@ class AsteroidClient(GameManager):
 
 
 if __name__ == "__main__":
-    IP = "172.16.0.39."
-    PORT = 1234
+    #IP: 25.71.207.126
+    #PORT: 1234
+    IP = input("IP: ")
+    PORT = int(input("PORT: "))
     # IP, PORT
     c = AsteroidClient(IP, PORT)
     # print(c)
