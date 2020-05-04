@@ -73,10 +73,18 @@ class VisualFourier:
     """Show an application of the fourier transform."""
 
     # Instance methods
-    def __init__(self, context, image=None, coefficients=[], directory="FourierObjects", filename="Fourier"):
+    def __init__(self,
+            context,
+            image=None,
+            coefficients=[],
+            directory="FourierObjects",
+            filename="Fourier",
+            coefficients_filename="fourier_coefficients.txt"
+        ):
         """Initialization."""
         self.context = context
         self.coefficients = coefficients
+        self.coefficients_filename = coefficients_filename
 
         # Directory
         self.directory = directory
@@ -148,6 +156,7 @@ class VisualFourier:
             if event.type == pygame.QUIT:
                 self.context.open = False
             if event.type == KEYDOWN:
+
                 if event.key == K_ESCAPE:
                     self.context.open = False
                 if event.key == K_SPACE or event.key == K_MENU or event.key == K_q:
@@ -172,6 +181,8 @@ class VisualFourier:
                     self.drawing = self.drawing[:-1]
                 if event.key == K_s:
                     self.save()  # Save the coefficients and the graphs
+                if event.key == K_d:
+                    self.saveCoefficients()
                 if event.key == K_a:
                     # Save a picture the screen
                     self.screenshot(self.directory)
@@ -182,7 +193,7 @@ class VisualFourier:
                 if event.key == K_c:
                     self.show_camera = not(self.show_camera)
                     if self.show_camera:
-                        self.context.camera.build()
+                        self.context.camera.buildCapture()
                     else:
                         self.context.camera.destroy()
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -326,17 +337,28 @@ class VisualFourier:
         """Make a screenshot of the window."""
         self.context.draw.window.screenshot(self.filename)
 
-    def save(self):
-        """Save the sampled graph and fourier's coefficients."""
-        path = self.directory + "/" + self.filename
+    @property
+    def dictionary(self):
+        """Return the dictionary."""
         dictionary = {
             "coefficients":     self.coefficients,
             "drawing":          self.drawing,
             "construction":     self.construction,
             "display":          self.display
         }
-        pickle.dump(dictionary, open(path, 'wb'))
+        return dictionary
+
+    def save(self):
+        """Save the sampled graph and fourier's coefficients."""
+        path = self.directory + "/" + self.filename
+        pickle.dump(self.dictionary, open(path, 'wb'))
         self.context.console.append("The Fourier components are saved.")
+
+    def saveCoefficients(self):
+        """Save the coefficients in a txt file."""
+        with open(self.coefficients_filename, mode="w", encoding="utf-8") as file:
+            file.write(str(self.dictionary))
+            self.context.console.append("The Fourier coefficients are written.")
 
     def load(self):
         """Load the fourier's coefficients."""
@@ -438,14 +460,19 @@ class VisualFourier:
 if __name__ == "__main__":
     from mycontext import Context
 
+    folder ="FourierImages"
+
     sj = "saint jalm.jpg"
     vl = "valentin.png"
     tm = "tetedemarc.png"
     pm = "profiledemarc.jpg"
+    rh = "rohart à l'aise.jpg"
+
+    image = folder + "/" + rh
 
     context = Context(
         name="Application of the Fourier Transform.", fullscreen=False)
-    fourier = VisualFourier(context, image=sj)
+    fourier = VisualFourier(context, image=image)
     fourier.load()
     fourier()
     fourier.save()
