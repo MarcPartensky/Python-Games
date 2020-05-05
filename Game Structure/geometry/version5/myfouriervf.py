@@ -179,6 +179,7 @@ class VisualFourier:
                     self.reset()
                 if event.key == K_z:
                     self.drawing = self.drawing[:-1]
+                    self.updateSample()
                 if event.key == K_s:
                     self.save()  # Save the coefficients and the graphs
                 if event.key == K_d:
