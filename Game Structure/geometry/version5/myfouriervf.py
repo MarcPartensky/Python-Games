@@ -36,7 +36,8 @@ class Fourier:
         return cfs
 
     def inverseTransform(cfs, npts, wo=2 * math.pi):
-        """Apply the true fourier inverse transform by returning the list of the points."""
+        """Apply the true fourier inverse transform
+        by returning the list of the points."""
         ncfs = len(cfs)
         h = npts // 2
         pts = []
@@ -74,13 +75,13 @@ class VisualFourier:
 
     # Instance methods
     def __init__(self,
-            context,
-            image=None,
-            coefficients=[],
-            directory="FourierObjects",
-            filename="Fourier",
-            coefficients_filename="fourier_coefficients.txt"
-        ):
+                 context,
+                 image=None,
+                 coefficients=[],
+                 directory="FourierObjects",
+                 filename="Fourier",
+                 coefficients_filename="fourier_coefficients.txt"
+                 ):
         """Initialization."""
         self.context = context
         self.coefficients = coefficients
@@ -359,8 +360,10 @@ class VisualFourier:
         """Save the coefficients in a txt file."""
         path = self.directory + "/" + self.coefficients_filename
         with open(path, mode="w", encoding="utf-8") as file:
-            file.write("\n".join([f"{k}:{v}" for k,v in self.dictionary["coefficients"].items()]))
-            self.context.console.append("The Fourier coefficients are written.")
+            file.write(
+                "\n".join([f"{k}:{v}" for k, v in self.dictionary["coefficients"].items()]))
+            self.context.console.append(
+                "The Fourier coefficients are written.")
 
     def load(self):
         """Load the fourier's coefficients."""
@@ -462,7 +465,7 @@ class VisualFourier:
 if __name__ == "__main__":
     from mycontext import Context
 
-    folder ="FourierImages"
+    folder = "FourierImages"
 
     sj = "saint jalm.jpg"
     vl = "valentin.png"
