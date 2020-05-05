@@ -357,8 +357,9 @@ class VisualFourier:
 
     def saveCoefficients(self):
         """Save the coefficients in a txt file."""
-        with open(self.coefficients_filename, mode="w", encoding="utf-8") as file:
-            file.write(str(self.dictionary))
+        path = self.directory + "/" + self.coefficients_filename
+        with open(path, mode="w", encoding="utf-8") as file:
+            file.write("\n".join([f"{k}:{v}" for k,v in self.dictionary["coefficients"].items()]))
             self.context.console.append("The Fourier coefficients are written.")
 
     def load(self):
