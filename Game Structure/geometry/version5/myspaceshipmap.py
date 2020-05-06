@@ -1,16 +1,16 @@
 from myspaceship import Shooter, GamePlayer, GameHunter, Asteroid, Hunter, SpiderBase
-from mydictmap import Map
+from mytree import Tree
 
-class SpaceshipMap(TreeMap):
+class SpaceshipTree(Tree):
     pass
 
-class ShooterSpaceshipMap(SpaceshipMap):
-    def __init__(self, map, shooting):
-        super().__init__(map)
+class ShooterSpaceshipTree(SpaceshipTree):
+    def __init__(self, m, shooting):
+        super().__init__(m)
         self.shooting = shooting
 
 
-class PlayerMap(SpaceshipMap):
+class PlayerTree(SpaceshipTree):
     @classmethod
     def random(cls, n=1):
         """Create a group of 1 random player."""
@@ -25,14 +25,16 @@ class PlayerMap(SpaceshipMap):
                 shooted += entity.shoot()
         return shooted
 
-class AsteroidMap()
+class AsteroidTree():
+    pass
 
-class AsteroidGameMap(Map):
+class AsteroidGameTree(Tree):
     def update(self):
+        pass
 
 
 
 
 if __name__=="__main__":
-    p = PlayerMap.random(10)
+    p = PlayerTree.random(10)
     print(p["Player:0"])
