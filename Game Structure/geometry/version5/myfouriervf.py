@@ -31,7 +31,7 @@ class Fourier:
                 w = iw / npts  # w is not a frequency but the variable of a parametric equation
                 fw = complex(*pts[iw])
                 cn += fw * cmath.exp(-1j * n * w * wo)
-            cn /= npts  # should i remove this?
+            cn /= npts
             cfs[n] = cn
         return cfs
 
@@ -48,8 +48,6 @@ class Fourier:
             zpt = 0
             for (n, cn) in cfs.items():  # Addition is commutative, even though the dictionary is unordered, the sum of the terms will be the same
                 zpt += cn * cmath.exp(1j * wo * n * t)
-            # zpt*=(npts/ncfs)
-            # zpt/=ncfs
             pts.append((zpt.real, zpt.imag))
         return pts
 
@@ -471,7 +469,7 @@ if __name__ == "__main__":
     vl = "valentin.png"
     tm = "tetedemarc.png"
     pm = "profiledemarc.jpg"
-    rh = "rohart à l'aise.jpg"
+    rh = "rohart.jpg"
 
     image = folder + "/" + rh
 
