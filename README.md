@@ -2,10 +2,11 @@
 
 ## Game structure Folder
 
-### Dependencies
-- pygame (For displaying the game and detect the events)
-- opencv (For recording video or screen)
-- numpy (Useful in some cases of optimization)
+### Dependencies 
+Works on mac in python3.8 using:
+- pygame==2.0.0.dev6 (For displaying the game and detect the events)
+- opencv-python==4.2.0.34 (For recording video or screen)
+- numpy==1.18.1 (Useful in some cases of optimization)
 
 ### Introduction
 This is where i post all my games made in python using pygame. Most of them are based on a self-made hierarchy to reinforce the abstraction and so-doing the efficiency of writing code.
