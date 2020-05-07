@@ -7,7 +7,7 @@ class AsteroidClient(GameManager):
     def __init__(self, ip, port):
         self.id = id(self)
         self.client = Client(ip, port)
-        game = AsteroidGame()
+        game xxxx= AsteroidGame()
         super().__init__(game, build=False)
 
     def showLoop(self):

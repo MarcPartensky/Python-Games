@@ -1,52 +1,64 @@
 from collections import OrderedDict
 
-
 class Map(OrderedDict):
 
-    def set(self, m):
+    get = OrderedDict.__getitem__
+    set = OrderedDict.__setitem__
+
+    def __str__(self):
+        """Return the string representation of a map."""
+        return type(self).__name__+"{"+", ".join([f"{k}:{v}" for k,v in self.items()])+"}"
+
+    def reset(self, m):
+        """Reset the map."""
         self.clear()
         for [k, v] in m.items():
             self[k] = v
 
     def sort(self, f=lambda e: e):
-        self.set(self.sorted(f))
+        """Sort items."""
+        self.reset(self.sorted(f))
 
     def sortKeys(self, f):
-        self.set(self.sortedKeys(f))
+        """Sort items by keys."""
+        self.reset(self.sortedKeys(f))
 
     def sortValues(self, f):
-        self.set(self.sortedValues(f))
+        """Sort items by values."""
+        self.reset(self.sortedValues(f))
 
     def sorted(self, f=lambda e: e):
+        """Return a sorted map."""
         return Map(sorted(self.items(), key=f))
 
     def sortedKeys(self, f=lambda e: e[0]):
+        """Return a map sorted by keys."""
         return Map(sorted(self.items(), key=f))
 
     def sortedValues(self, f=lambda e: e[1]):
+        """Return a map sorted by values."""
         return Map(sorted(self.items(), key=f))
 
-    def forEach(self, f): #Not a fan
+    def forEach(self, f):
+        """Apply f then set each value."""
+        for (k,v) in self.items():
+            self[k]=f(v)
+
+    def map(self, f):
+        """Apply f then yield each value."""
         for e in self.values():
-            e=f(e)
+            yield f(e)
 
 
-if __name__ == "__main__":
-    d = {1: 5, 3: 4, 0: 3}
-    print(list(sorted(d)))
+if __name__=="__main__":
+    d = {0:2, 1:2, 3:3}
     m = Map(d)
     print(m)
     print(m.values())
     print(m.keys())
     print(len(m))
-    print(next(m))
-    print(next(m))
-    print(next(m))
     print(m)
     m.sort()
     print(m.sortedValues())
     print(m.sortedKeys())
-    print(list(iter(m)))
-
-    for (k, e) in m.items():
-        print(k, e)
+    print(m.get(0))
