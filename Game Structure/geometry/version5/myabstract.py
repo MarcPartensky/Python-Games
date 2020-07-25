@@ -2283,11 +2283,11 @@ class Circle:
         """Create a circle from point."""
         return cls(*point, radius=radius, **kwargs)
 
-    def __init__(self, *args, radius, fill=False, color=mycolors.WHITE, border_color=None, area_color=None,
+    def __init__(self, *position, radius, fill=False, color=mycolors.WHITE, border_color=None, area_color=None,
                  center_color=None, radius_color=None, radius_width=1, text_color=None, text_size=20):
         """Create a circle object using x, y and radius and optional color and width."""
-        if len(args) == 1: args = args[0]
-        self.position = args
+        if len(position) == 1: position = position[0]
+        self.position = list(position)
         self.radius = radius
         self.fill = fill
         if color:
@@ -2356,7 +2356,12 @@ class Circle:
         if not border_color: border_color = self.border_color
         if not area_color: area_color = self.area_color
         if not fill: fill = self.fill
-        window.draw.circle(window.screen, border_color, self.position, self.radius, fill)
+        if fill:
+            window.draw.circle(window.screen, area_color, self.position, self.radius, fill)
+        else:
+            window.draw.circle(window.screen, border_color, self.position,
+                               self.radius, fill)
+
 
     def showCenter(self, window, color=None, mode=None):
         """Show the center of the screen."""
