@@ -95,7 +95,7 @@ class Plan:
         window.screen.fill(self.background)
         wsx,wsy=window.size
         translation=[wsx//2,wsy//2]
-        self.drawAxis(window)
+        # self.drawAxis(window)
         for i,graph in enumerate(self.graphs):
             graph.draw(self,window)
             position=[wsx-200,wsy-(2+i)*30]
@@ -187,7 +187,7 @@ class Grapher:
         self.name="Grapher"
         self.controller=Controller()
         self.window=Window(self,self.window_size)
-        self.plan=Plan(BLACK,WHITE)
+        self.plan=Plan(WHITE,BLACK)
         for function,color in zip(functions,self.graph_colors):
             self.graph=Graph(function,color)
             self.plan.addGraph(self.graph)
@@ -224,4 +224,34 @@ class Grapher:
 
 if __name__=="__main__":
     functions=[math.sin,math.cos,math.exp,lambda x:x**3-2*x+1]
-    Grapher=Grapher(functions)
+    def f(n,p):
+        def curve(x):
+            v = x%p
+            if v<p/n:
+                return 0
+            else:
+                return 1
+        return f
+
+    def curve1(x):
+        v = x%5
+        if v>1/3:
+            return 0
+        else:
+            return 1
+
+    def curve2(x):
+        v = x%5
+        if v>1.5/3:
+            return 0
+        else:
+            return 1
+
+    def curve3(x):
+        v = x%5
+        if v>2/3:
+            return 0
+        else:
+            return 1
+    # functions = [curve1, curve2, curve3]
+    Grapher=Grapher([curve3])

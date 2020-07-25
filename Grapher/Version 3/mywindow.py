@@ -7,7 +7,7 @@ from pygame.locals import *
 
 class Window:
     made=0
-    def __init__(self,game=None,size=None,font="monospace",text_color=BLACK,set=True):
+    def __init__(self,game=None,size=None,font="monospace",text_color=WHITE,set=True):
         Window.made+=1
         self.number=Window.made
         self.title=game.name
