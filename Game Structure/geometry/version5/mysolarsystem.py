@@ -36,7 +36,7 @@ class System:
         """Return the force of attraction of the astre2 on the astre1."""
         norm = G * astre1.mass * astre2.mass / cls.distance(astre1, astre2)**2
         angle = (astre2.position - astre1.position).angle
-        return Force.createFromPolarCoordonnates(norm, angle) / astre1.mass
+        return Force.createFromPolar(norm, angle) / astre1.mass
 
     def random(n=10):
         """Create a random system."""
@@ -159,10 +159,10 @@ class Planet(Astre):
         """Find the motion of a planet with its distance and its mass."""
         angle = random.uniform(0, 2 * math.pi)
         norm = self.distance
-        position = Vector.createFromPolarCoordonnates(norm, angle)
+        position = Vector.createFromPolar(norm, angle)
         angle = (angle + math.pi / 2) % (2 * math.pi)
         norm = self.speed  # in m/s-1
-        velocity = Vector.createFromPolarCoordonnates(norm, angle)
+        velocity = Vector.createFromPolar(norm, angle)
         acceleration = Vector.null()
         return Motion(position, velocity, acceleration)
 
