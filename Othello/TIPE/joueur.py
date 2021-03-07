@@ -80,7 +80,7 @@ class Joueur:
             text="Joueur"+str(self.cote)
         return text
 
-    __repr__=__str__ #Permet de faire un print et d'obtenir le même résultat que str.
+    __repr__=__str__ # Permet de faire un print sur l'instance et d'obtenir le même résultat que str.
 
 
 
@@ -123,7 +123,7 @@ class Humain(Joueur):
         #mais ce celui-ci connait toujours son coté.
         #Effectivement c'est le plateau qui affiche une couleur prédéfinie dans le thème.
         if "nom" in self.__dict__: #Vérifie si le joueur possede un attribut nom
-            text="Joueur"+str(self.name)
+            text="Joueur"+str(self.nom)
         elif "couleur" in self.__dict__: #Vérifie si le joueur possede un attribut couleur
             #Pourrait fonctionner si l'on créer une classe de couleur
             #mais c'est un peu exagéré.
@@ -131,6 +131,8 @@ class Humain(Joueur):
         else: #Sinon dans la plupart des cas on affiche uniquement son type.
             text="Joueur Humain"
         return text
+    
+    __repr__=__str__ # Permet de faire un print sur l'instance et d'obtenir le même résultat que str.
 
 class Robot(Joueur):
     def __init__(self):
@@ -157,7 +159,7 @@ class Robot(Joueur):
         #mais ce celui-ci connait toujours son coté.
         #Effectivement c'est le plateau qui affiche une couleur prédéfinie dans le thème.
         if "nom" in self.__dict__: #Vérifie si le joueur possede un attribut nom
-            text="Joueur"+str(self.name)
+            text="Joueur"+str(self.nom)
         elif "couleur" in self.__dict__: #Vérifie si le joueur possede un attribut couleur
             #Pourrait fonctionner si l'on créer une classe de couleur
             #mais c'est un peu exagéré.
@@ -165,6 +167,8 @@ class Robot(Joueur):
         else: #Sinon dans la plupart des cas on affiche uniquement son type.
             text="Joueur Robot"
         return text
+    
+    __repr__=__str__# Permet de faire un print sur l'instance et d'obtenir le même résultat que str.
 
 class Developpeur(Joueur):
     def __init__(self):
