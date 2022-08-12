@@ -1,16 +1,11 @@
 from mywindow import *
 from mycolors import *
 
-from pieces import King
 from board import Board
-from player import Player
 from human import Human
 from robot import Robot
 
-from copy import deepcopy
-
 import json
-import time
 import pygame
 
 from pygame.locals import *
