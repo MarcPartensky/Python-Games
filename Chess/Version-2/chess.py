@@ -232,7 +232,7 @@ if __name__ == "__main__":
     # print(directory)
     # print("\n\n")
     human = Human(1)
-    robot = Robot(2, prediction=3)
+    robot = Robot(2, prediction=2)
     players = [human, robot]
     window = Window(build=False, size=[700, 700])
     game = Chess(window, players)
