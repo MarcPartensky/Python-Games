@@ -545,6 +545,17 @@ files = [
 ]
 
 [[package]]
+name = "pyopengl"
+version = "3.1.7"
+description = "Standard OpenGL bindings for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyOpenGL-3.1.7-py3-none-any.whl", hash = "sha256:a6ab19cf290df6101aaf7470843a9c46207789855746399d0af92521a0a92b7a"},
+    {file = "PyOpenGL-3.1.7.tar.gz", hash = "sha256:eef31a3888e6984fd4d8e6c9961b184c9813ca82604d37fe3da80eb000a76c86"},
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.1.1"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -586,4 +597,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6f1b34c15e3e78bcb29c5b931807ae908aaf3fbc61d35db87228d1adafd77866"
+content-hash = "ee96e7beeb3d16d27ea3729c2b40fb2579887234c9db938ddfb92188fe040083"
