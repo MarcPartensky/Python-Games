@@ -512,6 +512,17 @@ files = [
 ]
 
 [[package]]
+name = "pygame-geometry"
+version = "0.1.2"
+description = "Geometry environment for pygame."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pygame_geometry-0.1.2-py3-none-any.whl", hash = "sha256:2e978e894d6908caf53322faddc03356ded63c4b1588fd46716a932c479cb075"},
+    {file = "pygame_geometry-0.1.2.tar.gz", hash = "sha256:68a2fa6a3670e9d7d08f0ad5628332ed7f7d92f6102003e95dff26608386b852"},
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.1.1"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -553,4 +564,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "bd900f37b772973469b3e3da77e5696eb3d8e8adf6113be065b3a72a4cd18327"
+content-hash = "6557c59ce8f10f5afb089e9251785356491e3669721d7ce8ef4f2989af0d34eb"

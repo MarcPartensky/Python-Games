@@ -10,6 +10,7 @@ python = "^3.11"
 pygame = "^2.5.2"
 numpy = "^1.26.4"
 matplotlib = "^3.8.3"
+pygame-geometry = "^0.1.2"
 
 
 [build-system]
