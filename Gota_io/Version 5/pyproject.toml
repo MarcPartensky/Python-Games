@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "gota-io"
+version = "0.1.0"
+description = ""
+authors = ["Marc Partensky <marc.partensky@gmail.com>"]
+readme = "README.md"
+packages = [{include = "gota"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pygame = "^2.5.2"
+numpy = "^1.26.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
